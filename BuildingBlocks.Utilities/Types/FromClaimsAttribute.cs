@@ -1,10 +1,9 @@
 namespace BuildingBlocks.Utilities.Types;
 
-[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
 /// <summary>
-/// Represents an attribute that maps a property or field to a claim in a security principal.
+/// Represents an attribute that can be applied to properties or fields in a class to specify the claim type from which the value should be mapped.
 /// </summary>
-/// <param name="claimType">The type of claim to map to the property or field.</param>
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
 public class FromClaimsAttribute(string claimType) : Attribute
 {
     /// <summary>

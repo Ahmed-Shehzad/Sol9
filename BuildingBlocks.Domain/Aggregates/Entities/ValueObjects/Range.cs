@@ -15,6 +15,15 @@ public record Range<T>
         From = from;
         To = to;
     }
+    
+    /// <summary>
+    /// Gets the start value of the range.
+    /// </summary>
     public T From { get; init; }
+
+    /// <summary>
+    /// Gets the end value of the range.
+    /// </summary>
     public T To { get; init; }
 }
+

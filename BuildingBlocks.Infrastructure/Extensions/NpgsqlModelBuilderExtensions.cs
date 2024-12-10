@@ -14,6 +14,7 @@ namespace BuildingBlocks.Infrastructure.Extensions;
         {
             builder.HasPostgresExtension("postgis");
         }
+        
         public static void UseNpgsqlDictionaryConvention(this ModelBuilder builder)
         {
             foreach (var entity in builder.Model.GetEntityTypes())

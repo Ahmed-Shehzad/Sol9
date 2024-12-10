@@ -6,10 +6,10 @@ namespace BuildingBlocks.Contracts.Types;
 public interface ITenantDependent
 {
     /// <summary>
-    /// Gets or sets the unique identifier of the tenant associated with the entity.
+    /// Get the unique identifier of the tenant associated with the entity.
     /// </summary>
     /// <value>
     /// The unique identifier of the tenant. If the entity is not tenant-dependent, this value should be null.
     /// </value>
-    Ulid? TenantId { get; set; }
+    Ulid? TenantId { get; }
 }
