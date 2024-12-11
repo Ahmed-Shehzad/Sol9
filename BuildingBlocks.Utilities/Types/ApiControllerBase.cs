@@ -18,7 +18,6 @@ public class ApiControllerBase : ControllerBase
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="mediator"/> is null.</exception>
     public ApiControllerBase(IMediator mediator)
     {
-        ArgumentNullException.ThrowIfNull(mediator);
         _mediator = mediator;
     }
 

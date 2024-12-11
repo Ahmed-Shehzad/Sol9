@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using BuildingBlocks.Contracts.Types;
+using BuildingBlocks.Extensions.Types;
 using BuildingBlocks.Utilities.Exceptions.Handlers;
 using BuildingBlocks.Utilities.Types;
 using MediatR.Registration;
@@ -79,8 +80,6 @@ public static class ServiceCollectionExtensions
         this IEndpointRouteBuilder endpoints, 
         string pattern, Action<DevToolsOptions> configure)
     {
-        ArgumentNullException.ThrowIfNull(endpoints);
-        
         endpoints.Map(pattern, ctx =>
         {
             var container = new Dictionary<string, Func<IServiceProvider, object>>();
@@ -105,11 +104,9 @@ public static class ServiceCollectionExtensions
         this IEndpointRouteBuilder endpoints,
         PathString fromPattern, PathString toPattern, string? pathBase = null)
     {
-        ArgumentNullException.ThrowIfNull(endpoints);
-        
-        if (!string.IsNullOrWhiteSpace(pathBase))
+        if (!pathBase.IsNullOrWhiteSpace())
         {
-            PathString path = pathBase.TrimEnd('/');
+            PathString path = pathBase!.TrimEnd('/');
             if (!toPattern.StartsWithSegments(pathBase))
             {
                 toPattern = path.Add(toPattern);

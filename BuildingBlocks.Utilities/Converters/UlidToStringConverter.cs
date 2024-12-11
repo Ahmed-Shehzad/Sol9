@@ -14,7 +14,7 @@ public class UlidToStringConverter(ConverterMappingHints? mappingHints = null) :
     /// <summary>
     /// Default mapping hints for the converter.
     /// </summary>
-    private static readonly ConverterMappingHints DefaultHints = new ConverterMappingHints(size: 26);
+    private static readonly ConverterMappingHints DefaultHints = new(size: 26);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UlidToStringConverter"/> class with default mapping hints.

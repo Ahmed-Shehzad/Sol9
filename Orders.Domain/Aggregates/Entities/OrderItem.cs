@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using BuildingBlocks.Domain.Aggregates.Entities;
 using BuildingBlocks.Domain.Aggregates.Entities.ValueObjects;
+using Orders.Domain.Aggregates.Entities.ValueObjects;
 
 namespace Orders.Domain.Aggregates.Entities;
 
@@ -16,43 +17,29 @@ public class OrderItem() : BaseEntity(Ulid.NewUlid())
 
     public Ulid? TripId { get; private set; }
 
-    public UnitValue<decimal> Quantity { get; private set; }
-
-    public string? Description { get; private set; }
-
-    public UnitValue<decimal> Weight { get; private set; }
-
-    public JsonElement? MetaData { get; private set; }
+    public OrderItemInfo OrderItemInfo { get; private set; }
 
     private OrderItem(Order order,
         Ulid? productId,
         Ulid? stopItemId,
         Ulid? tripId,
-        UnitValue<decimal> quantity,
-        string? description,
-        UnitValue<decimal> weight,
-        JsonElement? metaData) : this()
+        OrderItemInfo orderItemInfo) : this()
     {
         OrderId = order.Id;
         Order = order;
         ProductId = productId;
         StopItemId = stopItemId;
         TripId = tripId;
-        Quantity = quantity;
-        Description = description;
-        Weight = weight;
-        MetaData = metaData;
+        OrderItemInfo = orderItemInfo;
     }
+    
     public static OrderItem Create(
         Order order,
         Ulid? productId,
         Ulid? stopItemId,
         Ulid? tripId,
-        UnitValue<decimal> quantity,
-        string? description,
-        UnitValue<decimal> weight,
-        JsonElement? metaData)
+        OrderItemInfo orderItemInfo)
     {
-        return new OrderItem(order, productId, stopItemId, tripId, quantity, description, weight, metaData);
+        return new OrderItem(order, productId, stopItemId, tripId, orderItemInfo);
     }
 }

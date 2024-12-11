@@ -34,19 +34,59 @@ namespace Inventories.Domain.Aggregates.Entities
             return new StockItemBooking(quantity, stockItem, product, depot, tripId, stopItemId);
         }
 
+        /// <summary>
+        /// The product associated with the stock item.
+        /// </summary>
         public Product Product { get; private set; }
+        
+        /// <summary>
+        /// The unique identifier of the product.
+        /// </summary>
         public Ulid ProductId { get; private set; }
+        
+        /// <summary>
+        /// The depot where the stock item is being booked.
+        /// </summary>
         public Depot Depot { get; private set; }
+        
+        /// <summary>
+        /// The unique identifier of the depot.
+        /// </summary>
         public Ulid DepotId { get; private set; }
         
+        /// <summary>
+        /// The stock item to be booked.
+        /// </summary>
         public StockItem StockItem { get; private set; }
+        
+        /// <summary>
+        /// The unique identifier of the stock item.
+        /// </summary>
         public Ulid StockItemId { get; private set; }
 
+        /// <summary>
+        /// The unique identifier of the trip.
+        /// </summary>
         public Ulid TripId { get; private set; }
+        
+        /// <summary>
+        /// The unique identifier of the trip stop.
+        /// </summary>
         public Ulid StopItemId { get; private set; }
         
+        /// <summary>
+        /// The quantity of the stock item to be booked.
+        /// </summary>
         public UnitValue<decimal> Quantity { get; private set; }
-        public Ulid? TenantId { get; set; }
-        public Ulid? UserId { get; set; }
+        
+        /// <summary>
+        /// The unique identifier of the tenant.
+        /// </summary>
+        public Ulid? TenantId { get; private set; }
+        
+        /// <summary>
+        /// The unique identifier of the user.
+        /// </summary>
+        public Ulid? UserId { get; private set; }
     }
 }

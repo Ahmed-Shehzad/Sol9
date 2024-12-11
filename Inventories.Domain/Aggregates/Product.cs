@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using BuildingBlocks.Contracts.Types;
 using BuildingBlocks.Domain.Aggregates;
@@ -30,6 +31,7 @@ namespace Inventories.Domain.Aggregates
         public static Product Create(string name, string description, string manufacturer, ProductStatus status, UnitValue<decimal> unitPrice, Ulid userId, Ulid tenantId)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
+            
             return new Product(name, description, manufacturer, status, unitPrice, userId, tenantId);
         }
 
@@ -55,7 +57,6 @@ namespace Inventories.Domain.Aggregates
         /// </remarks>
         public void UpdateProductStatus(ProductStatus status)
         {
-            ArgumentNullException.ThrowIfNull(status);
             Status = status;
         }
         
@@ -68,7 +69,6 @@ namespace Inventories.Domain.Aggregates
         /// </remarks>
         public void UpdateUnitPrice(UnitValue<decimal> unitPrice)
         {
-            ArgumentNullException.ThrowIfNull(unitPrice);
             UnitPrice = unitPrice;
         }
         
@@ -78,7 +78,6 @@ namespace Inventories.Domain.Aggregates
         /// <param name="stockItem">The stock item to be added. This cannot be null.</param>
         public void AddStockItem(StockItem stockItem)
         {
-            ArgumentNullException.ThrowIfNull(stockItem);
             StockItems.Add(stockItem);
         }
         /// <summary>
@@ -87,7 +86,6 @@ namespace Inventories.Domain.Aggregates
         /// <param name="stockItems">The collection of stock items to be added. This cannot be null.</param>
         public void AddStockItems(ICollection<StockItem> stockItems)
         {
-            ArgumentNullException.ThrowIfNull(stockItems);
             StockItems.AddRange(stockItems);
         }
         /// <summary>
@@ -96,7 +94,6 @@ namespace Inventories.Domain.Aggregates
         /// <param name="stockItemBooking">The stock item booking to be added. This cannot be null.</param>
         public void AddStockItemBooking(StockItemBooking stockItemBooking)
         {
-            ArgumentNullException.ThrowIfNull(stockItemBooking);
             StockItemBookings.Add(stockItemBooking);
         }
         /// <summary>
@@ -105,7 +102,6 @@ namespace Inventories.Domain.Aggregates
         /// <param name="stockItemBookings">The collection of stock item bookings to be added. This cannot be null.</param>
         public void AddStockItemBookings(ICollection<StockItemBooking> stockItemBookings)
         {
-            ArgumentNullException.ThrowIfNull(stockItemBookings);
             StockItemBookings.AddRange(stockItemBookings);
         }
         /// <summary>
@@ -118,7 +114,6 @@ namespace Inventories.Domain.Aggregates
         /// </remarks>
         public void RemoveStockItem(StockItem stockItem)
         {
-            ArgumentNullException.ThrowIfNull(stockItem);
             StockItems.Remove(stockItem);
         }
         /// <summary>
@@ -131,7 +126,6 @@ namespace Inventories.Domain.Aggregates
         /// </remarks>
         public void RemoveStockItems(ICollection<StockItem> stockItems)
         {
-            ArgumentNullException.ThrowIfNull(stockItems);
             StockItems.RemoveRange(stockItems);
         }
         /// <summary>
@@ -144,7 +138,6 @@ namespace Inventories.Domain.Aggregates
         /// </remarks>
         public void RemoveStockItemBooking(StockItemBooking stockItemBooking)
         {
-            ArgumentNullException.ThrowIfNull(stockItemBooking);
             StockItemBookings.Remove(stockItemBooking);
         }
         /// <summary>
@@ -157,7 +150,6 @@ namespace Inventories.Domain.Aggregates
         /// </remarks>
         public void RemoveStockItemBookings(ICollection<StockItemBooking> stockItemBookings)
         {
-            ArgumentNullException.ThrowIfNull(stockItemBookings);
             StockItemBookings.RemoveRange(stockItemBookings);
         }
 

@@ -49,7 +49,6 @@ public abstract class BaseDbContext<TContext>(DbContextOptions<TContext> options
         modelBuilder.UseSingularTableNamingConvention();
         
         modelBuilder.ApplyDateTimeUtcConversion();
-        modelBuilder.ApplyEnumToStringConversion();
         
         modelBuilder.UseCustomNamingConvention();
         modelBuilder.UseNpgsqlDictionaryConvention();
@@ -57,5 +56,6 @@ public abstract class BaseDbContext<TContext>(DbContextOptions<TContext> options
         modelBuilder.UseNpgsqlNamingConvention();
         
         modelBuilder.ApplySoftDeleteQueryFilter();
+        modelBuilder.ApplyEnumerationConfiguration();
     }
 }

@@ -12,8 +12,6 @@ public class Repository<TModel> : IRepository<TModel> where TModel : BaseEntity
 
     protected Repository(DbContext dbContext)
     {
-        ArgumentNullException.ThrowIfNull(dbContext);
-
         Context = dbContext;
         Set = dbContext.Set<TModel>();
     }

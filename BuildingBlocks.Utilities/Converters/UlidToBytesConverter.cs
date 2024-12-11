@@ -14,7 +14,7 @@ public class UlidToBytesConverter(ConverterMappingHints? mappingHints = null) : 
     /// <summary>
     /// A static readonly instance of <see cref="ConverterMappingHints"/> with a size of 16.
     /// </summary>
-    private static readonly ConverterMappingHints DefaultHints = new ConverterMappingHints(size: 16);
+    private static readonly ConverterMappingHints DefaultHints = new(size: 16);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UlidToBytesConverter"/> class with default mapping hints.

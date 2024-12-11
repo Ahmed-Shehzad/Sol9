@@ -9,26 +9,26 @@ namespace Orders.Domain.Aggregates.Entities
     {
         private Document(DocumentInfo documentDetails, Order order, JsonElement? metaData) : this()
         {
-            DocumentDetails = documentDetails;
+            DocumentInfo = documentDetails;
             OrderId = order.Id;
             Order = order;
             MetaData = metaData;
         }
         
-        public static Document Create(DocumentInfo documentDetails, Order order, JsonElement? metaData)
+        public static Document Create(DocumentInfo documentInfo, Order order, JsonElement? metaData)
         {
-            return new Document(documentDetails, order, metaData);
+            return new Document(documentInfo, order, metaData);
         }
 
-        public void Update(DocumentInfo documentDetails, Order order, JsonElement? metaData)
+        public void Update(DocumentInfo documentInfo, Order order, JsonElement? metaData)
         {
-            DocumentDetails = documentDetails;
+            DocumentInfo = documentInfo;
             OrderId = order.Id;
             Order = order;
             MetaData = metaData;
         }
         
-        public DocumentInfo DocumentDetails { get; private set; }
+        public DocumentInfo DocumentInfo { get; private set; }
 
         public Ulid OrderId { get; private set; }
 

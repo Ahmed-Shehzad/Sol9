@@ -26,4 +26,3 @@ public record Range<T>
     /// </summary>
     public T To { get; init; }
 }
-

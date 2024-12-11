@@ -3,7 +3,7 @@ namespace BuildingBlocks.Extensions.Types;
 public static class EnumerableExtensions
 {
     /// <summary>
-    ///     Creates a difference result of two lists (may have different types).
+    ///  Creates a difference result of two lists (may have different types).
     /// </summary>
     /// <param name="source">Source list</param>
     /// <param name="destination">Destination list</param>
@@ -16,10 +16,6 @@ public static class EnumerableExtensions
         IEnumerable<T2> destination, 
         Func<T1, T2, bool> comparer)
     {
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(destination);
-        ArgumentNullException.ThrowIfNull(comparer);
-        
         var up = new List<T2>(destination);
         var down = new List<T1>();
         var intersect = new List<(T1, T2)>();
@@ -27,7 +23,7 @@ public static class EnumerableExtensions
         foreach (var x in source)
         {
             var y = up.SingleOrDefault(s => comparer(x, s));
-            if (y != null)
+            if (y is not null)
             {
                 intersect.Add((x, y));
                 up.Remove(y);
