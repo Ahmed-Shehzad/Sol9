@@ -17,11 +17,13 @@ public interface IRepository<TModel> : IDisposable where TModel : class
     Task<ICollection<TModel>> FindAllByAsync(Expression<Func<TModel, bool>> predicate, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Finds all models in the repository.
+    /// Finds all models in the repository using pagination.
     /// </summary>
+    /// <param name="pageSize"></param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <param name="pageNumber"></param>
     /// <returns>An asynchronous task that represents the operation. The task result contains a collection of all models in the repository.</returns>
-    Task<ICollection<TModel>> FindAllAsync(CancellationToken cancellationToken = default);
+    Task<ICollection<TModel>> FindAllAsync(int pageNumber = 1, int pageSize = 100, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Finds a single model in the repository that satisfies the given predicate.

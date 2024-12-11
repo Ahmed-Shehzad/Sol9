@@ -6,25 +6,41 @@ namespace Orders.Domain.Aggregates.Entities.ValueObjects;
 /// <summary>
 /// Represents the information of an order item.
 /// </summary>
-public record OrderItemInfo(UnitValue<decimal> Quantity, string? Description, UnitValue<decimal> Weight, JsonElement? MetaData)
+public record OrderItemInfo
 {
+    /// <summary>
+    /// Represents the information of an order item.
+    /// </summary>
+    private OrderItemInfo(UnitValue<decimal> quantity, string? description, UnitValue<decimal> weight, JsonElement? metaData)
+    {
+        Quantity = quantity;
+        Description = description;
+        Weight = weight;
+        MetaData = metaData;
+    }
+    
+    public static OrderItemInfo Create(UnitValue<decimal> quantity, string? description, UnitValue<decimal> weight, JsonElement? metaData)
+    {
+        return new OrderItemInfo(quantity, description, weight, metaData);
+    }
+
     /// <summary>
     /// The quantity of the item in the order.
     /// </summary>
-    public UnitValue<decimal> Quantity { get; init; } = Quantity;
+    public UnitValue<decimal> Quantity { get; init; }
 
     /// <summary>
     /// An optional description of the item.
     /// </summary>
-    public string? Description { get; init; } = Description;
+    public string? Description { get; init; }
 
     /// <summary>
     /// The weight of the item in the order.
     /// </summary>
-    public UnitValue<decimal> Weight { get; init; } = Weight;
+    public UnitValue<decimal> Weight { get; init; }
 
     /// <summary>
     /// Additional metadata for the item in JSON format.
     /// </summary>
-    public JsonElement? MetaData { get; init; } = MetaData;
+    public JsonElement? MetaData { get; init; }
 }

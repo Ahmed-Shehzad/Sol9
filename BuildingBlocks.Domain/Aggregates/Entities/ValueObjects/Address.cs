@@ -1,4 +1,6 @@
-﻿using NetTopologySuite.Geometries;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using BuildingBlocks.Domain.Aggregates.Utilities;
+using NetTopologySuite.Geometries;
 
 namespace BuildingBlocks.Domain.Aggregates.Entities.ValueObjects;
 
@@ -17,9 +19,9 @@ public record Address
     /// <param name="city">The city name of the address.</param>
     /// <param name="state">The state or province name of the address.</param>
     /// <param name="country">The country name of the address.</param>
-    private Address(Point? geography, string street, string number, string zipCode, string city, string state, string country)
+    private Address(Geography? geography, string street, string number, string zipCode, string city, string state, string country)
     {
-        Geography = geography;
+        Point = GeographyUtils.ToPoint(geography);
         Street = street;
         Number = number;
         ZipCode = zipCode;
@@ -39,15 +41,31 @@ public record Address
     /// <param name="state">The state or province name of the address.</param>
     /// <param name="country">The country name of the address.</param>
     /// <returns>A new instance of the <see cref="Address"/> class.</returns>
-    public static Address Create(Point? geography, string street, string number, string zipCode, string city, string state, string country)
+    public static Address Create(Geography? geography, string street, string number, string zipCode, string city, string state, string country)
     {
         return new Address(geography, street, number, zipCode, city, state, country);
     }
 
     /// <summary>
+    /// Gets or sets the geographical point representing the address location.
+    /// This property is marked with <see cref="NotMapped"/> attribute to exclude it from database mapping.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="Geography"/> property provides a convenient way to access and manipulate the geographical point using the <see cref="GeographyUtils"/> class.
+    /// The getter retrieves the geography from the <see cref="Point"/> using <see cref="GeographyUtils.FromPoint(Point)"/> method.
+    /// The setter updates the <see cref="Point"/> using <see cref="GeographyUtils.ToPoint(Geography?)"/> method.
+    /// </remarks>
+    [NotMapped]
+    public Geography? Geography
+    {
+        get => GeographyUtils.FromPoint(Point);
+        init => Point = GeographyUtils.ToPoint(value);
+    }
+
+    /// <summary>
     /// Gets the geographical point representing the address location.
     /// </summary>
-    public Point? Geography { get; init; }
+    public Point? Point { get; init; }
 
     /// <summary>
     /// Gets the street name of the address.

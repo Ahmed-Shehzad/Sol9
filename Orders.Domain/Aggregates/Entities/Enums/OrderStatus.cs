@@ -10,9 +10,9 @@ public class OrderStatus : Enumeration
     /// <summary>
     /// Initializes a new instance of the <see cref="OrderStatus"/> class.
     /// </summary>
-    /// <param name="id">The unique identifier of the order status.</param>
+    /// <param name="key">The unique identifier of the order status.</param>
     /// <param name="value">The display name of the order status.</param>
-    private OrderStatus(int id, string value) : base(id, value)
+    private OrderStatus(int key, string value) : base(key, value)
     {
     }
 

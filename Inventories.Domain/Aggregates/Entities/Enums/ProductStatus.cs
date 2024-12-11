@@ -10,9 +10,9 @@ public class ProductStatus : Enumeration
     /// <summary>
     /// Initializes a new instance of the <see cref="ProductStatus"/> class.
     /// </summary>
-    /// <param name="id">The unique identifier of the product status.</param>
+    /// <param name="key">The unique identifier of the product status.</param>
     /// <param name="value">The display name of the product status.</param>
-    private ProductStatus(int id, string value) : base(id, value)
+    private ProductStatus(int key, string value) : base(key, value)
     {
     }
 

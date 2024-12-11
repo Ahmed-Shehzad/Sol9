@@ -2,14 +2,14 @@
 
 namespace BuildingBlocks.Utilities.Types;
 
-public abstract class Enumeration(long id, string value) : IComparable
+public abstract class Enumeration(long key, string value) : IComparable
 {
     /// <summary>
     /// Gets the unique identifier of the enumeration value.
     /// </summary>
-    public long Id
+    public long Key
     {
-        get => id;
+        get => key;
     }
 
     /// <summary>
@@ -68,7 +68,7 @@ public abstract class Enumeration(long id, string value) : IComparable
         var typeMatches = GetType() == obj.GetType();
 
         // Check if the unique identifier of the current object is equal to the unique identifier of the specified object
-        var valueMatches = id.Equals(otherValue.Id);
+        var valueMatches = key.Equals(otherValue.Key);
 
         // Return true if both type and value match, otherwise return false
         return typeMatches && valueMatches;
@@ -82,7 +82,7 @@ public abstract class Enumeration(long id, string value) : IComparable
     /// </returns>
     public override int GetHashCode()
     {
-        return id.GetHashCode();
+        return key.GetHashCode();
     }
 
     /// <summary>
@@ -93,7 +93,7 @@ public abstract class Enumeration(long id, string value) : IComparable
     /// <returns>The absolute difference between the unique identifiers of the two Enumeration instances.</returns>
     public static long AbsoluteDifference(Enumeration firstValue, Enumeration secondValue)
     {
-        var absoluteDifference = Math.Abs(firstValue.Id - secondValue.Id);
+        var absoluteDifference = Math.Abs(firstValue.Key - secondValue.Key);
         return absoluteDifference;
     }
 
@@ -101,12 +101,12 @@ public abstract class Enumeration(long id, string value) : IComparable
     /// Retrieves an instance of the specified Enumeration type based on the provided unique identifier.
     /// </summary>
     /// <typeparam name="T">The Enumeration type to retrieve an instance for.</typeparam>
-    /// <param name="id">The unique identifier of the Enumeration instance to retrieve.</param>
+    /// <param name="key">The unique identifier of the Enumeration instance to retrieve.</param>
     /// <returns>The Enumeration instance with the specified unique identifier.</returns>
     /// <exception cref="ApplicationException">Thrown when no Enumeration instance with the specified unique identifier is found.</exception>
-    public static T FromId<T>(long id) where T : Enumeration, new()
+    public static T FromId<T>(long key) where T : Enumeration, new()
     {
-        var matchingItem = Parse<T, long>(id, "id", item => item.Id == id);
+        var matchingItem = Parse<T, long>(key, "key", item => item.Key == key);
         return matchingItem;
     }
     
@@ -172,6 +172,6 @@ public abstract class Enumeration(long id, string value) : IComparable
             throw new ArgumentException($"Object must be of type {nameof(Enumeration)}", nameof(other));
         }
 
-        return Id.CompareTo(otherEnumeration.Id);
+        return Key.CompareTo(otherEnumeration.Key);
     }
 }

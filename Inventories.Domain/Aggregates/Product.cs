@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using BuildingBlocks.Contracts.Types;
 using BuildingBlocks.Domain.Aggregates;

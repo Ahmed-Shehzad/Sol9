@@ -10,9 +10,9 @@ public class ContactType : Enumeration
     /// <summary>
     /// Initializes a new instance of the <see cref="ContactType"/> class.
     /// </summary>
-    /// <param name="id">The unique identifier of the contact type.</param>
+    /// <param name="key">The unique identifier of the contact type.</param>
     /// <param name="value">The display name of the contact type.</param>
-    private ContactType(int id, string value) : base(id, value)
+    private ContactType(int key, string value) : base(key, value)
     {
     }
     

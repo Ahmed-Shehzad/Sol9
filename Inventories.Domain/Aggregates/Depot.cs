@@ -22,7 +22,6 @@ public class Depot : AggregateRoot, ITenantDependent, IUserDependent
     public static Depot Create(string name, Address address, Contact contact)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
-
         return new Depot(name, address, contact);
     }
     

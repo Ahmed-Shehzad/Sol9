@@ -18,16 +18,21 @@ public class Repository<TModel> : IRepository<TModel> where TModel : BaseEntity
 
     public void Dispose()
     {
-        Context?.Dispose();
+        Context.Dispose();
         GC.SuppressFinalize(this);
     }
     public async Task<TModel?> FindAsync(Expression<Func<TModel, bool>> predicate, CancellationToken cancellationToken = default)
     {
         return await Set.FirstOrDefaultAsync(predicate, cancellationToken);
     }
-    public async Task<ICollection<TModel>> FindAllAsync(CancellationToken cancellationToken = default)
+    public async Task<ICollection<TModel>> FindAllAsync(int pageNumber = 1, int pageSize = 100, CancellationToken cancellationToken = default)
     {
-        return await Set.ToListAsync(cancellationToken);
+        pageNumber = pageNumber <= 0 ? 1 : pageNumber;
+        pageSize = pageSize <= 0 ? 100 : pageSize;
+        pageSize = pageSize >= 1000 ? 1000 : pageSize;
+        
+        var query = Set.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+        return await query.ToListAsync(cancellationToken);
     }
     public async Task<ICollection<TModel>> FindAllByAsync(Expression<Func<TModel, bool>> predicate, CancellationToken cancellationToken = default)
     {
