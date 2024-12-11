@@ -10,7 +10,7 @@ public static class StringExtensions
     /// <returns></returns>
     public static string JoinIfNotNullOrWhitespace(this IEnumerable<string> @this, char separator)
     {
-        return string.Join(separator, @this.Where(s => !string.IsNullOrWhiteSpace(s)));
+        return string.Join(separator, @this.Where(s => !s.IsNullOrWhiteSpace()));
     }
         
     /// <summary>
@@ -21,7 +21,7 @@ public static class StringExtensions
     /// <returns></returns>
     public static string JoinIfNotNullOrWhitespace(this IEnumerable<string?> @this, string separator)
     {
-        return string.Join(separator, @this.Where(s => !string.IsNullOrWhiteSpace(s)));
+        return string.Join(separator, @this.Where(s => !s.IsNullOrWhiteSpace()));
     }
 
     /// <summary>

@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
-using static BuildingBlocks.Extensions.Types.StringExtensions;
 using JsonSerializer = Newtonsoft.Json.JsonSerializer;
+using BuildingBlocks.Extensions.Types;
 
 namespace BuildingBlocks.Utilities.Parsers.JsonElement;
 

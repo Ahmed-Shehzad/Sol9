@@ -1,6 +1,4 @@
-﻿using BuildingBlocks.Contracts.Types;
-
-namespace BuildingBlocks.Domain.Aggregates.Entities;
+﻿namespace BuildingBlocks.Domain.Aggregates.Entities;
 
 /// <summary>
 /// Represents an outbox entity that holds messages to be processed outside the domain.

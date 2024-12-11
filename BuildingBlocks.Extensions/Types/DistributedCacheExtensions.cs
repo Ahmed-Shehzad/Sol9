@@ -2,8 +2,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace BuildingBlocks.Extensions.Types;
 
@@ -11,7 +9,7 @@ public static class DistributedCacheExtensions
 {
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
-        PropertyNamingPolicy = null,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         WriteIndented = true,
         AllowTrailingCommas = true,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
@@ -39,7 +37,7 @@ public static class DistributedCacheExtensions
     /// <param name="key">The cache key.</param>
     /// <param name="value">The value to be stored.</param>
     /// <param name="options">The expiration policy options.</param>
-    public static Task SetAsync<T>(this IDistributedCache cache, string key, T value, DistributedCacheEntryOptions options)
+    private static Task SetAsync<T>(this IDistributedCache cache, string key, T value, DistributedCacheEntryOptions options)
     {
         var bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(value, SerializerOptions));
         return cache.SetAsync(key, bytes, options);
@@ -53,13 +51,15 @@ public static class DistributedCacheExtensions
     /// <param name="key">The cache key.</param>
     /// <param name="value">The output parameter to store the retrieved value.</param>
     /// <returns>True if the value was found in the cache; otherwise, false.</returns>
-    public static bool TryGetValue<T>(this IDistributedCache cache, string key, out T? value)
+    private static bool TryGetValue<T>(this IDistributedCache cache, string key, out T? value)
     {
         var val = cache.Get(key);
+        
         value = default;
         if (val == null) return false;
+        
         var json = Encoding.UTF8.GetString(val);
-        value = JsonConvert.DeserializeObject<T>(json);
+        value = JsonSerializer.Deserialize<T>(json, SerializerOptions);
         return true;
     }
 
