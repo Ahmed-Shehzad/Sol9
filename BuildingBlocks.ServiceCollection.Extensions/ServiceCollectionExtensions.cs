@@ -132,7 +132,7 @@ public static class ServiceCollectionExtensions
     /// <returns>The same service collection instance with the MediatR services added.</returns>
     public static IServiceCollection AddMediatRConfiguration(this IServiceCollection services)
     {
-        ServiceRegistrar.AddRequiredServices(services, new Microsoft.Extensions.DependencyInjection.MediatRServiceConfiguration());
+        ServiceRegistrar.AddRequiredServices(services, new MediatRServiceConfiguration());
 
         return services;
     }

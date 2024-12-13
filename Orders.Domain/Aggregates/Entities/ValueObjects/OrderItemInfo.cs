@@ -10,11 +10,8 @@ public record OrderItemInfo
 {
     public OrderItemInfo()
     {
-        Quantity = UnitValue<decimal>.Create(0, string.Empty);
-        Description = string.Empty;
-        Weight = UnitValue<decimal>.Create(0, string.Empty);
     }
-    
+
     /// <summary>
     /// Represents the information of an order item.
     /// </summary>
@@ -25,7 +22,7 @@ public record OrderItemInfo
         Weight = weight;
         MetaData = metaData;
     }
-    
+
     public static OrderItemInfo Create(UnitValue<decimal> quantity, string? description, UnitValue<decimal> weight, JsonElement? metaData)
     {
         return new OrderItemInfo(quantity, description, weight, metaData);

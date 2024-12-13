@@ -9,7 +9,7 @@ namespace BuildingBlocks.Domain.Aggregates.Entities;
 public abstract class BaseEntity(Ulid id) : IBaseEntity, IAuditInfo
 {
     private static readonly DateTime TimeStampUtc = DateTime.UtcNow;
-    
+
     /// <summary>
     /// Gets or sets the unique identifier for the entity.
     /// </summary>
@@ -68,4 +68,5 @@ public abstract class BaseEntity(Ulid id) : IBaseEntity, IAuditInfo
     public string? DeletedBy { get; set; } = null;
 
     #endregion AuditInfo
+
 }

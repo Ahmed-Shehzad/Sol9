@@ -12,8 +12,8 @@ public class Order : AggregateRoot, ITenantDependent, IUserDependent
 {
     public Order()
     {
-        
     }
+    
     private Order(string type,
         string description,
         OrderStatus status,

@@ -49,7 +49,7 @@ public record Address
     }
 
     /// <summary>
-    /// Gets or sets the geographical point representing the address location.
+    /// Gets or sets the geographical representing the address location.
     /// This property is marked with <see /> attribute to exclude it from database mapping.
     /// </summary>
     /// <remarks>

@@ -1,0 +1,6 @@
+services:
+  orders.api:
+    image: ${DOCKER_REGISTRY-}ordersapi
+    build:
+      context: .
+      dockerfile: Orders.API/Dockerfile
