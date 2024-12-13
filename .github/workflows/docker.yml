@@ -42,8 +42,7 @@ jobs:
           context: .
           file: Orders.API/Dockerfile
           push: true
-          tags: |
-            ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest
+          tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/sol9/${{ env.IMAGE_NAME }}:latest | tr '[:upper:]' '[:lower:]'
 
       - name: Start Docker Compose for services
         run: |
