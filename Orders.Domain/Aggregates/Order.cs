@@ -10,12 +10,16 @@ namespace Orders.Domain.Aggregates;
 
 public class Order : AggregateRoot, ITenantDependent, IUserDependent
 {
+    public Order()
+    {
+        
+    }
     private Order(string type,
         string description,
         OrderStatus status,
-        Address billingAddress,
-        Address shippingAddress,
-        Address transportAddress)
+        Address? billingAddress,
+        Address? shippingAddress,
+        Address? transportAddress)
     {
         Type = type;
         Description = description;
@@ -28,9 +32,9 @@ public class Order : AggregateRoot, ITenantDependent, IUserDependent
     public static Order Create(string type,
         string description,
         OrderStatus status,
-        Address billingAddress,
-        Address shippingAddress,
-        Address transportAddress)
+        Address? billingAddress,
+        Address? shippingAddress,
+        Address? transportAddress)
     {
         return new Order(type,
             description,
@@ -56,7 +60,7 @@ public class Order : AggregateRoot, ITenantDependent, IUserDependent
     /// Updates the billing address of the order.
     /// </summary>
     /// <param name="billingAddress">The new billing address to set for the order.</param>
-    public void UpdateBillingAddress(Address billingAddress)
+    public void UpdateBillingAddress(Address? billingAddress)
     {
         BillingAddress = billingAddress;
     }
@@ -65,7 +69,7 @@ public class Order : AggregateRoot, ITenantDependent, IUserDependent
     /// Updates the shipping address of the order.
     /// </summary>
     /// <param name="shippingAddress">The new shipping address to set for the order.</param>
-    public void UpdateShippingAddress(Address shippingAddress)
+    public void UpdateShippingAddress(Address? shippingAddress)
     {
         ShippingAddress = shippingAddress;
     }
@@ -74,7 +78,7 @@ public class Order : AggregateRoot, ITenantDependent, IUserDependent
     /// Updates the transport address of the order.
     /// </summary>
     /// <param name="transportAddress">The new transport address to set for the order.</param>
-    public void UpdateTransportAddress(Address transportAddress)
+    public void UpdateTransportAddress(Address? transportAddress)
     {
         TransportAddress = transportAddress;
     }
@@ -142,7 +146,7 @@ public class Order : AggregateRoot, ITenantDependent, IUserDependent
     /// Adds a document to the order.
     /// </summary>
     /// <param name="document">The document to add to the order.</param>
-    public void AddDocument(Document document)
+    public void AddDocument(OrderDocument document)
     {
         Documents.Add(document);
     }
@@ -151,7 +155,7 @@ public class Order : AggregateRoot, ITenantDependent, IUserDependent
     /// Removes a document from the order.
     /// </summary>
     /// <param name="document">The document to remove from the order.</param>
-    public void RemoveDocument(Document document)
+    public void RemoveDocument(OrderDocument document)
     {
         Documents.Remove(document);
     }
@@ -173,6 +177,27 @@ public class Order : AggregateRoot, ITenantDependent, IUserDependent
     {
         Depots.Remove(depot);
     }
+    
+    /// <summary>
+    /// Adds an order item to the order.
+    /// </summary>
+    /// <param name="orderItem">The order item to add to the order.</param>
+    public void AddOrderItem(OrderItem orderItem)
+    {
+        Items.Add(orderItem);
+    }
+    public void RemoveOrderItem(OrderItem orderItem)
+    {
+        Items.Remove(orderItem);
+    }
+    public void AddTimeFrame(OrderTimeFrame timeFrame)
+    {
+        TimeFrames.Add(timeFrame);
+    }
+    public void RemoveTimeFrame(OrderTimeFrame timeFrame)
+    {
+        TimeFrames.Remove(timeFrame);
+    }
 
     /// <summary>
     /// Gets or sets the type of the order.
@@ -192,18 +217,23 @@ public class Order : AggregateRoot, ITenantDependent, IUserDependent
     /// <summary>
     /// Gets or sets the billing address of the order.
     /// </summary>
-    public Address BillingAddress { get; private set; }
+    public Address? BillingAddress { get; private set; }
 
     /// <summary>
     /// Gets or sets the shipping address of the order.
     /// </summary>
-    public Address ShippingAddress { get; private set; }
-
+    public Address? ShippingAddress { get; private set; }
+    
     /// <summary>
     /// Gets or sets the transport address of the order.
     /// </summary>
-    public Address TransportAddress { get; private set; }
+    public Address? TransportAddress { get; private set; }
 
+    /// <summary>
+    /// Gets a collection of time frames associated with the order.
+    /// </summary>
+    public ICollection<OrderTimeFrame> TimeFrames { get; private set; } = new Collection<OrderTimeFrame>();
+    
     /// <summary>
     /// Gets a collection of order items associated with the order.
     /// </summary>
@@ -212,7 +242,7 @@ public class Order : AggregateRoot, ITenantDependent, IUserDependent
     /// <summary>
     /// Gets a collection of documents associated with the order.
     /// </summary>
-    public ICollection<Document> Documents { get; private set; } = new Collection<Document>();
+    public ICollection<OrderDocument> Documents { get; private set; } = new Collection<OrderDocument>();
 
     /// <summary>
     /// Gets a collection of depots associated with the order.

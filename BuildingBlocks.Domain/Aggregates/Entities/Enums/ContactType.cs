@@ -7,6 +7,10 @@ namespace BuildingBlocks.Domain.Aggregates.Entities.Enums;
 /// </summary>
 public class ContactType : Enumeration
 {
+    public ContactType() : base()
+    {
+    }
+    
     /// <summary>
     /// Initializes a new instance of the <see cref="ContactType"/> class.
     /// </summary>
@@ -19,20 +23,20 @@ public class ContactType : Enumeration
     /// <summary>
     /// Represents a landline contact type.
     /// </summary>
-    public static ContactType Landline { get; } = new(0, nameof(Landline));
+    public static ContactType Landline { get; } = new(1, nameof(Landline));
     
     /// <summary>
     /// Represents a work contact type.
     /// </summary>
-    public static ContactType Work { get; } = new(1, nameof(Work));
+    public static ContactType Work { get; } = new(2, nameof(Work));
     
     /// <summary>
     /// Represents a mobile contact type.
     /// </summary>
-    public static ContactType Mobile { get; } = new(2, nameof(Mobile));
+    public static ContactType Mobile { get; } = new(3, nameof(Mobile));
     
     /// <summary>
     /// Represents a fax contact type.
     /// </summary>
-    public static ContactType Fax { get; } = new(3, nameof(Fax));
+    public static ContactType Fax { get; } = new(4, nameof(Fax));
 }

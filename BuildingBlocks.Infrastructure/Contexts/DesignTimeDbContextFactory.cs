@@ -2,11 +2,10 @@
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 
-namespace BuildingBlocks.Infrastructure.Types;
+namespace BuildingBlocks.Infrastructure.Contexts;
 
 public abstract class DesignTimeDbContextFactory<TContext> : IDesignTimeDbContextFactory<TContext> where TContext: DbContext
 {
-
     public TContext CreateDbContext(string[] args)
     {
         return Create(Directory.GetCurrentDirectory(),

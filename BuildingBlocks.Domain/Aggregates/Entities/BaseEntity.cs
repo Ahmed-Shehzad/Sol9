@@ -20,12 +20,12 @@ public abstract class BaseEntity(Ulid id) : IBaseEntity, IAuditInfo
     /// <summary>
     /// Gets or sets the date when the entity was created.
     /// </summary>
-    public DateOnly? CreatedDateAt { get; set; } = DateOnly.FromDateTime(TimeStampUtc);
+    public DateOnly? CreatedDateUtcAt { get; set; } = DateOnly.FromDateTime(TimeStampUtc);
 
     /// <summary>
     /// Gets or sets the time when the entity was created.
     /// </summary>
-    public TimeOnly? CreatedTimeAt { get; set; } = TimeOnly.FromDateTime(TimeStampUtc);
+    public TimeOnly? CreatedTimeUtcAt { get; set; } = TimeOnly.FromDateTime(TimeStampUtc);
 
     /// <summary>
     /// Gets or sets the user who created the entity.
@@ -35,12 +35,12 @@ public abstract class BaseEntity(Ulid id) : IBaseEntity, IAuditInfo
     /// <summary>
     /// Gets or sets the date when the entity was last updated.
     /// </summary>
-    public DateOnly? UpdatedDateAt { get; set; } = null;
+    public DateOnly? UpdatedDateUtcAt { get; set; } = null;
 
     /// <summary>
     /// Gets or sets the time when the entity was last updated.
     /// </summary>
-    public TimeOnly? UpdatedTimeAt { get; set; } = null;
+    public TimeOnly? UpdatedTimeUtcAt { get; set; } = null;
 
     /// <summary>
     /// Gets or sets the user who last updated the entity.
@@ -55,12 +55,12 @@ public abstract class BaseEntity(Ulid id) : IBaseEntity, IAuditInfo
     /// <summary>
     /// Gets or sets the date when the entity was deleted.
     /// </summary>
-    public DateOnly? DeletedDateAt { get; set; } = null;
+    public DateOnly? DeletedDateUtcAt { get; set; } = null;
 
     /// <summary>
     /// Gets or sets the time when the entity was deleted.
     /// </summary>
-    public TimeOnly? DeletedTimeAt { get; set; } = null;
+    public TimeOnly? DeletedTimeUtcAt { get; set; } = null;
 
     /// <summary>
     /// Gets or sets the user who deleted the entity.

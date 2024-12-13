@@ -2,23 +2,27 @@
 
 namespace BuildingBlocks.Utilities.Types;
 
-public abstract class Enumeration(long key, string value) : IComparable
+public abstract class Enumeration : IComparable
 {
+    protected Enumeration()
+    {
+    }
+    
+    protected Enumeration(long key, string value)
+    {
+        Key = key;
+        Value = value;
+    }
+
     /// <summary>
     /// Gets the unique identifier of the enumeration value.
     /// </summary>
-    public long Key
-    {
-        get => key;
-    }
+    public long Key { get; init; }
 
     /// <summary>
     /// Gets the string representation of the enumeration value.
     /// </summary>
-    public string Value
-    {
-        get => value;
-    }
+    public string Value { get; init; }
 
     /// <summary>
     /// Returns a string representation of the Enumeration's value.
@@ -68,7 +72,7 @@ public abstract class Enumeration(long key, string value) : IComparable
         var typeMatches = GetType() == obj.GetType();
 
         // Check if the unique identifier of the current object is equal to the unique identifier of the specified object
-        var valueMatches = key.Equals(otherValue.Key);
+        var valueMatches = Key.Equals(otherValue.Key);
 
         // Return true if both type and value match, otherwise return false
         return typeMatches && valueMatches;
@@ -82,7 +86,7 @@ public abstract class Enumeration(long key, string value) : IComparable
     /// </returns>
     public override int GetHashCode()
     {
-        return key.GetHashCode();
+        return Key.GetHashCode();
     }
 
     /// <summary>

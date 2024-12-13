@@ -5,32 +5,36 @@ using Orders.Domain.Aggregates.Entities.ValueObjects;
 
 namespace Orders.Domain.Aggregates.Entities
 {
-    public class Document : BaseEntity, ITenantDependent, IUserDependent
+    public class OrderDocument : BaseEntity, ITenantDependent, IUserDependent
     {
+        public OrderDocument() : base(Ulid.NewUlid())
+        {
+        }
+        
         /// <summary>
-        /// Initializes a new instance of the <see cref="Document"/> class.
+        /// Initializes a new instance of the <see cref="OrderDocument"/> class.
         /// </summary>
-        /// <param name="documentDetails">The details of the document.</param>
+        /// <param name="documentInfo">The details of the document.</param>
         /// <param name="order">The order associated with the document.</param>
         /// <param name="metaData">Additional metadata for the document.</param>
-        private Document(DocumentInfo documentDetails, Order order, JsonElement? metaData) : base(Ulid.NewUlid())
+        private OrderDocument(OrderDocumentInfo documentInfo, Order order, JsonElement? metaData) : this()
         {
-            DocumentInfo = documentDetails;
+            DocumentInfo = documentInfo;
             OrderId = order.Id;
             Order = order;
             MetaData = metaData;
         }
         
         /// <summary>
-        /// Creates a new instance of the <see cref="Document"/> class.
+        /// Creates a new instance of the <see cref="OrderDocument"/> class.
         /// </summary>
         /// <param name="documentInfo">The details of the document.</param>
         /// <param name="order">The order associated with the document.</param>
         /// <param name="metaData">Additional metadata for the document.</param>
-        /// <returns>A new instance of the <see cref="Document"/> class.</returns>
-        public static Document Create(DocumentInfo documentInfo, Order order, JsonElement? metaData)
+        /// <returns>A new instance of the <see cref="OrderDocument"/> class.</returns>
+        public static OrderDocument Create(OrderDocumentInfo documentInfo, Order order, JsonElement? metaData)
         {
-            return new Document(documentInfo, order, metaData);
+            return new OrderDocument(documentInfo, order, metaData);
         }
 
         /// <summary>
@@ -39,7 +43,7 @@ namespace Orders.Domain.Aggregates.Entities
         /// <param name="documentInfo">The updated details of the document.</param>
         /// <param name="order">The updated order associated with the document.</param>
         /// <param name="metaData">The updated additional metadata for the document.</param>
-        public void Update(DocumentInfo documentInfo, Order order, JsonElement? metaData)
+        public void Update(OrderDocumentInfo documentInfo, Order order, JsonElement? metaData)
         {
             DocumentInfo = documentInfo;
             OrderId = order.Id;
@@ -50,7 +54,7 @@ namespace Orders.Domain.Aggregates.Entities
         /// <summary>
         /// Gets the details of the document.
         /// </summary>
-        public DocumentInfo DocumentInfo { get; private set; }
+        public OrderDocumentInfo DocumentInfo { get; private set; }
 
         /// <summary>
         /// Gets the unique identifier of the order associated with the document.

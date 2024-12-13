@@ -3,20 +3,20 @@
 /// <summary>
 /// Represents information about a document, such as its name, type, and URL.
 /// </summary>
-public record DocumentInfo
+public record OrderDocumentInfo
 {
     /// <summary>
     /// Represents information about a document, such as its name, type, and URL.
     /// </summary>
-    private DocumentInfo(string name, string type, string url)
+    private OrderDocumentInfo(string name, string type, string url)
     {
         Name = name;
         Type = type;
         Url = url;
     }
-    public static DocumentInfo Create(string name, string type, string url)
+    public static OrderDocumentInfo Create(string name, string type, string url)
     {
-        return new DocumentInfo(name, type, url);
+        return new OrderDocumentInfo(name, type, url);
     }
 
     /// <summary>
@@ -37,10 +37,4 @@ public record DocumentInfo
     /// <value>The URL of the document.</value>
     public string Url { get; init; }
 
-    public void Deconstruct(out string Name, out string Type, out string Url)
-    {
-        Name = this.Name;
-        Type = this.Type;
-        Url = this.Url;
-    }
 }

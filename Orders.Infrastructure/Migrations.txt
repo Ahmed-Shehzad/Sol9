@@ -1,0 +1,2 @@
+﻿dotnet ef migrations add Initial --project ./Orders.Infrastructure.csproj --context OrdersDbContext --output-dir Migrations/OrdersDbContext
+dotnet ef database update --context OrdersDbContext

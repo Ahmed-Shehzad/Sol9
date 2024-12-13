@@ -10,6 +10,11 @@
     <ItemGroup>
       <PackageReference Include="Asp.Versioning.Mvc" Version="8.1.0" />
       <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0" />
+      <PackageReference Include="AspNetCore.HealthChecks.Kafka" Version="8.0.1" />
+      <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.2" />
+      <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="8.0.1" />
+      <PackageReference Include="AspNetCore.HealthChecks.UI" Version="8.0.2" />
+      <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="8.0.1" />
       <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
       <PackageReference Include="AWS.Logger.AspNetCore" Version="3.5.3" />
       <PackageReference Include="Bogus" Version="35.6.1" />
@@ -28,6 +33,10 @@
       <PackageReference Include="FluentResults.Extensions.FluentAssertions" Version="2.1.2" />
       <PackageReference Include="FluentValidation" Version="11.11.0" />
       <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
+      <PackageReference Include="Flurl" Version="4.0.0" />
+      <PackageReference Include="Flurl.Http" Version="4.0.2" />
+      <PackageReference Include="Grpc.AspNetCore.HealthChecks" Version="2.67.0" />
+      <PackageReference Include="Grpc.HealthCheck" Version="2.67.0" />
       <PackageReference Include="IdentityModel" Version="7.0.0" />
       <PackageReference Include="JsonConverter.System.Text.Json" Version="0.7.1" />
       <PackageReference Include="JsonSchema.Net.Data" Version="7.0.0" />
@@ -61,10 +70,12 @@
       <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="8.0.11" />
       <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.11" />
       <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.11" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
+      <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite" Version="9.0.0" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.0">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -110,8 +121,14 @@
       <PackageReference Include="Microsoft.IdentityModel.Protocols" Version="8.3.0" />
       <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.3.0" />
       <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.3.0" />
+      <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore" Version="9.0.0" />
       <PackageReference Include="Moq" Version="4.20.72" />
       <PackageReference Include="Moq.EntityFrameworkCore" Version="8.0.1.2" />
+      <PackageReference Include="morelinq" Version="4.3.0" />
+      <PackageReference Include="MoreLinq.Source.MoreEnumerable.ForEach" Version="1.0.2">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
       <PackageReference Include="NetTopologySuite" Version="2.5.0" />
       <PackageReference Include="NetTopologySuite.Features" Version="2.2.0" />
       <PackageReference Include="NetTopologySuite.IO.GeoJSON" Version="4.0.0" />

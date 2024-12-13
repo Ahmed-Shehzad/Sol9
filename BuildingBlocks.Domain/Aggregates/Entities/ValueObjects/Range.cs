@@ -10,7 +10,7 @@ public record Range<T>
     /// Represents a range of values from a start (from) to an end (to).
     /// </summary>
     /// <typeparam name="T">The type of values in the range.</typeparam>
-    public Range(T from, T to)
+    protected Range(T from, T to)
     {
         From = from;
         To = to;

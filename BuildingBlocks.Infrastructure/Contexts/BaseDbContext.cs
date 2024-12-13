@@ -1,11 +1,13 @@
 ﻿using System.Text.Json;
+using BuildingBlocks.Contracts.Types;
 using BuildingBlocks.Domain.Aggregates.Entities;
+using BuildingBlocks.Infrastructure.EntityConfigurations;
 using BuildingBlocks.Infrastructure.Extensions;
 using BuildingBlocks.Infrastructure.Interceptors;
 using BuildingBlocks.Utilities.Converters;
 using Microsoft.EntityFrameworkCore;
 
-namespace BuildingBlocks.Infrastructure.Types;
+namespace BuildingBlocks.Infrastructure.Contexts;
 
 public abstract class BaseDbContext<TContext>(DbContextOptions<TContext> options, Ulid? tenantId, Ulid? userId) : DbContext(options)
     where TContext : DbContext
@@ -44,16 +46,23 @@ public abstract class BaseDbContext<TContext>(DbContextOptions<TContext> options
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
+        
         modelBuilder.ConfigureDefaultSchema(this);
+        
         modelBuilder.UseSingularTableNamingConvention();
         
+        modelBuilder.ApplyAllConfigurations<TContext>();
         modelBuilder.ApplyDateTimeUtcConversion();
+        modelBuilder.ApplyConfiguration(new OutboxConfiguration());
         
         modelBuilder.UseCustomNamingConvention();
         modelBuilder.UseNpgsqlDictionaryConvention();
+
         modelBuilder.UseNpgsqlSpatialData();
         modelBuilder.UseNpgsqlNamingConvention();
+
+        modelBuilder.ApplyTenantQueryFilter(tenantId);
+        modelBuilder.ApplyUserQueryFilter(userId);
         
         modelBuilder.ApplySoftDeleteQueryFilter();
         modelBuilder.ApplyEnumerationConfiguration();

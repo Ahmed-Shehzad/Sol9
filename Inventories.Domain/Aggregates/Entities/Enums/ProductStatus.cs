@@ -7,6 +7,10 @@ namespace Inventories.Domain.Aggregates.Entities.Enums;
 /// </summary>
 public class ProductStatus : Enumeration
 {
+    public ProductStatus() : base()
+    {
+    }
+    
     /// <summary>
     /// Initializes a new instance of the <see cref="ProductStatus"/> class.
     /// </summary>

@@ -8,7 +8,6 @@ namespace Orders.Domain.Aggregates.Entities;
 /// </summary>
 public class OrderItem : BaseEntity
 {
-
     /// <summary>
     /// Gets the unique identifier of the order.
     /// </summary>
@@ -70,7 +69,7 @@ public class OrderItem : BaseEntity
         Ulid? productId,
         Ulid? stopItemId,
         Ulid? tripId,
-        OrderItemInfo orderItemInfo) : base(Ulid.NewUlid())
+        OrderItemInfo orderItemInfo) : this()
     {
         OrderId = order.Id;
         Order = order;
@@ -78,5 +77,9 @@ public class OrderItem : BaseEntity
         StopItemId = stopItemId;
         TripId = tripId;
         OrderItemInfo = orderItemInfo;
+    }
+
+    public OrderItem() : base(Ulid.NewUlid())
+    {
     }
 }

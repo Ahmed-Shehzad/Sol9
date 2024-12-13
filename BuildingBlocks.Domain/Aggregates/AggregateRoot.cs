@@ -57,4 +57,12 @@ public abstract class AggregateRoot() : BaseEntity(Ulid.NewUlid()), IAggregateRo
         }
     }
     #endregion Aggregate Events
+    
+    /// <summary>
+    /// Represents the version of the aggregate root. It is incremented every time the aggregate is modified.
+    /// </summary>
+    /// <remarks>
+    /// This property is used for optimistic concurrency control. It ensures that changes to the aggregate are only applied if the current version matches the one in the database.
+    /// </remarks>
+    public uint RowVersion { get; private set; }
 }

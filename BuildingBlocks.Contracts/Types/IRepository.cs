@@ -19,9 +19,9 @@ public interface IRepository<TModel> : IDisposable where TModel : class
     /// <summary>
     /// Finds all models in the repository using pagination.
     /// </summary>
+    /// <param name="pageNumber"></param>
     /// <param name="pageSize"></param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-    /// <param name="pageNumber"></param>
     /// <returns>An asynchronous task that represents the operation. The task result contains a collection of all models in the repository.</returns>
     Task<ICollection<TModel>> FindAllAsync(int pageNumber = 1, int pageSize = 100, CancellationToken cancellationToken = default);
 

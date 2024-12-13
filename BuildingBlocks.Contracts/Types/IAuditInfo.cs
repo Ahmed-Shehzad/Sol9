@@ -8,12 +8,12 @@ public interface IAuditInfo
     /// <summary>
     /// Gets or sets the date when the entity was created.
     /// </summary>
-    DateOnly? CreatedDateAt { get; set; }
+    DateOnly? CreatedDateUtcAt { get; set; }
     
     /// <summary>
     /// Gets or sets the time when the entity was created.
     /// </summary>
-    TimeOnly? CreatedTimeAt { get; set; }
+    TimeOnly? CreatedTimeUtcAt { get; set; }
 
     /// <summary>
     /// Gets or sets the user who created the entity.
@@ -23,12 +23,12 @@ public interface IAuditInfo
     /// <summary>
     /// Gets or sets the date when the entity was last updated.
     /// </summary>
-    DateOnly? UpdatedDateAt { get; set; }
+    DateOnly? UpdatedDateUtcAt { get; set; }
     
     /// <summary>
     /// Gets or sets the time when the entity was last updated.
     /// </summary>
-    TimeOnly? UpdatedTimeAt { get; set; }
+    TimeOnly? UpdatedTimeUtcAt { get; set; }
 
     /// <summary>
     /// Gets or sets the user who last updated the entity.
@@ -43,12 +43,12 @@ public interface IAuditInfo
     /// <summary>
     /// Gets or sets the date when the entity was deleted.
     /// </summary>
-    DateOnly? DeletedDateAt { get; set; }
+    DateOnly? DeletedDateUtcAt { get; set; }
     
     /// <summary>
     /// Gets or sets the time when the entity was deleted.
     /// </summary>
-    TimeOnly? DeletedTimeAt { get; set; }
+    TimeOnly? DeletedTimeUtcAt { get; set; }
 
     /// <summary>
     /// Gets or sets the user who deleted the entity.

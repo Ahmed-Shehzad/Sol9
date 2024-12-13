@@ -42,18 +42,18 @@ public class EntityAuditInterceptor : SaveChangesInterceptor
             switch (entry.State)
             {
                 case EntityState.Added:
-                    SetCurrentPropertyValue(entry, nameof(IAuditInfo.CreatedDateAt), today);
-                    SetCurrentPropertyValue(entry, nameof(IAuditInfo.CreatedTimeAt), timestamp);
+                    SetCurrentPropertyValue(entry, nameof(IAuditInfo.CreatedDateUtcAt), today);
+                    SetCurrentPropertyValue(entry, nameof(IAuditInfo.CreatedTimeUtcAt), timestamp);
                     SetCurrentPropertyValue(entry, nameof(IAuditInfo.CreatedBy), Configurations.System);
                     break;
                 case EntityState.Modified when !entry.Entity.IsDeleted:
-                    SetCurrentPropertyValue(entry, nameof(IAuditInfo.UpdatedDateAt), today);
-                    SetCurrentPropertyValue(entry, nameof(IAuditInfo.UpdatedTimeAt), timestamp);
+                    SetCurrentPropertyValue(entry, nameof(IAuditInfo.UpdatedDateUtcAt), today);
+                    SetCurrentPropertyValue(entry, nameof(IAuditInfo.UpdatedTimeUtcAt), timestamp);
                     SetCurrentPropertyValue(entry, nameof(IAuditInfo.UpdatedBy), Configurations.System);
                     break;
                 case EntityState.Deleted when !entry.Entity.IsDeleted:
-                    SetCurrentPropertyValue(entry, nameof(IAuditInfo.DeletedDateAt), today);
-                    SetCurrentPropertyValue(entry, nameof(IAuditInfo.DeletedTimeAt), timestamp);
+                    SetCurrentPropertyValue(entry, nameof(IAuditInfo.DeletedDateUtcAt), today);
+                    SetCurrentPropertyValue(entry, nameof(IAuditInfo.DeletedTimeUtcAt), timestamp);
                     SetCurrentPropertyValue(entry, nameof(IAuditInfo.IsDeleted), true);
                     SetCurrentPropertyValue(entry, nameof(IAuditInfo.DeletedBy), Configurations.System);
                     entry.State = EntityState.Modified;

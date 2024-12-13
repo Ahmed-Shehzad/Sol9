@@ -8,6 +8,13 @@ namespace Orders.Domain.Aggregates.Entities.ValueObjects;
 /// </summary>
 public record OrderItemInfo
 {
+    public OrderItemInfo()
+    {
+        Quantity = UnitValue<decimal>.Create(0, string.Empty);
+        Description = string.Empty;
+        Weight = UnitValue<decimal>.Create(0, string.Empty);
+    }
+    
     /// <summary>
     /// Represents the information of an order item.
     /// </summary>

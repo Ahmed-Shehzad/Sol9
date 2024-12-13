@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using BuildingBlocks.Domain.Aggregates.Utilities;
+﻿using BuildingBlocks.Domain.Aggregates.Utilities;
 using NetTopologySuite.Geometries;
 
 namespace BuildingBlocks.Domain.Aggregates.Entities.ValueObjects;
@@ -9,6 +8,9 @@ namespace BuildingBlocks.Domain.Aggregates.Entities.ValueObjects;
 /// </summary>
 public record Address
 {
+    public Address()
+    {
+    }
     /// <summary>
     /// Represents an address with geographical and location details.
     /// </summary>
@@ -48,14 +50,13 @@ public record Address
 
     /// <summary>
     /// Gets or sets the geographical point representing the address location.
-    /// This property is marked with <see cref="NotMapped"/> attribute to exclude it from database mapping.
+    /// This property is marked with <see /> attribute to exclude it from database mapping.
     /// </summary>
     /// <remarks>
     /// The <see cref="Geography"/> property provides a convenient way to access and manipulate the geographical point using the <see cref="GeographyUtils"/> class.
-    /// The getter retrieves the geography from the <see cref="Point"/> using <see cref="GeographyUtils.FromPoint(Point)"/> method.
-    /// The setter updates the <see cref="Point"/> using <see cref="GeographyUtils.ToPoint(Geography?)"/> method.
+    /// The getter retrieves the geography from the <see cref="Point"/> using <see cref="GeographyUtils.FromPoint(NetTopologySuite.Geometries.Point)"/> method.
+    /// The setter updates the <see cref="Point"/> using <see cref="GeographyUtils.ToPoint(ValueObjects.Geography)"/> method.
     /// </remarks>
-    [NotMapped]
     public Geography? Geography
     {
         get => GeographyUtils.FromPoint(Point);

@@ -7,6 +7,10 @@ namespace Orders.Domain.Aggregates.Entities.Enums;
 /// </summary>
 public class OrderStatus : Enumeration
 {
+    public OrderStatus() : base()
+    {
+    }
+    
     /// <summary>
     /// Initializes a new instance of the <see cref="OrderStatus"/> class.
     /// </summary>
