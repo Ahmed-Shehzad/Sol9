@@ -44,3 +44,12 @@ services:
     restart: always
     volumes:
       - ./.redis/data:/data
+  
+  portainer:
+    restart: always
+    ports:
+      - "8000:8000"  # HTTP Management Port
+      - "9443:9443"  # HTTPS Management Port
+    volumes:
+      - ./.portainer/var/run/docker.sock:/var/run/docker.sock  # Bind Docker socket
+      - ./.portainer/data:/data                      # Persistent data storage
