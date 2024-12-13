@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -14,9 +15,11 @@ using Orders.Infrastructure.Contexts;
 namespace Orders.Infrastructure.Migrations.OrdersDbContext
 {
     [DbContext(typeof(Contexts.OrdersDbContext))]
-    partial class OrdersDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241213153933_complex_properties")]
+    partial class complex_properties
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -166,18 +169,18 @@ namespace Orders.Infrastructure.Migrations.OrdersDbContext
                                 .IsRequired()
                                 .HasMaxLength(255)
                                 .HasColumnType("character varying(255)")
-                                .HasColumnName("name");
+                                .HasColumnName("Name");
 
                             b1.Property<string>("Type")
                                 .IsRequired()
                                 .HasMaxLength(255)
                                 .HasColumnType("character varying(255)")
-                                .HasColumnName("type");
+                                .HasColumnName("Type");
 
                             b1.Property<string>("Url")
                                 .IsRequired()
                                 .HasColumnType("text")
-                                .HasColumnName("url");
+                                .HasColumnName("Url");
                         });
 
                     b.HasKey("Id")
@@ -260,12 +263,10 @@ namespace Orders.Infrastructure.Migrations.OrdersDbContext
                             b1.IsRequired();
 
                             b1.Property<string>("Description")
-                                .HasColumnType("text")
-                                .HasColumnName("description");
+                                .HasColumnType("text");
 
                             b1.Property<JsonElement?>("MetaData")
-                                .HasColumnType("jsonb")
-                                .HasColumnName("metadata");
+                                .HasColumnType("jsonb");
 
                             b1.ComplexProperty<Dictionary<string, object>>("Quantity", "Orders.Domain.Aggregates.Entities.OrderItem.OrderItemInfo#OrderItemInfo.Quantity#UnitValue<decimal>", b2 =>
                                 {
@@ -274,12 +275,10 @@ namespace Orders.Infrastructure.Migrations.OrdersDbContext
                                     b2.Property<string>("Unit")
                                         .IsRequired()
                                         .HasMaxLength(255)
-                                        .HasColumnType("character varying(255)")
-                                        .HasColumnName("quantity_unit");
+                                        .HasColumnType("character varying(255)");
 
                                     b2.Property<decimal>("Value")
-                                        .HasColumnType("decimal(18, 3)")
-                                        .HasColumnName("quantity_value");
+                                        .HasColumnType("decimal(18, 3)");
                                 });
 
                             b1.ComplexProperty<Dictionary<string, object>>("Weight", "Orders.Domain.Aggregates.Entities.OrderItem.OrderItemInfo#OrderItemInfo.Weight#UnitValue<decimal>", b2 =>
@@ -289,12 +288,10 @@ namespace Orders.Infrastructure.Migrations.OrdersDbContext
                                     b2.Property<string>("Unit")
                                         .IsRequired()
                                         .HasMaxLength(255)
-                                        .HasColumnType("character varying(255)")
-                                        .HasColumnName("weight_unit");
+                                        .HasColumnType("character varying(255)");
 
                                     b2.Property<decimal>("Value")
-                                        .HasColumnType("decimal(18, 3)")
-                                        .HasColumnName("weight_value");
+                                        .HasColumnType("decimal(18, 3)");
                                 });
                         });
 

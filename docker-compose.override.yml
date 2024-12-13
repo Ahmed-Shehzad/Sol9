@@ -4,6 +4,8 @@ services:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
       ASPNETCORE_HTTP_PORTS: 8080
       ASPNETCORE_HTTPS_PORTS: 8081
+      REDIS_CONNECTION_STRING: redis
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
     ports:
       - "5000:8080"
       - "5001:8081"
