@@ -1,7 +1,7 @@
 services:
   orders.api:
     container_name: orders.api
-    image: ${DOCKER_REGISTRY-}ordersapi
+    image: ghcr.io/ahmed-shehzad/sol9/ordersapi:latest
     build:
       context: .
       dockerfile: Orders.API/Dockerfile
@@ -21,3 +21,7 @@ services:
   portainer:
     container_name: portainer
     image: portainer/portainer-ee:2.21.4
+  
+  sonarqube:
+    container_name: sonarqube
+    image: sonarqube:lts-community

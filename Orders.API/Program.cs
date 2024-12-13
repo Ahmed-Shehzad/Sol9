@@ -1,36 +1,41 @@
+using Treblle.Net.Core;
 
-namespace Orders.API
+namespace Orders.API;
+
+public class Program
 {
-    public class Program
+    public static void Main(string[] args)
     {
-        public static void Main(string[] args)
-        {
-            var builder = WebApplication.CreateBuilder(args);
+        var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+        // Add services to the container.
 
-            builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+        builder.Services.AddControllers();
+        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
 
-            var app = builder.Build();
+        builder.Services.AddTreblle(
+            builder.Configuration["Treblle:ApiKey"]!,
+            builder.Configuration["Treblle:ProjectId"]!);
 
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+        var app = builder.Build();
 
-            app.UseHttpsRedirection();
+        // Configure the HTTP request pipeline.
+        // if (app.Environment.IsDevelopment())
+        // {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+        // }
 
-            app.UseAuthorization();
+        app.UseHttpsRedirection();
 
+        app.UseAuthorization();
 
-            app.MapControllers();
+        app.UseTreblle(useExceptionHandler: true);
 
-            app.Run();
-        }
+        app.MapControllers();
+
+        app.Run();
     }
 }
