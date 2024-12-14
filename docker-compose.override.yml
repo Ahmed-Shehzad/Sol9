@@ -9,7 +9,7 @@ services:
       Treblle__ApiKey: ${TREBLLE_API_KEY}
       Treblle__ProjectId: ${TREBLLE_PROJECT_ID}
       ASPNETCORE_Kestrel__Certificates__Default__Path: /home/app/.aspnet/https/ordersapi.pfx
-      ASPNETCORE_Kestrel__Certificates__Default__Password: ${SSL_PASSWORD}
+      ASPNETCORE_Kestrel__Certificates__Default__Password: ${ORDER_API_SSL_PASSWORD}
     ports:
       - "5000:5000"
       - "5001:5001"
