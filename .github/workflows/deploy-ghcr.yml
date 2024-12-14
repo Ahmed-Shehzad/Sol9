@@ -64,13 +64,20 @@ jobs:
         run: |
           docker push ghcr.io/ahmed-shehzad/sol9/ordersapi:latest
 
+  # Separate job to run docker-compose and ngrok steps after the first job
+  deploy-and-expose:
+    name: Deploy and Expose Services with Docker Compose and ngrok
+    runs-on: ubuntu-latest
+    needs: build-and-deploy # This job runs after the `build-and-deploy` job completes successfully
+
+    steps:
       # Step 6: Set up Docker Compose and deploy services using the override file
       - name: Set up Docker Compose
         run: |
           # Run docker-compose with override file
           docker-compose -f docker-compose.yml -f docker-compose.override.yml up -d
 
-      # Step 7: Install ngrok to expose URLs
+        # Step 7: Install ngrok to expose URLs
       - name: Install ngrok
         run: |
           sudo apt-get update
@@ -79,7 +86,7 @@ jobs:
           unzip ngrok-stable-linux-amd64.zip
           sudo mv ngrok /usr/local/bin
 
-      # Step 8: Expose services using ngrok
+        # Step 8: Expose services using ngrok
       - name: Expose services with ngrok
         run: |
           # Start ngrok for ordersapi (port 5000)
