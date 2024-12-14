@@ -125,13 +125,15 @@ jobs:
       - name: Restore dependencies
         run: |
           dotnet restore ./Sol9.sln
-      #   - name: Build and analyze
-      #     env:
-      #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
-      #     run: |
-      #       ./.sonar/scanner/dotnet-sonarscanner begin /k:"Sol9" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}"
-      #       dotnet build ./Sol9.sln
-      #       ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+
+      - name: Build and analyze
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
+        run: |
+          ./.sonar/scanner/dotnet-sonarscanner begin /k:"Sol9" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}"
+          dotnet build ./Sol9.sln
+          ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+
       # Step 7: Install ngrok to expose URLs
       - name: Install ngrok
         run: |
