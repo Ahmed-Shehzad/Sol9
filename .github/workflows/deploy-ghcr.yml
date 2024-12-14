@@ -71,11 +71,42 @@ jobs:
     needs: build-and-deploy # This job runs after the `build-and-deploy` job completes successfully
 
     steps:
-      #   # Step 6: Set up Docker Compose and deploy services using the override file
-      #   - name: Set up Docker Compose
-      #     run: |
-      #       # Run docker-compose with override file
-      #       docker compose -f docker-compose.yml -f docker-compose.override.yml up -d --build
+      - uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0 # Shallow clones should be disabled for better relevancy of analysis
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4.5.0
+        with:
+          java-version: 11
+          distribution: "temurin"
+      - name: Cache SonarQube packages
+        uses: actions/cache@v4.2.0
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - name: Cache SonarQube scanner
+        id: cache-sonar-scanner
+        uses: actions/cache@v4.2.0
+        with:
+          path: ./.sonar/scanner
+          key: ${{ runner.os }}-sonar-scanner
+          restore-keys: ${{ runner.os }}-sonar-scanner
+      - name: Install SonarQube scanner
+        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ./.sonar/scanner
+          dotnet tool update dotnet-sonarscanner --tool-path ./.sonar/scanner
+      - name: Restore dependencies
+        run: |
+          dotnet restore ./Sol9.sln
+      - name: Build and analyze
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
+        run: |
+          ./.sonar/scanner/dotnet-sonarscanner begin /k:"Sol9" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}"
+          dotnet build ./Sol9.sln
+          ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
 
       # Step 7: Install ngrok to expose URLs
       - name: Install ngrok
