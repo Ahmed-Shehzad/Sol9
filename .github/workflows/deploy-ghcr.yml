@@ -74,7 +74,7 @@ jobs:
           echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env
           echo "TREBLLE_API_KEY=${{ secrets.TREBLLE_API_KEY }}" >> .env
           echo "TREBLLE_PROJECT_ID=${{ secrets.TREBLLE_PROJECT_ID }}" >> .env
-          echo "SSL_PASSWORD=${{ secrets.SSL_PASSWORD }}" >> .env
+          echo "ORDER_API_SSL_PASSWORD=${{ secrets.ORDER_API_SSL_PASSWORD }}" >> .env
           echo "PGADMIN_DEFAULT_EMAIL=${{ secrets.PGADMIN_DEFAULT_EMAIL }}" >> .env
           echo "PGADMIN_DEFAULT_PASSWORD=${{ secrets.PGADMIN_DEFAULT_PASSWORD }}" >> .env
           echo "SONAR_JDBC_URL=${{ secrets.SONAR_JDBC_URL }}" >> .env
