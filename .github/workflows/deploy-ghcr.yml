@@ -135,53 +135,51 @@ jobs:
       # Step 7: Install ngrok to expose URLs
       - name: Install ngrok
         run: |
-          sudo apt-get update
-          sudo apt-get install -y unzip
-          wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
-          unzip ngrok-stable-linux-amd64.zip
-          sudo mv ngrok /usr/local/bin
+          curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
+          | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null \
+          && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" \
+          | sudo tee /etc/apt/sources.list.d/ngrok.list \
+          && sudo apt update \
+          && sudo apt install -y ngrok
+
+      - name: Configure ngrok
+        run: |
+          ngrok config add-authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
 
         # Step 8: Expose services using ngrok
       - name: Expose services with ngrok
         run: |
-          # Start ngrok for ordersapi (port 5000)
-          nohup ngrok http 5000 > ordersapi-ngrok.log &
+          # Start ngrok for ordersapi (port 5001)
+          ngrok http https://localhost:5001 > ordersapi-ngrok.log &
           sleep 10  # Wait for ngrok to establish the tunnel
           ORDER_API=$(grep -o 'https://[a-z0-9]*\.ngrok.io' ordersapi-ngrok.log | tail -n 1)
           echo "ORDER API URL: $ORDER_API"
 
           # Start ngrok for SonarQube (port 9000)
-          nohup ngrok http 9000 > sonarqube-ngrok.log &
+          ngrok http http://localhost:9000 > sonarqube-ngrok.log &
           sleep 10  # Wait for ngrok to establish the tunnel
           SONAR_URL=$(grep -o 'https://[a-z0-9]*\.ngrok.io' sonarqube-ngrok.log | tail -n 1)
           echo "SonarQube URL: $SONAR_URL"
 
-          # Start ngrok for Redis (port 6379)
-          nohup ngrok tcp 6379 > redis-ngrok.log &
-          sleep 10  # Wait for ngrok to establish the tunnel
-          REDIS_URL=$(grep -o 'https://[a-z0-9]*\.ngrok.io' redis-ngrok.log | tail -n 1)
-          echo "Redis URL: $REDIS_URL"
-
           # Start ngrok for Redis UI (port 8001)
-          nohup ngrok tcp 8001 > redis-ngrok.log &
+          ngrok http http://localhost:8001 > redis-ngrok.log &
           sleep 10  # Wait for ngrok to establish the tunnel
           REDIS_UI_URL=$(grep -o 'https://[a-z0-9]*\.ngrok.io' redis-ngrok.log | tail -n 1)
           echo "Redis UI URL: $REDIS_UI_URL"
 
           # Start ngrok for Postgres (port 5432)
-          nohup ngrok tcp 5432 > postgres-ngrok.log &
+          ngrok http http://localhost:5432 > postgres-ngrok.log &
           sleep 10  # Wait for ngrok to establish the tunnel
           POSTGRESQL_URL=$(grep -o 'https://[a-z0-9]*\.ngrok.io' postgres-ngrok.log | tail -n 1)
           echo "Postgres URL: $POSTGRESQL_URL"
 
           # Start ngrok for PgAdmin (port 80)
-          nohup ngrok http 15432 > pgadmin-ngrok.log &
+          ngrok http http://localhost:15432 > pgadmin-ngrok.log &
           sleep 10  # Wait for ngrok to establish the tunnel
           PGADMIN_URL=$(grep -o 'https://[a-z0-9]*\.ngrok.io' pgadmin-ngrok.log | tail -n 1)
           echo "PgAdmin URL: $PGADMIN_URL"
 
-          # Start ngrok for Portainer (port 8000)
-          nohup ngrok http 8000 > portainer-ngrok.log &
+          ngrok http http://localhost:9443 > portainer-ngrok.log &
           sleep 10  # Wait for ngrok to establish the tunnel
           PORTAINER_URL=$(grep -o 'https://[a-z0-9]*\.ngrok.io' portainer-ngrok.log | tail -n 1)
           echo "Portainer URL: $PORTAINER_URL"
