@@ -1,196 +1,68 @@
-name: Build and Deploy Docker Containers with Docker Compose to GHCR and Expose Services with ngrok
+name: CI/CD Pipeline
 
 on:
   push:
     branches:
       - main
+  pull_request:
 
 jobs:
-  build-and-deploy:
-    name: Build, Push, and Deploy Docker Containers and Expose Services
+  build-and-push:
+    name: Build and Push Containers to GHCR
     runs-on: ubuntu-latest
 
-    services:
-      # Define services like Postgres, Redis, etc. in the GitHub Actions runner.
-      postgres:
-        image: postgis/postgis:16-3.4-alpine
-        ports:
-          - 5432:5432
-      redis:
-        image: redis/redis-stack:latest
-        ports:
-          - 6379:6379
-      sonarqube:
-        image: sonarqube:lts-community
-        ports:
-          - 9000:9000
-      pgadmin:
-        image: dpage/pgadmin4:latest
-        ports:
-          - 15432:80
-      portainer:
-        image: portainer/portainer-ee:2.21.4
-        ports:
-          - 8000:8000
-          - 9443:9443
-
     steps:
-      # Step 1: Checkout the code
       - name: Checkout code
         uses: actions/checkout@v4.2.2
-        with:
-          fetch-depth: 0 # Shallow clones should be disabled for better relevancy of analysis
-      - name: Set up Docker
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            apt-transport-https \
-            ca-certificates \
-            curl \
-            software-properties-common
-          curl -fsSL https://get.docker.com -o get-docker.sh
-          sudo sh get-docker.sh
-          sudo usermod -aG docker $USER
-          sudo systemctl enable --now docker
 
-      - name: Install Docker Compose
-        run: |
-          sudo curl -L "https://github.com/docker/compose/releases/download/v2.19.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
-
-      - name: Build and start Docker containers
-        run: |
-          docker compose up -d --build
-
-      # Step 2: Set up .NET 8
-      - name: Set up .NET 8
-        uses: actions/setup-dotnet@v4.1.0
-        with:
-          dotnet-version: 8.0.x
-
-      - name: Set up JDK 11
-        uses: actions/setup-java@v4.5.0
-        with:
-          java-version: 11
-          distribution: "temurin"
-
-      - name: Cache SonarQube scanner
-        id: cache-sonar-scanner
-        uses: actions/cache@v4.2.0
-        with:
-          path: ./.sonar/scanner
-          key: ${{ runner.os }}-sonar-scanner
-          restore-keys: ${{ runner.os }}-sonar-scanner
-      - name: Install SonarQube scanner
-        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p ./.sonar/scanner
-          dotnet tool update dotnet-sonarscanner --tool-path ./.sonar/scanner
-      - name: Restore dependencies
-        run: |
-          dotnet restore ./Sol9.sln
-
-      - name: Build and analyze
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
-        run: |
-          ./.sonar/scanner/dotnet-sonarscanner begin /k:"Sol9" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}"
-          dotnet build ./Sol9.sln
-          ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
-
-      # Step 3: Log in to GitHub Container Registry
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3.3.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          logout: false
 
-      # Step 4: Build the Docker image for orders.api
-      - name: Build Docker image for orders.api
-        run: |
-          docker build -t ghcr.io/ahmed-shehzad/sol9/ordersapi:latest -f Orders.API/Dockerfile .
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3.2.0
 
-      # Step 5: Push the Docker image for orders.api to GHCR
-      - name: Push Docker image to GHCR
-        run: |
-          docker push ghcr.io/ahmed-shehzad/sol9/ordersapi:latest
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3.7.1
 
-  # Separate job to run docker-compose and ngrok steps after the first job
-  deploy-and-expose:
-    name: Expose Services with ngrok
+      - name: Build and Push Containers
+        uses: docker/build-push-action@v6.10.0
+        with:
+          push: true
+          tags: |
+            ghcr.io/ahmed-shehzad/sol9/ordersapi:latest
+          context: .
+          file: Orders.API/Dockerfile
+
+  deploy:
+    name: Deploy Application
+    needs: build-and-push
     runs-on: ubuntu-latest
-    needs: build-and-deploy # This job runs after the `build-and-deploy` job completes successfully
 
     steps:
-      # Step 7: Install ngrok to expose URLs
-      - name: Install ngrok
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2
+
+      - name: Install Docker Compose
         run: |
-          curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
-          | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null \
-          && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" \
-          | sudo tee /etc/apt/sources.list.d/ngrok.list \
-          && sudo apt update \
-          && sudo apt install -y ngrok
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.6.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
 
-      - name: Configure ngrok
+      - name: Deploy with Docker Compose
+        env:
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          PGADMIN_DEFAULT_EMAIL: ${{ secrets.PGADMIN_DEFAULT_EMAIL }}
+          PGADMIN_DEFAULT_PASSWORD: ${{ secrets.PGADMIN_DEFAULT_PASSWORD }}
+          TREBLLE_API_KEY: ${{ secrets.TREBLLE_API_KEY }}
+          TREBLLE_PROJECT_ID: ${{ secrets.TREBLLE_PROJECT_ID }}
+          ORDER_API_SSL_PASSWORD: ${{ secrets.ORDER_API_SSL_PASSWORD }}
+          SONAR_JDBC_URL: ${{ secrets.SONAR_JDBC_URL }}
+          SONAR_JDBC_USERNAME: ${{ secrets.SONAR_JDBC_USERNAME }}
+          SONAR_JDBC_PASSWORD: ${{ secrets.SONAR_JDBC_PASSWORD }}
         run: |
-          ngrok config add-authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
-
-        # Step 8: Expose services using ngrok
-      - name: Expose services with ngrok
-        run: |
-          # Start ngrok for ordersapi (port 5001)
-          ngrok http https://localhost:5001 > ordersapi-ngrok.log &
-          # Capture the ngrok process ID
-          NGROK_PID=$!
-          sleep 10  # Wait for ngrok to establish the tunnel
-          ORDER_API=$(grep -o 'https://[a-z0-9]*\.ngrok.io' ordersapi-ngrok.log | tail -n 1)
-          echo "ORDER API URL: $ORDER_API"
-          # Kill the ngrok process to close the tunnel
-          kill $NGROK_PID
-
-          # Start ngrok for SonarQube (port 9000)
-          ngrok http http://localhost:9000 > sonarqube-ngrok.log &
-          NGROK_PID=$!
-          sleep 10  # Wait for ngrok to establish the tunnel
-          SONAR_URL=$(grep -o 'https://[a-z0-9]*\.ngrok.io' sonarqube-ngrok.log | tail -n 1)
-          echo "SonarQube URL: $SONAR_URL"
-          # Kill the ngrok process to close the tunnel
-          kill $NGROK_PID
-
-          # Start ngrok for Redis UI (port 8001)
-          ngrok http http://localhost:8001 > redis-ngrok.log &
-          NGROK_PID=$!
-          sleep 10  # Wait for ngrok to establish the tunnel
-          REDIS_UI_URL=$(grep -o 'https://[a-z0-9]*\.ngrok.io' redis-ngrok.log | tail -n 1)
-          echo "Redis UI URL: $REDIS_UI_URL"
-          # Kill the ngrok process to close the tunnel
-          kill $NGROK_PID
-
-          # Start ngrok for Postgres (port 5432)
-          ngrok http http://localhost:5432 > postgres-ngrok.log &
-          NGROK_PID=$!
-          sleep 10  # Wait for ngrok to establish the tunnel
-          POSTGRESQL_URL=$(grep -o 'https://[a-z0-9]*\.ngrok.io' postgres-ngrok.log | tail -n 1)
-          echo "Postgres URL: $POSTGRESQL_URL"
-          # Kill the ngrok process to close the tunnel
-          kill $NGROK_PID
-
-          # Start ngrok for PgAdmin (port 80)
-          ngrok http http://localhost:15432 > pgadmin-ngrok.log &
-          NGROK_PID=$!
-          sleep 10  # Wait for ngrok to establish the tunnel
-          PGADMIN_URL=$(grep -o 'https://[a-z0-9]*\.ngrok.io' pgadmin-ngrok.log | tail -n 1)
-          echo "PgAdmin URL: $PGADMIN_URL"
-          # Kill the ngrok process to close the tunnel
-          kill $NGROK_PID
-
-          ngrok http https://localhost:9443 > portainer-ngrok.log &
-          NGROK_PID=$!
-          sleep 10  # Wait for ngrok to establish the tunnel
-          PORTAINER_URL=$(grep -o 'https://[a-z0-9]*\.ngrok.io' portainer-ngrok.log | tail -n 1)
-          echo "Portainer URL: $PORTAINER_URL"
-          # Kill the ngrok process to close the tunnel
-          kill $NGROK_PID
+          docker compose -f docker-compose.yml -f docker-compose.override.yml up -d --build
