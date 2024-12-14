@@ -27,6 +27,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+          logout: false
 
       - name: Cache Docker layers
         uses: actions/cache@v4.2.0
@@ -57,6 +58,3 @@ jobs:
             /d:sonar.login="${SONAR_TOKEN}"
           dotnet build .\Sol9.sln
           dotnet-sonarscanner end /d:sonar.login="${SONAR_TOKEN}"
-
-      - name: Logout from Docker
-        run: docker logout ghcr.io
