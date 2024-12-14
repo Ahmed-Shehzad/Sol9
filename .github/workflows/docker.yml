@@ -18,10 +18,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Log in to GitHub Container Registry (with debug)
-        run: |
-          echo "Logging in to GitHub Container Registry"
-          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          logout: false
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -39,6 +42,15 @@ jobs:
           LOWERCASE_STRING=$(echo "${{ env.REGISTRY }}/${{ github.repository_owner }}/sol9/${{ env.IMAGE_NAME }}:latest" | tr '[:upper:]' '[:lower:]')
           echo "LOWERCASE_STRING=$LOWERCASE_STRING" >> $GITHUB_ENV
 
+      - name: Build and push orders.api image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: Orders.API/Dockerfile
+          push: true
+          tags: |
+            ${{ env.LOWERCASE_STRING }}
+
       - name: Official SonarQube Scan
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -48,14 +60,5 @@ jobs:
             /k:"Sol9" \
             /d:sonar.host.url="${SONAR_HOST_URL}" \
             /d:sonar.login="${SONAR_TOKEN}"
-          dotnet build
+          dotnet build .\Sol9.sln
           dotnet-sonarscanner end /d:sonar.login="${SONAR_TOKEN}"
-
-      - name: Build and push orders.api image
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: Orders.API/Dockerfile
-          push: true
-          tags: |
-            ${{ env.LOWERCASE_STRING }}
