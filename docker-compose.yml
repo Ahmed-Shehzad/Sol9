@@ -17,11 +17,15 @@ services:
   redis:
     container_name: redis
     image: redis/redis-stack:latest
-  
+
   portainer:
     container_name: portainer
     image: portainer/portainer-ee:2.21.4
-  
+
+  portainer_agent:
+    container_name: portainer_agent
+    image: portainer/agent:2.21.4
+
   sonarqube:
     container_name: sonarqube
     image: sonarqube:lts-community

@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-and-push:
-    name: Build and Push Docker Images
+    name: Build, Scan, and Push Docker Images
     runs-on: ubuntu-latest
 
     env:
@@ -41,6 +41,18 @@ jobs:
           LOWERCASE_STRING=$(echo "${{ env.REGISTRY }}/${{ github.repository_owner }}/sol9/${{ env.IMAGE_NAME }}:latest" | tr '[:upper:]' '[:lower:]')
           echo "LOWERCASE_STRING=$LOWERCASE_STRING" >> $GITHUB_ENV
 
+      - name: Official SonarQube Scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
+          dotnet-sonarscanner begin \
+            /k:"Sol9" \
+            /d:sonar.host.url="${SONAR_HOST_URL}" \
+            /d:sonar.login="${SONAR_TOKEN}"
+          dotnet build .\Sol9.sln
+          dotnet-sonarscanner end /d:sonar.login="${SONAR_TOKEN}"
+
       - name: Build and push orders.api image
         uses: docker/build-push-action@v4
         with:
@@ -49,45 +61,3 @@ jobs:
           push: true
           tags: |
             ${{ env.LOWERCASE_STRING }}
-
-      - name: Start Docker Compose for services
-        run: |
-          docker-compose -f docker-compose.yml up -d --build
-
-      - name: Verify Services
-        run: |
-          docker ps
-          docker logs orders.api
-          docker logs pgadmin4
-          docker logs postgres
-          docker logs redis
-          docker logs portainer
-
-      - name: Official SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v4.1.0
-
-    #   - name: Clean up Docker Compose
-    #     if: always()
-    #     run: |
-    #       docker-compose down
-#   test:
-#     name: Run Tests
-#     runs-on: ubuntu-latest
-
-#     steps:
-#       - name: Checkout repository
-#         uses: actions/checkout@v4
-
-#       - name: Set up Docker Compose
-#         run: |
-#           docker-compose -f docker-compose.yml up -d
-
-#       - name: Run Tests
-#         run: |
-#           # Add your test command here, e.g., API integration tests
-#           echo "Tests would run here."
-
-#       - name: Clean up Docker Compose
-#         if: always()
-#         run: |
-#           docker-compose down

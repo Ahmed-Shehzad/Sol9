@@ -17,7 +17,7 @@ services:
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
-  
+
   postgres:
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -28,7 +28,7 @@ services:
       - "5432:5432"
     volumes:
       - ./.postgresql/data:/var/lib/postgresql/data
-  
+
   pgadmin:
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
@@ -48,16 +48,25 @@ services:
     restart: always
     volumes:
       - ./.redis/data:/data
-  
+
   portainer:
     restart: always
     ports:
-      - "8000:8000"  # HTTP Management Port
-      - "9443:9443"  # HTTPS Management Port
+      - "8000:8000" # HTTP Management Port
+      - "9443:9443" # HTTPS Management Port
     volumes:
-      - ./.portainer/var/run/docker.sock:/var/run/docker.sock  # Bind Docker socket
-      - ./.portainer/data:/data                      # Persistent data storage
-  
+      - /var/run/docker.sock:/var/run/docker.sock # Bind Docker socket
+      - ./.portainer/data:/data # Persistent data storage
+
+  portainer_agent:
+    restart: always
+    ports:
+      - "9001:9001"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/volumes:/var/lib/docker/volumes
+      - ./.portainer/host:/host
+
   sonarqube:
     restart: always
     ports:
