@@ -75,7 +75,7 @@ jobs:
       - name: Set up Docker Compose
         run: |
           # Run docker-compose with override file
-          docker-compose -f docker-compose.yml -f docker-compose.override.yml up -d
+          docker compose -f docker-compose.yml -f docker-compose.override.yml up -d --build
 
         # Step 7: Install ngrok to expose URLs
       - name: Install ngrok
