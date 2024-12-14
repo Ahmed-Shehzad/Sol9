@@ -2,15 +2,17 @@ services:
   orders.api:
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
-      ASPNETCORE_HTTP_PORTS: 8080
-      ASPNETCORE_HTTPS_PORTS: 8081
+      ASPNETCORE_HTTP_PORTS: 5000
+      ASPNETCORE_HTTPS_PORTS: 5001
       REDIS_CONNECTION_STRING: redis
       ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
       Treblle__ApiKey: ${TREBLLE_API_KEY}
       Treblle__ProjectId: ${TREBLLE_PROJECT_ID}
+      ASPNETCORE_Kestrel__Certificates__Default__Path: /home/app/.aspnet/https/ordersapi.pfx
+      ASPNETCORE_Kestrel__Certificates__Default__Password: ${SSL_PASSWORD}
     ports:
-      - "5000:8080"
-      - "5001:8081"
+      - "5000:5000"
+      - "5001:5001"
     depends_on:
       - postgres
       - redis
