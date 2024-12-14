@@ -153,35 +153,54 @@ jobs:
         run: |
           # Start ngrok for ordersapi (port 5001)
           ngrok http https://localhost:5001 > ordersapi-ngrok.log &
+          # Capture the ngrok process ID
+          NGROK_PID=$!
           sleep 10  # Wait for ngrok to establish the tunnel
           ORDER_API=$(grep -o 'https://[a-z0-9]*\.ngrok.io' ordersapi-ngrok.log | tail -n 1)
           echo "ORDER API URL: $ORDER_API"
+          # Kill the ngrok process to close the tunnel
+          kill $NGROK_PID
 
           # Start ngrok for SonarQube (port 9000)
           ngrok http http://localhost:9000 > sonarqube-ngrok.log &
+          NGROK_PID=$!
           sleep 10  # Wait for ngrok to establish the tunnel
           SONAR_URL=$(grep -o 'https://[a-z0-9]*\.ngrok.io' sonarqube-ngrok.log | tail -n 1)
           echo "SonarQube URL: $SONAR_URL"
+          # Kill the ngrok process to close the tunnel
+          kill $NGROK_PID
 
           # Start ngrok for Redis UI (port 8001)
           ngrok http http://localhost:8001 > redis-ngrok.log &
+          NGROK_PID=$!
           sleep 10  # Wait for ngrok to establish the tunnel
           REDIS_UI_URL=$(grep -o 'https://[a-z0-9]*\.ngrok.io' redis-ngrok.log | tail -n 1)
           echo "Redis UI URL: $REDIS_UI_URL"
+          # Kill the ngrok process to close the tunnel
+          kill $NGROK_PID
 
           # Start ngrok for Postgres (port 5432)
           ngrok http http://localhost:5432 > postgres-ngrok.log &
+          NGROK_PID=$!
           sleep 10  # Wait for ngrok to establish the tunnel
           POSTGRESQL_URL=$(grep -o 'https://[a-z0-9]*\.ngrok.io' postgres-ngrok.log | tail -n 1)
           echo "Postgres URL: $POSTGRESQL_URL"
+          # Kill the ngrok process to close the tunnel
+          kill $NGROK_PID
 
           # Start ngrok for PgAdmin (port 80)
           ngrok http http://localhost:15432 > pgadmin-ngrok.log &
+          NGROK_PID=$!
           sleep 10  # Wait for ngrok to establish the tunnel
           PGADMIN_URL=$(grep -o 'https://[a-z0-9]*\.ngrok.io' pgadmin-ngrok.log | tail -n 1)
           echo "PgAdmin URL: $PGADMIN_URL"
+          # Kill the ngrok process to close the tunnel
+          kill $NGROK_PID
 
           ngrok http https://localhost:9443 > portainer-ngrok.log &
+          NGROK_PID=$!
           sleep 10  # Wait for ngrok to establish the tunnel
           PORTAINER_URL=$(grep -o 'https://[a-z0-9]*\.ngrok.io' portainer-ngrok.log | tail -n 1)
           echo "Portainer URL: $PORTAINER_URL"
+          # Kill the ngrok process to close the tunnel
+          kill $NGROK_PID
