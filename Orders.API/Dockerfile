@@ -2,6 +2,13 @@
 
 # This stage is used when running from VS in fast mode (Default for Debug configuration)
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+
+# Add metadata for the container image
+LABEL org.opencontainers.image.title="Sol9"
+LABEL org.opencontainers.image.description="This is the Docker image for the Sol9 project."
+LABEL org.opencontainers.image.source="https://github.com/ahmed-shehzad/sol9"
+LABEL org.opencontainers.image.licenses="MIT"
+
 USER $APP_UID
 WORKDIR /app
 EXPOSE 5000
