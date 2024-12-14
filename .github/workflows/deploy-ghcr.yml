@@ -179,7 +179,7 @@ jobs:
           PGADMIN_URL=$(grep -o 'https://[a-z0-9]*\.ngrok.io' pgadmin-ngrok.log | tail -n 1)
           echo "PgAdmin URL: $PGADMIN_URL"
 
-          ngrok http http://localhost:9443 > portainer-ngrok.log &
+          ngrok http https://localhost:9443 > portainer-ngrok.log &
           sleep 10  # Wait for ngrok to establish the tunnel
           PORTAINER_URL=$(grep -o 'https://[a-z0-9]*\.ngrok.io' portainer-ngrok.log | tail -n 1)
           echo "Portainer URL: $PORTAINER_URL"
