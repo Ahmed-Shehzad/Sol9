@@ -71,13 +71,13 @@ jobs:
     needs: build-and-deploy # This job runs after the `build-and-deploy` job completes successfully
 
     steps:
-      # Step 6: Set up Docker Compose and deploy services using the override file
-      - name: Set up Docker Compose
-        run: |
-          # Run docker-compose with override file
-          docker compose -f docker-compose.yml -f docker-compose.override.yml up -d --build
+      #   # Step 6: Set up Docker Compose and deploy services using the override file
+      #   - name: Set up Docker Compose
+      #     run: |
+      #       # Run docker-compose with override file
+      #       docker compose -f docker-compose.yml -f docker-compose.override.yml up -d --build
 
-        # Step 7: Install ngrok to expose URLs
+      # Step 7: Install ngrok to expose URLs
       - name: Install ngrok
         run: |
           sudo apt-get update
