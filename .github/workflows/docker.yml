@@ -42,7 +42,7 @@ jobs:
           context: .
           file: Orders.API/Dockerfile
           push: true
-          tags: ghcr.io/USERNAME/sol9/ordersapi:latest
+          tags: ghcr.io/ahmed-shehzad/sol9/ordersapi:latest
           secrets: |
             GIT_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}
 
