@@ -1,5 +1,5 @@
-﻿using BuildingBlocks.Domain.Aggregates.Entities.ValueObjects;
-using NetTopologySuite.Geometries;
+﻿using NetTopologySuite.Geometries;
+using Coordinates = BuildingBlocks.Domain.Aggregates.Entities.ValueObjects.Coordinates;
 
 namespace BuildingBlocks.Domain.Aggregates.Utilities;
 
@@ -9,29 +9,29 @@ public static class GeographyUtils
     private const int Srid = 4326;
 
     /// <summary>
-    /// Converts a Geography object to a Point object with the specified SRID.
+    /// Converts a Coordinates object to a Point object with the specified SRID.
     /// </summary>
-    /// <param name="geometry">The Geography object to convert. If null, the function returns null.</param>
-    /// <returns>A Point object representing the coordinates of the input Geography object. If the input Geography object has more or less than 2 coordinates, a NotSupportedException is thrown.</returns>
-    public static Point? ToPoint(Geography? geometry)
+    /// <param name="geometry">The Coordinates object to convert. If null, the function returns null.</param>
+    /// <returns>A Point object representing the coordinates of the input Coordinates object. If the input Coordinates object has more or less than 2 coordinates, a NotSupportedException is thrown.</returns>
+    public static Point? ToPoint(Coordinates? geometry)
     {
         if (geometry == null) return null;
-        if (geometry.Coordinates.Length != 2) throw new NotSupportedException("GEOJSON coordinate field must have exact length of 2.");
+
         return new Point(
-            Convert.ToDouble(decimal.Round(geometry.Coordinates[0], 6, MidpointRounding.AwayFromZero)), 
-            Convert.ToDouble(decimal.Round(geometry.Coordinates[1], 6, MidpointRounding.AwayFromZero)))
+            Convert.ToDouble(decimal.Round(geometry.Longitude, 6, MidpointRounding.AwayFromZero)),
+            Convert.ToDouble(decimal.Round(geometry.Latitude, 6, MidpointRounding.AwayFromZero)))
         {
             SRID = Srid
         };
     }
-        
+
     /// <summary>
-    /// Converts a Point object to a Geography object.
+    /// Converts a Point object to a Coordinates object.
     /// </summary>
     /// <param name="point">The Point object to convert. If null, the function returns null.</param>
-    /// <returns>A Geography object representing the coordinates of the input Point object.</returns>
-    public static Geography? FromPoint(Point? point)
+    /// <returns>A Coordinates object representing the coordinates of the input Point object.</returns>
+    public static Coordinates? FromPoint(Point? point)
     {
-        return point == null ? null : new Geography(Convert.ToDecimal(point.X), Convert.ToDecimal(point.Y));
+        return point == null ? null : new Coordinates(Convert.ToDecimal(point.X), Convert.ToDecimal(point.Y));
     }
 }

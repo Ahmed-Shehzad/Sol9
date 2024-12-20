@@ -21,7 +21,7 @@ public record Address
     /// <param name="city">The city name of the address.</param>
     /// <param name="state">The state or province name of the address.</param>
     /// <param name="country">The country name of the address.</param>
-    private Address(Geography? geography, string street, string number, string zipCode, string city, string state, string country)
+    private Address(Coordinates? geography, string street, string number, string zipCode, string city, string state, string country)
     {
         Point = GeographyUtils.ToPoint(geography);
         Street = street;
@@ -43,7 +43,8 @@ public record Address
     /// <param name="state">The state or province name of the address.</param>
     /// <param name="country">The country name of the address.</param>
     /// <returns>A new instance of the <see cref="Address"/> class.</returns>
-    public static Address Create(Geography? geography, string street, string number, string zipCode, string city, string state, string country)
+    public static Address Create(Coordinates? geography, string street, string number, string zipCode, string city, string state,
+        string country)
     {
         return new Address(geography, street, number, zipCode, city, state, country);
     }
@@ -55,9 +56,9 @@ public record Address
     /// <remarks>
     /// The <see cref="Geography"/> property provides a convenient way to access and manipulate the geographical point using the <see cref="GeographyUtils"/> class.
     /// The getter retrieves the geography from the <see cref="Point"/> using <see cref="GeographyUtils.FromPoint(NetTopologySuite.Geometries.Point)"/> method.
-    /// The setter updates the <see cref="Point"/> using <see cref="GeographyUtils.ToPoint(ValueObjects.Geography)"/> method.
+    /// The setter updates the <see cref="Point"/> using <see cref="GeographyUtils.ToPoint(Coordinates)"/> method.
     /// </remarks>
-    public Geography? Geography
+    public Coordinates? Geography
     {
         get => GeographyUtils.FromPoint(Point);
         init => Point = GeographyUtils.ToPoint(value);

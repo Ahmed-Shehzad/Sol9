@@ -19,7 +19,13 @@ public class GetOrdersQueryHandler(ILogger<GetOrdersQueryHandler> logger, IOrder
             request.PageNumber,
             request.PageSize);
 
-        var query = ordersReadOnlyDbContext.Orders.Skip((request.PageNumber - 1) * request.PageSize).Take(request.PageSize);
+        var query = ordersReadOnlyDbContext.Orders.OrderByDescending(o => o.CreatedDateUtcAt)
+            .Skip((request.PageNumber - 1) * request.PageSize).Take(request.PageSize);
+
+#if DEBUG
+        _logger.LogInformation("GetOrdersQueryHandler: Query: {Query}", query.ToQueryString());
+#endif
+
         var orders = await query.ToListAsync(cancellationToken);
         var orderListDto = orders.MapOrdersToDto();
 

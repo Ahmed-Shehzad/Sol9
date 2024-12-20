@@ -4,7 +4,7 @@ namespace Orders.Domain.Aggregates.Dtos;
 
 public record AddressDto
 {
-    private AddressDto(Geography? geography, string street, string number, string zipCode, string city, string state, string country)
+    private AddressDto(Coordinates? geography, string street, string number, string zipCode, string city, string state, string country)
     {
         Geography = geography;
         Street = street;
@@ -14,7 +14,7 @@ public record AddressDto
         State = state;
         Country = country;
     }
-    public static AddressDto Create(Geography? geography, string street, string number, string zipCode, string city, string state,
+    public static AddressDto Create(Coordinates? geography, string street, string number, string zipCode, string city, string state,
         string country)
     {
         return new AddressDto(geography, street, number, zipCode, city, state, country);
@@ -23,7 +23,7 @@ public record AddressDto
     /// <summary>
     /// Gets the geographical point representing the address location.
     /// </summary>
-    public Geography? Geography { get; init; }
+    public Coordinates? Geography { get; init; }
 
     /// <summary>
     /// Gets the street name of the address.

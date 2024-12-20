@@ -5,15 +5,16 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace BuildingBlocks.Infrastructure.Repositories;
 
-public class UnitOfWork<TContext>(TContext context) : IUnitOfWork, IUnitOfWorkContext, IDisposable
+public class UnitOfWork<TContext>(TContext context) : IUnitOfWork, IDisposable
     where TContext : DbContext
 {
     private IDbContextTransaction? _transaction;
+    private bool _disposed = false;
     public async Task CommitAsync(CancellationToken cancellationToken = default)
-    { 
+    {
         await context.SaveChangesAsync(cancellationToken);
     }
-    
+
     public async Task CommitAsync(Func<IUnitOfWorkContext, Task> operation, CancellationToken cancellationToken = default)
     {
         // Begin the transaction
@@ -26,7 +27,7 @@ public class UnitOfWork<TContext>(TContext context) : IUnitOfWork, IUnitOfWorkCo
             // Commit the transaction at the end
             await _transaction.CommitAsync(cancellationToken);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             // Rollback the transaction on error
             if (_transaction != null) await _transaction.RollbackAsync(cancellationToken);
@@ -39,7 +40,7 @@ public class UnitOfWork<TContext>(TContext context) : IUnitOfWork, IUnitOfWorkCo
             _transaction = null;
         }
     }
-    
+
     public async Task<T> CommitAsync<T>(Func<IUnitOfWorkContext, Task<T>> operation, CancellationToken cancellationToken = default)
     {
         // Begin the transaction
@@ -53,7 +54,7 @@ public class UnitOfWork<TContext>(TContext context) : IUnitOfWork, IUnitOfWorkCo
             await _transaction.CommitAsync(cancellationToken);
             return result;
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             // Rollback the transaction on error
             if (_transaction != null) await _transaction.RollbackAsync(cancellationToken);
@@ -66,10 +67,33 @@ public class UnitOfWork<TContext>(TContext context) : IUnitOfWork, IUnitOfWorkCo
             _transaction = null;
         }
     }
-    
+
+    /// <summary>
+    /// Disposes the transaction and the context.
+    /// </summary>
     public void Dispose()
     {
-        _transaction?.Dispose();
-        context.Dispose();
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Disposes the transaction and the context.
+    /// </summary>
+    /// <param name="disposing">Indicates whether the method is called from Dispose or the finalizer.</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed) return;
+        if (disposing)
+        {
+            _transaction?.Dispose();
+            context?.Dispose();
+        }
+        _disposed = true;
+    }
+
+    ~UnitOfWork()
+    {
+        Dispose(false);
     }
 }
