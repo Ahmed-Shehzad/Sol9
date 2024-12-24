@@ -1,9 +1,13 @@
 ﻿using System.Net;
+using System.Reflection;
 using System.Threading.RateLimiting;
+using Asp.Versioning;
 using BuildingBlocks.Contracts.Types;
 using BuildingBlocks.Extensions.Types;
 using BuildingBlocks.Utilities.Exceptions.Handlers;
+using BuildingBlocks.Utilities.Filters.Swashbuckle;
 using BuildingBlocks.Utilities.Types;
+using FluentValidation;
 using MediatR.Registration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -12,12 +16,48 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Logging;
+using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
+using Npgsql;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 namespace BuildingBlocks.ServiceCollection.Extensions;
 
 public static class ServiceCollectionExtensions
 {
+    /// <summary>
+    /// Extension method to configure API versioning for the service collection.
+    /// </summary>
+    /// <param name="service">The service collection to add the API versioning to.</param>
+    /// <returns>The same service collection instance so that multiple calls can be chained.</returns>
+    public static IServiceCollection UseApiVersioning(this IServiceCollection service)
+    {
+        service.AddApiVersioning(option =>
+        {
+            option.AssumeDefaultVersionWhenUnspecified =
+                true; //This ensures if client doesn't specify an API version. The default version should be considered. 
+            option.DefaultApiVersion = new ApiVersion(1, 0); //This we set the default API version
+            option.ReportApiVersions =
+                true; //The allow the API Version information to be reported in the client  in the response header. This will be useful for the client to understand the version of the API they are interacting with.
+            //------------------------------------------------//
+            option.ApiVersionReader = ApiVersionReader.Combine(
+                new UrlSegmentApiVersionReader(),
+                new QueryStringApiVersionReader("X-Api-Version"),
+                new HeaderApiVersionReader("X-Version"),
+                new MediaTypeApiVersionReader(
+                    "ver")); //This says how the API version should be read from the client's request, 3 options are enabled 1.Querystring, 2.Header, 3.MediaType. 
+            //"api-version", "X-Version" and "ver" are parameter name to be set with version number in client before request the endpoints.
+        }).AddApiExplorer(options =>
+        {
+            options.GroupNameFormat = "'v'VVV"; //The say our format of our version number “‘v’major[.minor][-status]”
+            options.SubstituteApiVersionInUrl =
+                true; //This will help us to resolve the ambiguity when there is a routing conflict due to routing template one or more end points are same.
+        });
+        return service;
+    }
+
     /// <summary>
     /// Adds a singleton instance of <see cref="IIdentityAccessor"/> to the service collection.
     /// </summary>
@@ -135,7 +175,6 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddMediatRConfiguration(this IServiceCollection services)
     {
         ServiceRegistrar.AddRequiredServices(services, new MediatRServiceConfiguration());
-
         return services;
     }
 
@@ -155,7 +194,7 @@ public static class ServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The service collection to add the extension method to.</param>
     /// <returns>The same service collection instance so that multiple calls can be chained.</returns>
-    public static IServiceCollection ApplyGlobalExceptions(this IServiceCollection services)
+    public static IServiceCollection AddGlobalExceptions(this IServiceCollection services)
     {
         services.AddExceptionHandler<BadRequestExceptionHandler>();
         services.AddExceptionHandler<InternalServerExceptionHandler>();
@@ -171,46 +210,139 @@ public static class ServiceCollectionExtensions
     /// <returns>The same service collection instance so that multiple calls can be chained.</returns>
     public static IServiceCollection AddRateLimiterConfigurations(this IServiceCollection services)
     {
-        services.AddRateLimiter(options =>
+        services.AddRateLimiter(rateLimiterOptions =>
+            rateLimiterOptions.AddFixedWindowLimiter("fixed", options =>
+            {
+                options.PermitLimit = 4;
+                options.Window = TimeSpan.FromSeconds(12);
+                options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                options.QueueLimit = 2;
+            }).AddSlidingWindowLimiter("sliding", options =>
+            {
+                options.PermitLimit = 100;
+                options.Window = TimeSpan.FromSeconds(10);
+                options.SegmentsPerWindow = 8;
+                options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                options.QueueLimit = 2;
+            }).AddTokenBucketLimiter("token", options =>
+            {
+                options.TokenLimit = 10;
+                options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                options.QueueLimit = 2;
+                options.ReplenishmentPeriod = TimeSpan.FromSeconds(2);
+                options.TokensPerPeriod = 4;
+                options.AutoReplenishment = false;
+            }).AddConcurrencyLimiter("Concurrency", options =>
+            {
+                options.PermitLimit = 4;
+                options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                options.QueueLimit = 2;
+            }));
+        return services;
+    }
+
+    /// <summary>
+    /// Adds Swagger generation services to the specified <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The service collection to add the Swagger generation services to.</param>
+    /// <param name="assembly">The assembly containing the XML comments for the Swagger documentation.</param>
+    /// <returns>The same service collection instance so that multiple calls can be chained.</returns>
+    public static IServiceCollection UseSwagger(this IServiceCollection services, Assembly assembly)
+    {
+        services.AddSwaggerGen(options =>
         {
-            // Fixed Window Limiter
-            options.AddFixedWindowLimiter("FixedWindowPolicy", policy =>
-            {
-                policy.PermitLimit = 100; // Max 100 requests
-                policy.Window = TimeSpan.FromMinutes(1); // Per minute
-                policy.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-                policy.QueueLimit = 5; // Additional queue slots
-            });
+            // Set the comments path for the Swagger JSON and UI.
+            var xmlFile = $"{assembly.GetName().Name}.xml";
+            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+            options.IncludeXmlComments(xmlPath);
 
-            // Sliding Window Limiter
-            options.AddSlidingWindowLimiter("SlidingWindowPolicy", policy =>
+            options.UseAllOfForInheritance();
+            options.UseOneOfForPolymorphism();
+            options.UseInlineDefinitionsForEnums();
+            options.SchemaFilter<UlidSchemaFilter>();
+            options.SelectDiscriminatorNameUsing(_ => "discriminator");
+            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
-                policy.PermitLimit = 100; // Allow 100 requests
-                policy.Window = TimeSpan.FromMinutes(1); // Per minute
-                policy.SegmentsPerWindow = 5; // Divide into 5 segments
+                In = ParameterLocation.Header,
+                Description = "Please insert JWT with Bearer into field",
+                Name = "Authorization",
+                Type = SecuritySchemeType.ApiKey,
+                BearerFormat = "JWT",
+                Scheme = "Bearer"
             });
-
-            // Token Bucket Limiter
-            options.AddTokenBucketLimiter("TokenBucketPolicy", policy =>
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
             {
-                policy.TokenLimit = 10; // Maximum of 10 tokens
-                policy.TokensPerPeriod = 5; // Replenish 5 tokens
-                policy.ReplenishmentPeriod = TimeSpan.FromSeconds(10); // Every 10 seconds
-                policy.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-                policy.QueueLimit = 3; // Allow 3 queued requests
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    Array.Empty<string>()
+                }
             });
-
-            // Concurrency Limiter
-            options.AddConcurrencyLimiter("ConcurrencyPolicy", policy =>
-            {
-                policy.PermitLimit = 3; // Allow 3 concurrent requests
-                policy.QueueLimit = 2; // Allow 2 queued requests
-                policy.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-            });
-
-            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
         });
+        return services;
+    }
 
+    /// <summary>
+    /// Adds FluentValidation services to the specified <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
+    /// <param name="assembly"></param>
+    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    /// <remarks>
+    /// This method adds all the validators found in the assembly of the calling class to the service collection.
+    /// </remarks>
+    public static IServiceCollection AddFluentValidation(this IServiceCollection services, Assembly assembly)
+    {
+        services.AddValidatorsFromAssembly(assembly);
+        return services;
+    }
+
+    /// <summary>
+    /// Adds OpenTelemetry tracing and logging services to the specified <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The service collection to add the OpenTelemetry services to.</param>
+    /// <param name="serviceName">The name of the service to be used in the OpenTelemetry resource.</param>
+    /// <returns>The same service collection instance so that multiple calls can be chained.</returns>
+    public static IServiceCollection AddOpenTelemetry(this IServiceCollection services, string serviceName)
+    {
+        // Configure OpenTelemetry tracing
+        services.AddOpenTelemetry()
+            .WithTracing(providerBuilder =>
+            {
+                providerBuilder
+                    .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName))
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
+                    .AddRedisInstrumentation(options =>
+                    {
+                        options.EnrichActivityWithTimingEvents = true;
+                        options.SetVerboseDatabaseStatements = true;
+                    })
+                    .AddEntityFrameworkCoreInstrumentation(options =>
+                    {
+                        options.SetDbStatementForText = true;
+                        options.SetDbStatementForStoredProcedure = true;
+                    })
+                    .AddSqlClientInstrumentation(options =>
+                    {
+                        options.SetDbStatementForText = true;
+                        options.EnableConnectionLevelAttributes = true;
+                        options.RecordException = true;
+                    })
+                    .AddNpgsql()
+                    .AddOtlpExporter();
+            })
+            .WithLogging(providerBuilder =>
+            {
+                providerBuilder.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName));
+                providerBuilder.AddOtlpExporter();
+            });
         return services;
     }
 }

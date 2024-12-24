@@ -13,6 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\BuildingBlocks.ServiceCollection.Extensions\BuildingBlocks.ServiceCollection.Extensions.csproj"/>
         <ProjectReference Include="..\Orders.Infrastructure\Orders.Infrastructure.csproj"/>
     </ItemGroup>
 

@@ -143,12 +143,18 @@
         <PackageReference Include="OpenTelemetry" Version="1.10.0"/>
         <PackageReference Include="OpenTelemetry.Api" Version="1.10.0"/>
         <PackageReference Include="OpenTelemetry.Api.ProviderBuilderExtensions" Version="1.10.0"/>
-        <PackageReference Include="OpenTelemetry.Exporter.OneCollector" Version="1.10.0"/>
+        <PackageReference Include="OpenTelemetry.AutoInstrumentation" Version="1.10.0-beta.1"/>
+        <PackageReference Include="OpenTelemetry.Contrib.Instrumentation.GrpcCore" Version="1.0.0-beta3"/>
         <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.10.0"/>
         <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.10.0"/>
         <PackageReference Include="OpenTelemetry.Extensions.Propagators" Version="1.10.0"/>
+        <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.10.1"/>
+        <PackageReference Include="OpenTelemetry.Instrumentation.ConfluentKafka" Version="0.1.0-alpha.2"/>
+        <PackageReference Include="OpenTelemetry.Instrumentation.GrpcCore" Version="1.0.0-beta.6"/>
+        <PackageReference Include="OpenTelemetry.Instrumentation.Hangfire" Version="1.9.0-beta.1"/>
         <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.10.0"/>
         <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.10.0"/>
+        <PackageReference Include="OpenTelemetry.Instrumentation.StackExchangeRedis" Version="1.10.0-beta.1"/>
         <PackageReference Include="Polly.Core" Version="8.5.0"/>
         <PackageReference Include="Polly.Extensions" Version="8.5.0"/>
         <PackageReference Include="Polly.RateLimiting" Version="8.5.0"/>

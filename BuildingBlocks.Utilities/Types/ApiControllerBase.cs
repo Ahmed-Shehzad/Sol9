@@ -43,6 +43,11 @@ public class ApiControllerBase : ControllerBase
         return data.IsFailed ? NotFound(data.Reasons) : Ok(data.ValueOrDefault);
     }
 
+    protected ActionResult<T> NotNull<T>(T? data)
+    {
+        return data is null ? NotFound() : Ok(data);
+    }
+
     /// <summary>
     /// Asynchronously sends a command request to the mediator and returns the result.
     /// </summary>

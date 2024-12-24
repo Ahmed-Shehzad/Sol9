@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace BuildingBlocks.Infrastructure.Repositories;
 
-public class UnitOfWork<TContext>(TContext context) : IUnitOfWork, IDisposable
+public sealed class UnitOfWork<TContext>(TContext context) : IUnitOfWork, IDisposable
     where TContext : DbContext
 {
     private IDbContextTransaction? _transaction;
@@ -81,7 +81,7 @@ public class UnitOfWork<TContext>(TContext context) : IUnitOfWork, IDisposable
     /// Disposes the transaction and the context.
     /// </summary>
     /// <param name="disposing">Indicates whether the method is called from Dispose or the finalizer.</param>
-    protected virtual void Dispose(bool disposing)
+    private void Dispose(bool disposing)
     {
         if (_disposed) return;
         if (disposing)
