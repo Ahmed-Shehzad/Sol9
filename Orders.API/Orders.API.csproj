@@ -15,6 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\BuildingBlocks.ServiceCollection.Extensions\BuildingBlocks.ServiceCollection.Extensions.csproj"/>
         <ProjectReference Include="..\Orders.Application\Orders.Application.csproj"/>
     </ItemGroup>
 

@@ -1,5 +1,4 @@
 ﻿using BuildingBlocks.Infrastructure.Contexts;
-using BuildingBlocks.Infrastructure.Types;
 using Microsoft.EntityFrameworkCore;
 using Orders.Domain.Aggregates;
 using Orders.Domain.Aggregates.Entities;

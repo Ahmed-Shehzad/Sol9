@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Orders.Infrastructure.Migrations.OrdersDbContext
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class _01JFWAGEJG7ZW2ARXXSZJ3C3MS : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -129,6 +129,9 @@ namespace Orders.Infrastructure.Migrations.OrdersDbContext
                     meta_data = table.Column<JsonElement>(type: "jsonb", nullable: true),
                     tenant_id = table.Column<string>(type: "character varying(26)", nullable: false),
                     user_id = table.Column<string>(type: "character varying(26)", nullable: false),
+                    name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    type = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    url = table.Column<string>(type: "text", nullable: false),
                     created_date_utc_at = table.Column<DateOnly>(type: "date", nullable: true),
                     created_time_utc_at = table.Column<TimeOnly>(type: "time without time zone", nullable: true),
                     created_by = table.Column<string>(type: "text", nullable: true),
@@ -162,6 +165,12 @@ namespace Orders.Infrastructure.Migrations.OrdersDbContext
                     product_id = table.Column<string>(type: "character varying(26)", nullable: true),
                     stop_item_id = table.Column<string>(type: "character varying(26)", nullable: true),
                     trip_id = table.Column<string>(type: "character varying(26)", nullable: true),
+                    description = table.Column<string>(type: "text", nullable: true),
+                    metadata = table.Column<JsonElement>(type: "jsonb", nullable: true),
+                    quantity_unit = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    quantity_value = table.Column<decimal>(type: "numeric(18,3)", nullable: false),
+                    weight_unit = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    weight_value = table.Column<decimal>(type: "numeric(18,3)", nullable: false),
                     created_date_utc_at = table.Column<DateOnly>(type: "date", nullable: true),
                     created_time_utc_at = table.Column<TimeOnly>(type: "time without time zone", nullable: true),
                     created_by = table.Column<string>(type: "text", nullable: true),
@@ -261,91 +270,6 @@ namespace Orders.Infrastructure.Migrations.OrdersDbContext
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "order_document_info",
-                schema: "orders",
-                columns: table => new
-                {
-                    order_document_id = table.Column<string>(type: "character varying(26)", nullable: false),
-                    name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    type = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    url = table.Column<string>(type: "text", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_order_document_info", x => x.order_document_id);
-                    table.ForeignKey(
-                        name: "fk_order_document_info_order_document_order_document_id",
-                        column: x => x.order_document_id,
-                        principalSchema: "orders",
-                        principalTable: "order_document",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "order_item_info",
-                schema: "orders",
-                columns: table => new
-                {
-                    order_item_id = table.Column<string>(type: "character varying(26)", nullable: false),
-                    description = table.Column<string>(type: "text", nullable: true),
-                    meta_data = table.Column<JsonElement>(type: "jsonb", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_order_item_info", x => x.order_item_id);
-                    table.ForeignKey(
-                        name: "fk_order_item_info_order_item_order_item_id",
-                        column: x => x.order_item_id,
-                        principalSchema: "orders",
-                        principalTable: "order_item",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "order_item_quantity",
-                schema: "orders",
-                columns: table => new
-                {
-                    order_item_info_order_item_id = table.Column<string>(type: "character varying(26)", nullable: false),
-                    value = table.Column<decimal>(type: "numeric(18,3)", nullable: false),
-                    unit = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_order_item_quantity", x => x.order_item_info_order_item_id);
-                    table.ForeignKey(
-                        name: "fk_order_item_quantity_order_item_info_order_item_info_order_item_id",
-                        column: x => x.order_item_info_order_item_id,
-                        principalSchema: "orders",
-                        principalTable: "order_item_info",
-                        principalColumn: "order_item_id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "order_item_weight",
-                schema: "orders",
-                columns: table => new
-                {
-                    order_item_info_order_item_id = table.Column<string>(type: "character varying(26)", nullable: false),
-                    value = table.Column<decimal>(type: "numeric(18,3)", nullable: false),
-                    unit = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_order_item_weight", x => x.order_item_info_order_item_id);
-                    table.ForeignKey(
-                        name: "fk_order_item_weight_order_item_info_order_item_info_order_item_id",
-                        column: x => x.order_item_info_order_item_id,
-                        principalSchema: "orders",
-                        principalTable: "order_item_info",
-                        principalColumn: "order_item_id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_depot_depot_id",
                 schema: "orders",
@@ -425,15 +349,11 @@ namespace Orders.Infrastructure.Migrations.OrdersDbContext
                 schema: "orders");
 
             migrationBuilder.DropTable(
-                name: "order_document_info",
+                name: "order_document",
                 schema: "orders");
 
             migrationBuilder.DropTable(
-                name: "order_item_quantity",
-                schema: "orders");
-
-            migrationBuilder.DropTable(
-                name: "order_item_weight",
+                name: "order_item",
                 schema: "orders");
 
             migrationBuilder.DropTable(
@@ -450,18 +370,6 @@ namespace Orders.Infrastructure.Migrations.OrdersDbContext
 
             migrationBuilder.DropTable(
                 name: "outbox",
-                schema: "orders");
-
-            migrationBuilder.DropTable(
-                name: "order_document",
-                schema: "orders");
-
-            migrationBuilder.DropTable(
-                name: "order_item_info",
-                schema: "orders");
-
-            migrationBuilder.DropTable(
-                name: "order_item",
                 schema: "orders");
 
             migrationBuilder.DropTable(

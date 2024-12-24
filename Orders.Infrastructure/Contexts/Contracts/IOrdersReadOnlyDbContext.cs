@@ -1,6 +1,5 @@
 ﻿using BuildingBlocks.Contracts.Types;
 using Orders.Domain.Aggregates;
-using Orders.Domain.Aggregates.Entities;
 
 namespace Orders.Infrastructure.Contexts.Contracts;
 

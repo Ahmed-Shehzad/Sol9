@@ -2,18 +2,14 @@ namespace Orders.Domain.Aggregates.Dtos;
 
 public record OrdersDto
 {
-    private OrdersDto(OrderListDto orders, int nextPageNumber, int nextPageSize)
+    private OrdersDto(OrderListDto orders)
     {
         Orders = orders;
-        NextPageNumber = nextPageNumber;
-        NextPageSize = nextPageSize;
     }
-    public static OrdersDto Create(OrderListDto orders, int nextPageNumber, int nextPageSize)
+    public static OrdersDto Create(OrderListDto orders)
     {
-        return new OrdersDto(orders, nextPageNumber, nextPageSize);
+        return new OrdersDto(orders);
     }
 
     public OrderListDto Orders { get; init; }
-    public int NextPageNumber { get; init; }
-    public int NextPageSize { get; init; }
 }

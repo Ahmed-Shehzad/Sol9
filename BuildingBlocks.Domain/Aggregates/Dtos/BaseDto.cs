@@ -1,3 +1,3 @@
 ﻿namespace BuildingBlocks.Domain.Aggregates.Dtos;
 
-public abstract record BaseDto(Ulid Id);
+public abstract record BaseDto(Guid Id);

@@ -12,6 +12,11 @@ namespace Locations.Service.Extensions;
 
 public static class ServiceCollectionExtensions
 {
+    /// <summary>
+    /// Adds the Nominatim API client and service to the service collection.
+    /// </summary>
+    /// <param name="services">The service collection to add the services to.</param>
+    /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddNominatimApi(this IServiceCollection services)
     {
         // Register Refit Client with settings-driven configuration
@@ -27,7 +32,12 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddOsrmApi(this IServiceCollection services)
+    /// <summary>
+    /// Adds the Open Street Map API client and service to the service collection.
+    /// </summary>
+    /// <param name="services">The service collection to add the services to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddOpenStreetMapApi(this IServiceCollection services)
     {
         // Register Refit Client with settings-driven configuration
         services.AddRefitClient<IOsrmApi>()

@@ -31,7 +31,7 @@ public class OutboxProcessorBackgroundService(IServiceProvider serviceProvider) 
                         .FirstOrDefault(t => t.GetType().Name.Equals(outboxMessage.Type))?.GetType();
 
                     if (domainEventType == null) continue;
-                    
+
                     var jsonObject = JsonSerializer.Deserialize(outboxMessage.Payload, domainEventType);
                     if (jsonObject == null) continue;
 

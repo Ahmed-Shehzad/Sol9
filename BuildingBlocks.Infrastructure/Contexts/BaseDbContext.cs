@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using BuildingBlocks.Contracts.Types;
 using BuildingBlocks.Domain.Aggregates.Entities;
 using BuildingBlocks.Infrastructure.EntityConfigurations;
 using BuildingBlocks.Infrastructure.Extensions;
@@ -13,7 +12,7 @@ public abstract class BaseDbContext<TContext>(DbContextOptions<TContext> options
     where TContext : DbContext
 {
     public DbSet<Outbox>? OutboxMessages { get; set; }
-    
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.AddInterceptors(new EntityAuditInterceptor());
@@ -30,7 +29,7 @@ public abstract class BaseDbContext<TContext>(DbContextOptions<TContext> options
 
         // Enable service provider caching to improve performance.
         optionsBuilder.EnableServiceProviderCaching();
-        
+
         base.OnConfiguring(optionsBuilder);
     }
 
@@ -39,22 +38,22 @@ public abstract class BaseDbContext<TContext>(DbContextOptions<TContext> options
         configurationBuilder
             .Properties<Ulid>()
             .HaveConversion<UlidToStringConverter>();
-        
+
         configurationBuilder.Properties<JsonElement?>().HaveConversion<JsonElementConverter>();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        
+
         modelBuilder.ConfigureDefaultSchema(this);
-        
+
         modelBuilder.UseSingularTableNamingConvention();
-        
+
         modelBuilder.ApplyAllConfigurations<TContext>();
         modelBuilder.ApplyDateTimeUtcConversion();
         modelBuilder.ApplyConfiguration(new OutboxConfiguration());
-        
+
         modelBuilder.UseCustomNamingConvention();
         modelBuilder.UseNpgsqlDictionaryConvention();
 
@@ -63,7 +62,7 @@ public abstract class BaseDbContext<TContext>(DbContextOptions<TContext> options
 
         modelBuilder.ApplyTenantQueryFilter(tenantId);
         modelBuilder.ApplyUserQueryFilter(userId);
-        
+
         modelBuilder.ApplySoftDeleteQueryFilter();
         modelBuilder.ApplyEnumerationConfiguration();
     }

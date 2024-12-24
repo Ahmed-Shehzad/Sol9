@@ -16,7 +16,7 @@ public record OrderDto : BaseDto
         ICollection<OrderDocumentDto> Documents,
         ICollection<Depot> Depots,
         Ulid? TenantId,
-        Ulid? UserId) : base(Id)
+        Ulid? UserId) : base(Id.ToGuid())
     {
         this.Type = Type;
         this.Description = Description;

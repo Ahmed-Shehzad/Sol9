@@ -20,5 +20,8 @@
         <Content Include=".env">
             <DependentUpon>docker-compose.yml</DependentUpon>
         </Content>
+        <Content Include="Scripts\DbMigrations.py"/>
+        <Content Include="Scripts\DbUpdates.py"/>
+        <Content Include="Scripts\requirements.txt"/>
     </ItemGroup>
 </Project>

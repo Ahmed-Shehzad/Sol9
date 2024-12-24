@@ -1,6 +1,5 @@
 ﻿using BuildingBlocks.Infrastructure.Contexts;
 using BuildingBlocks.Infrastructure.Extensions;
-using BuildingBlocks.Infrastructure.Types;
 using Microsoft.EntityFrameworkCore;
 
 namespace Orders.Infrastructure.Contexts;

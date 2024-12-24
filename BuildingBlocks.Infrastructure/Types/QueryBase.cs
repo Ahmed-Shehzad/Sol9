@@ -7,4 +7,10 @@ namespace BuildingBlocks.Infrastructure.Types;
 /// Query base class
 /// </summary>
 /// <typeparam name="TResult"></typeparam>
-public abstract record QueryBase<TResult> : IQuery<Result<TResult>>;
+public abstract record QueryBase<TResult> : IQuery<TResult>;
+
+/// <summary>
+/// Query base class with result
+/// </summary>
+/// <typeparam name="TResult"></typeparam>
+public abstract record QueryBaseResult<TResult> : IQuery<Result<TResult>>;

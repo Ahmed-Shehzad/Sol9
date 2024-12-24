@@ -8,9 +8,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\BuildingBlocks.Common\BuildingBlocks.Common.csproj" />
-      <ProjectReference Include="..\BuildingBlocks.Contracts\BuildingBlocks.Contracts.csproj" />
-      <ProjectReference Include="..\BuildingBlocks.Extensions\BuildingBlocks.Extensions.csproj" />
+        <ProjectReference Include="..\BuildingBlocks.Common\BuildingBlocks.Common.csproj"/>
+        <ProjectReference Include="..\BuildingBlocks.Contracts\BuildingBlocks.Contracts.csproj"/>
+        <ProjectReference Include="..\BuildingBlocks.Extensions\BuildingBlocks.Extensions.csproj"/>
     </ItemGroup>
 
 </Project>

@@ -12,7 +12,7 @@ public record OrderDocumentDto : BaseDto
         Order Order,
         JsonElement? MetaData,
         Ulid? TenantId,
-        Ulid? UserId) : base(Id)
+        Ulid? UserId) : base(Id.ToGuid())
     {
         this.DocumentInfo = DocumentInfo;
         this.OrderId = OrderId;

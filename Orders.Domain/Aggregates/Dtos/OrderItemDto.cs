@@ -6,7 +6,7 @@ namespace Orders.Domain.Aggregates.Dtos;
 public record OrderItemDto : BaseDto
 {
     private OrderItemDto(Ulid Id, Ulid OrderId, Order Order, Ulid? ProductId, Ulid? StopItemId, Ulid? TripId,
-        OrderItemInfo OrderItemInfo) : base(Id)
+        OrderItemInfo OrderItemInfo) : base(Id.ToGuid())
     {
         this.OrderId = OrderId;
         this.Order = Order;

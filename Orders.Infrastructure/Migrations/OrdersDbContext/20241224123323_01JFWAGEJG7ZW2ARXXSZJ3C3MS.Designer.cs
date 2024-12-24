@@ -15,8 +15,8 @@ using Orders.Infrastructure.Contexts;
 namespace Orders.Infrastructure.Migrations.OrdersDbContext
 {
     [DbContext(typeof(Contexts.OrdersDbContext))]
-    [Migration("20241213153933_complex_properties")]
-    partial class complex_properties
+    [Migration("20241224123323_01JFWAGEJG7ZW2ARXXSZJ3C3MS")]
+    partial class _01JFWAGEJG7ZW2ARXXSZJ3C3MS
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -169,18 +169,18 @@ namespace Orders.Infrastructure.Migrations.OrdersDbContext
                                 .IsRequired()
                                 .HasMaxLength(255)
                                 .HasColumnType("character varying(255)")
-                                .HasColumnName("Name");
+                                .HasColumnName("name");
 
                             b1.Property<string>("Type")
                                 .IsRequired()
                                 .HasMaxLength(255)
                                 .HasColumnType("character varying(255)")
-                                .HasColumnName("Type");
+                                .HasColumnName("type");
 
                             b1.Property<string>("Url")
                                 .IsRequired()
                                 .HasColumnType("text")
-                                .HasColumnName("Url");
+                                .HasColumnName("url");
                         });
 
                     b.HasKey("Id")
@@ -263,10 +263,12 @@ namespace Orders.Infrastructure.Migrations.OrdersDbContext
                             b1.IsRequired();
 
                             b1.Property<string>("Description")
-                                .HasColumnType("text");
+                                .HasColumnType("text")
+                                .HasColumnName("description");
 
                             b1.Property<JsonElement?>("MetaData")
-                                .HasColumnType("jsonb");
+                                .HasColumnType("jsonb")
+                                .HasColumnName("metadata");
 
                             b1.ComplexProperty<Dictionary<string, object>>("Quantity", "Orders.Domain.Aggregates.Entities.OrderItem.OrderItemInfo#OrderItemInfo.Quantity#UnitValue<decimal>", b2 =>
                                 {
@@ -275,10 +277,12 @@ namespace Orders.Infrastructure.Migrations.OrdersDbContext
                                     b2.Property<string>("Unit")
                                         .IsRequired()
                                         .HasMaxLength(255)
-                                        .HasColumnType("character varying(255)");
+                                        .HasColumnType("character varying(255)")
+                                        .HasColumnName("quantity_unit");
 
                                     b2.Property<decimal>("Value")
-                                        .HasColumnType("decimal(18, 3)");
+                                        .HasColumnType("decimal(18, 3)")
+                                        .HasColumnName("quantity_value");
                                 });
 
                             b1.ComplexProperty<Dictionary<string, object>>("Weight", "Orders.Domain.Aggregates.Entities.OrderItem.OrderItemInfo#OrderItemInfo.Weight#UnitValue<decimal>", b2 =>
@@ -288,10 +292,12 @@ namespace Orders.Infrastructure.Migrations.OrdersDbContext
                                     b2.Property<string>("Unit")
                                         .IsRequired()
                                         .HasMaxLength(255)
-                                        .HasColumnType("character varying(255)");
+                                        .HasColumnType("character varying(255)")
+                                        .HasColumnName("weight_unit");
 
                                     b2.Property<decimal>("Value")
-                                        .HasColumnType("decimal(18, 3)");
+                                        .HasColumnType("decimal(18, 3)")
+                                        .HasColumnName("weight_value");
                                 });
                         });
 
