@@ -1,0 +1,35 @@
+services:
+  orders.api:
+    container_name: orders.api
+    image: ${DOCKER_REGISTRY-}sol9/orderapi
+    build:
+      context: .
+      dockerfile: Orders.API/Dockerfile
+
+  pgadmin:
+    container_name: pgadmin4
+    image: dpage/pgadmin4:latest
+
+  postgres:
+    container_name: postgres
+    image: postgis/postgis:16-3.4-alpine
+
+  redis:
+    container_name: redis
+    image: redis/redis-stack:latest
+
+  portainer:
+    container_name: portainer
+    image: portainer/portainer-ee:2.21.4
+
+  portainer.agent:
+    container_name: portainer.agent
+    image: portainer/agent:2.21.4
+
+  sonarqube:
+    container_name: sonarqube
+    image: sonarqube:lts-community
+  
+  keycloak:
+    container_name: keycloak
+    image: quay.io/keycloak/keycloak:latest

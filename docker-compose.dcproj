@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" Sdk="Microsoft.Docker.Sdk">
+    <PropertyGroup Label="Globals">
+        <ProjectVersion>2.1</ProjectVersion>
+        <DockerTargetOS>Linux</DockerTargetOS>
+        <DockerPublishLocally>False</DockerPublishLocally>
+        <ProjectGuid>6c1d0e11-2cba-4bb0-9d5d-3e2ff0060bed</ProjectGuid>
+        <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
+        <DockerServiceUrl>{Scheme}://localhost:{ServicePort}/swagger</DockerServiceUrl>
+        <DockerServiceName>orders.api</DockerServiceName>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Include="docker-compose.override.yml">
+            <DependentUpon>docker-compose.yml</DependentUpon>
+        </None>
+        <None Include="docker-compose.yml"/>
+        <None Include=".dockerignore"/>
+    </ItemGroup>
+    <ItemGroup>
+        <Content Include=".env.development">
+            <DependentUpon>docker-compose.yml</DependentUpon>
+        </Content>
+        <Content Include=".env.production">
+            <DependentUpon>docker-compose.yml</DependentUpon>
+        </Content>
+        <Content Include=".env.staging">
+            <DependentUpon>docker-compose.yml</DependentUpon>
+        </Content>
+        <Content Include="Scripts\DbMigrations.py"/>
+        <Content Include="Scripts\DbUpdates.py"/>
+        <Content Include="Scripts\requirements.txt"/>
+    </ItemGroup>
+</Project>

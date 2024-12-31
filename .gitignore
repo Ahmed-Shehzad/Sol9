@@ -1,0 +1,13 @@
+.idea/
+.pgadmin/
+.portainer/
+.postgresql/
+.redis/
+.vs/
+bin/
+obj/
+/packages/
+riderModule.iml
+/_ReSharper.Caches/
+.env**
+.sonarqube/
