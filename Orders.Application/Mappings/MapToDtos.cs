@@ -10,11 +10,6 @@ namespace Orders.Application.Mappings;
 
 public static class MapToDtos
 {
-    public static OrderStatusDto MapOrderStatusToDto(this OrderStatus status)
-    {
-        return new OrderStatusDto(status.Key, status.Value);
-    }
-    
     public static UnitValueDto<T> MapUnitValueToDto<T>(this UnitValue<T> unitValue)
     {
         return new UnitValueDto<T>(unitValue.Value, unitValue.Unit);
@@ -97,7 +92,7 @@ public static class MapToDtos
     public static OrderDto MapOrderToDto(this Order order)
     {
         return new OrderDto(order.Type, order.Description, 
-            order.Status.MapOrderStatusToDto(), 
+            order.Status.ToString(), 
             order.BillingAddress?.MapAddressToDto(),
             order.ShippingAddress?.MapAddressToDto(),
             order.TransportAddress.MapAddressToDto(),

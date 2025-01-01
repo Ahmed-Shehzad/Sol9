@@ -6,7 +6,7 @@ public record OrderDto(
     [property: JsonPropertyName("type")] string Type,
     [property: JsonPropertyName("description")]
     string Description,
-    [property: JsonPropertyName("status")] OrderStatusDto Status,
+    [property: JsonPropertyName("status")] string? Status,
     [property: JsonPropertyName("billingAddress")]
     AddressDto? BillingAddress,
     [property: JsonPropertyName("shippingAddress")]

@@ -10,8 +10,13 @@ services:
       Treblle__ProjectId: ${TREBLLE_PROJECT_ID}
       ASPNETCORE_Kestrel__Certificates__Default__Path: /home/app/.aspnet/https/ordersapi.pfx
       ASPNETCORE_Kestrel__Certificates__Default__Password: ${ORDER_API_SSL_PASSWORD}
-      KEYCLOAK__AUTHORITY: http://keycloak:8080/realms/sol9
       KEYCLOAK__CLIENT_ID: ordersapi
+      KEYCLOAK__REALM: sol9
+      KEYCLOAK__AUTH_SERVER_URL: http://keycloak:8080/
+      KEYCLOAK__VERIFY_TOKEN_AUDIENCE: false
+      KEYCLOAK__CLIENT_SECRET: fZYiENvmBZiWh1tNaGE6L1wSzK4C6WDS
+      KEYCLOAK__WELL_KNOWN_CONFIGURATION: http://keycloak:8080/realms/sol9/.well-known/openid-configuration
+      KEYCLOAK__OPEN_ID_CONNECT_TOKEN: http://keycloak:8080/realms/sol9/protocol/openid-connect/token
     ports:
       - "5000:5000"
       - "5001:5001"

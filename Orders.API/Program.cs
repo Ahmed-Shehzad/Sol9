@@ -12,7 +12,11 @@ using CorrelationId.DependencyInjection;
 using CorrelationId.Providers;
 using Hangfire;
 using HealthChecks.UI.Client;
+using Keycloak.AuthServices.Authentication;
+using Keycloak.AuthServices.Authorization;
+using Keycloak.AuthServices.Common;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Rewrite;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -72,6 +76,12 @@ public class Program
                 options.JsonSerializerOptions.PropertyNamingPolicy = defaultOptions.PropertyNamingPolicy;
             });
 
+        builder.Services.AddKeycloakWebApiAuthentication(configuration, options =>
+        {
+            options.RequireHttpsMetadata = false;
+        });
+        builder.Services.AddAuthorization().AddKeycloakAuthorization().AddAuthorizationServer(configuration);
+        
         builder.Services.AddAntiforgery(options =>
         {
             options.HeaderName = "X-XSRF-TOKEN";
