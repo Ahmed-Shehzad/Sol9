@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using Asp.Versioning.ApiExplorer;
 using BuildingBlocks.Utilities.Filters.Swashbuckle;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -11,7 +12,7 @@ namespace Orders.API.Configurations;
 /// A class that configures Swagger options for an API.
 /// </summary>
 /// <param name="provider">An instance of <see cref="IApiVersionDescriptionProvider"/> to provide API version descriptions.</param>
-public class ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider) : IConfigureOptions<SwaggerGenOptions>
+public class ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider, IConfiguration configuration) : IConfigureOptions<SwaggerGenOptions>
 {
     /// <summary>
     /// Configures the Swagger options.
@@ -33,15 +34,25 @@ public class ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider) : 
         options.SchemaFilter<UlidSchemaFilter>();
         options.SelectDiscriminatorNameUsing(_ => "discriminator");
         options.SelectSubTypesUsing(_ => null);
-        options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+
+        var keycloak = new OpenApiSecurityScheme
         {
-            In = ParameterLocation.Header,
-            Description = "Please insert JWT with Bearer into field",
-            Name = "Authorization",
-            Type = SecuritySchemeType.ApiKey,
-            BearerFormat = "JWT",
-            Scheme = "Bearer"
-        });
+            Type = SecuritySchemeType.OAuth2,
+            Flows = new OpenApiOAuthFlows
+            {
+                Implicit = new OpenApiOAuthFlow
+                {
+                    AuthorizationUrl = new Uri(configuration["Keycloak:AuthorizationEndpoint"]!),
+                    Scopes = new Dictionary<string, string>()
+                    {
+                        { "openid", "openid" },
+                        { "profile", "profile" }
+                    }
+                }
+            }
+        };
+        
+        options.AddSecurityDefinition(nameof(keycloak), keycloak);
         options.AddSecurityRequirement(new OpenApiSecurityRequirement
         {
             {
@@ -49,9 +60,12 @@ public class ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider) : 
                 {
                     Reference = new OpenApiReference
                     {
+                        Id = nameof(keycloak),
                         Type = ReferenceType.SecurityScheme,
-                        Id = "Bearer"
-                    }
+                    },
+                    In = ParameterLocation.Header,
+                    Name = JwtBearerDefaults.AuthenticationScheme,
+                    Scheme = JwtBearerDefaults.AuthenticationScheme,
                 },
                 Array.Empty<string>()
             }

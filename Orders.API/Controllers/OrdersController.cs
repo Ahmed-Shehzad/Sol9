@@ -14,8 +14,7 @@ namespace Orders.API.Controllers;
 /// <param name="mediator"></param>
 [ApiVersion("1.0")]
 // [Treblle]
-public class OrdersController(IMediator mediator)
-    : ApiControllerBase(mediator)
+public class OrdersController(IMediator mediator) : ApiControllerBase(mediator)
 {
     /// <summary>
     /// Get Orders
@@ -25,6 +24,7 @@ public class OrdersController(IMediator mediator)
     [ProducesResponseType(typeof(OrdersDto), 200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(404)]
+    [Authorize]
     public async Task<ActionResult<OrdersDto>> GetOrdersAsync([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 100)
     {
         var query = new GetOrdersQuery(pageNumber, pageSize);

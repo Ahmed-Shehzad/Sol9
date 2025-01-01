@@ -10,13 +10,15 @@ services:
       Treblle__ProjectId: ${TREBLLE_PROJECT_ID}
       ASPNETCORE_Kestrel__Certificates__Default__Path: /home/app/.aspnet/https/ordersapi.pfx
       ASPNETCORE_Kestrel__Certificates__Default__Password: ${ORDER_API_SSL_PASSWORD}
-      KEYCLOAK__CLIENT_ID: ordersapi
+      KEYCLOAK__CLIENTID: ordersapi
       KEYCLOAK__REALM: sol9
-      KEYCLOAK__AUTH_SERVER_URL: http://keycloak:8080/
-      KEYCLOAK__VERIFY_TOKEN_AUDIENCE: false
-      KEYCLOAK__CLIENT_SECRET: fZYiENvmBZiWh1tNaGE6L1wSzK4C6WDS
-      KEYCLOAK__WELL_KNOWN_CONFIGURATION: http://keycloak:8080/realms/sol9/.well-known/openid-configuration
-      KEYCLOAK__OPEN_ID_CONNECT_TOKEN: http://keycloak:8080/realms/sol9/protocol/openid-connect/token
+      KEYCLOAK__KEYCLOAKSERVERURL: http://localhost:8080
+      KEYCLOAK__VERIFYTOKENAUDIENCE: false
+      KEYCLOAK__CLIENTSECRET: fZYiENvmBZiWh1tNaGE6L1wSzK4C6WDS
+      KEYCLOAK__WELLKNOWNCONFIGURATION: http://localhost:8080/realms/sol9/.well-known/openid-configuration
+      KEYCLOAK__OPENIDCONNECTTOKEN: http://localhost:8080/realms/sol9/protocol/openid-connect/token
+      KEYCLOAK__AUTHORIZATIONENDPOINT: http://localhost:8080/realms/sol9/protocol/openid-connect/auth
+      KEYCLOAK__AUDIENCE: account
     ports:
       - "5000:5000"
       - "5001:5001"
@@ -107,6 +109,8 @@ services:
       KC_DB_URL: jdbc:postgresql://postgres/${POSTGRES_DB}
       KC_DB_USERNAME: ${POSTGRES_USER}
       KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./.keycloak/${ASPNETCORE_ENVIRONMENT}/data:/opt/keycloak/data
     command:
       - start-dev
     ports:

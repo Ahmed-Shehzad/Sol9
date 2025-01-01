@@ -16,10 +16,12 @@ using Keycloak.AuthServices.Authentication;
 using Keycloak.AuthServices.Authorization;
 using Keycloak.AuthServices.Common;
 using MediatR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Rewrite;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.IdentityModel.Tokens;
 using Orders.API.Configurations;
 using Orders.Application.Extensions;
 using Orders.Infrastructure.Contexts;
@@ -76,11 +78,20 @@ public class Program
                 options.JsonSerializerOptions.PropertyNamingPolicy = defaultOptions.PropertyNamingPolicy;
             });
 
-        builder.Services.AddKeycloakWebApiAuthentication(configuration, options =>
-        {
-            options.RequireHttpsMetadata = false;
-        });
-        builder.Services.AddAuthorization().AddKeycloakAuthorization().AddAuthorizationServer(configuration);
+        builder.Services.AddAuthorization().AddKeycloakAuthorization();
+        builder.Services
+            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = false;
+                options.Audience = configuration["Keycloak:Audience"]!;
+                options.MetadataAddress = configuration["Keycloak:WellKnownConfiguration"]!;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidIssuer = $"{configuration["Keycloak:KeycloakServerUrl"]!}/{configuration["Keycloak:Realm"]!}",
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
         
         builder.Services.AddAntiforgery(options =>
         {
