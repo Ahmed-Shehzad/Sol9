@@ -16,7 +16,7 @@ services:
       KEYCLOAK__VERIFYTOKENAUDIENCE: false
       KEYCLOAK__CLIENTSECRET: fZYiENvmBZiWh1tNaGE6L1wSzK4C6WDS
       KEYCLOAK__WELLKNOWNCONFIGURATION: http://localhost:8080/realms/sol9/.well-known/openid-configuration
-      KEYCLOAK__OPENIDCONNECTTOKEN: http://localhost:8080/realms/sol9/protocol/openid-connect/token
+      KEYCLOAK__OPENIDCONNECTURL: http://localhost:8080/realms/sol9/protocol/openid-connect/token
       KEYCLOAK__AUTHORIZATIONENDPOINT: http://localhost:8080/realms/sol9/protocol/openid-connect/auth
       KEYCLOAK__AUDIENCE: account
     ports:

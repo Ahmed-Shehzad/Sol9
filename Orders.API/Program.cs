@@ -65,7 +65,7 @@ public class Program
         }
 
         configuration.AddEnvironmentVariables(); // This ensures environment variables are used   
-        
+
         // Add services to the container.
         builder.Services.AddControllers()
             .AddJsonOptions(options =>
@@ -79,20 +79,27 @@ public class Program
             });
 
         builder.Services.AddAuthorization().AddKeycloakAuthorization();
-        builder.Services
-            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(options =>
+
+        builder.Services.AddKeycloakWebApiAuthentication(options =>
+        {
+            options.Audience = configuration["Keycloak:Audience"]!;
+            options.Realm = configuration["Keycloak:Realm"]!;
+            options.AuthServerUrl = configuration["Keycloak:KeycloakServerUrl"]!;
+            options.TokenClockSkew = TimeSpan.Zero;
+            options.VerifyTokenAudience = true;
+            options.Credentials.Secret = configuration["Keycload:ClientSecret"]!;
+        }, options =>
+        {
+            options.RequireHttpsMetadata = false;
+            options.Audience = configuration["Keycloak:Audience"]!;
+            options.MetadataAddress = configuration["Keycloak:WellKnownConfiguration"]!;
+            options.TokenValidationParameters = new TokenValidationParameters
             {
-                options.RequireHttpsMetadata = false;
-                options.Audience = configuration["Keycloak:Audience"]!;
-                options.MetadataAddress = configuration["Keycloak:WellKnownConfiguration"]!;
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidIssuer = $"{configuration["Keycloak:KeycloakServerUrl"]!}/{configuration["Keycloak:Realm"]!}",
-                    ClockSkew = TimeSpan.Zero
-                };
-            });
-        
+                ValidIssuer = $"{configuration["Keycloak:KeycloakServerUrl"]!}/{configuration["Keycloak:Realm"]!}",
+                ClockSkew = TimeSpan.Zero
+            };
+        });
+
         builder.Services.AddAntiforgery(options =>
         {
             options.HeaderName = "X-XSRF-TOKEN";
@@ -121,11 +128,11 @@ public class Program
 
         // Add API versioning.
         builder.Services.AddApiVersionings();
-        
+
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer().AddSwaggerGen();
         builder.Services.ConfigureOptions<ConfigureSwaggerOptions>();
-        
+
         builder.Services.AddOptions();
         builder.Services.AddMemoryCache();
 
@@ -164,12 +171,12 @@ public class Program
         builder.Services.AddResponseCompression();
 
         builder.Services.AddHttpContextMiddleware();
-        
+
         builder.Host.UseSerilog(GetSerilogLoggerConfiguration(environment));
 
         builder.Services.AddRateLimiterConfigurations();
         builder.Services.AddMediatRConfiguration();
-        
+
         builder.Services.AddCorrelationId<GuidCorrelationIdProvider>(options => { options.RequestHeader = "X-Correlation-Id"; });
 
         // Register MediatR and scan for handlers in all assemblies
@@ -198,14 +205,14 @@ public class Program
                 }
             };
         });
-        
+
         builder.Services
             .AddHealthChecks()
             .AddCheck("self", () => HealthCheckResult.Healthy())
             .AddNpgSql(connectionString: configuration.GetConnectionString("DefaultConnection")!,
                 name: "orders-db",
                 tags: Tags);
-        
+
         builder.Services.AddServiceLogEnricher();
 
         builder.Services.AddScoped<ITenantService, TenantService>();
@@ -229,7 +236,7 @@ public class Program
         builder.Services.AddTransient<SecurityHeadersMiddleware>();
         builder.Services.AddTransient<TenantMiddleware>();
         builder.Services.AddTransient<UserMiddleware>();
-        
+
         var app = builder.Build();
 
         // if (environment.IsDevelopment())
@@ -277,7 +284,7 @@ public class Program
             options.DisplayOperationId();
             options.ShowExtensions();
             options.ShowCommonExtensions();
-            
+
             var descriptions = app.DescribeApiVersions().Reverse();
             foreach (var description in descriptions)
             {
@@ -305,9 +312,9 @@ public class Program
         app.UseAuthentication(); // Authentication middleware
 
         app.UseAuthorization(); // Authorization middleware
-        
+
         app.UseRateLimiter();
-        
+
         app.UseAntiforgery();
 
         app.UseOutputCache();
@@ -315,7 +322,7 @@ public class Program
         app.UseHttpContextMiddleware();
 
         app.UseHttpLogging();
-        
+
         app.UseMiddleware<AcceptHeaderMiddleware>();
         app.UseMiddleware<AllowHeaderMiddleware>();
         app.UseMiddleware<SecurityHeadersMiddleware>();
@@ -351,10 +358,10 @@ public class Program
         app.MapHangfireDashboard("/hangfire");
 
         app.MapSwagger();
-        
+
         // Map controllers
         app.MapControllers();
-        
+
         app.Run();
     }
 }

@@ -38,6 +38,7 @@ public class ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider, IC
         var keycloak = new OpenApiSecurityScheme
         {
             Type = SecuritySchemeType.OAuth2,
+            OpenIdConnectUrl = new Uri(configuration["Keycloak:OpenIdConnectUrl"]!),
             Flows = new OpenApiOAuthFlows
             {
                 Implicit = new OpenApiOAuthFlow
