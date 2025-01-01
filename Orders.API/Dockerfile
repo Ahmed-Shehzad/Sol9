@@ -14,20 +14,20 @@ WORKDIR /app
 EXPOSE 5000
 EXPOSE 5001
 
-
 # This stage is used to build the service project
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["Orders.API/Orders.API.csproj", "Orders.API/"]
 COPY ["Orders.Application/Orders.Application.csproj", "Orders.Application/"]
-COPY ["Orders.Infrastructure/Orders.Infrastructure.csproj", "Orders.Infrastructure/"]
-COPY ["BuildingBlocks.Infrastructure/BuildingBlocks.Infrastructure.csproj", "BuildingBlocks.Infrastructure/"]
-COPY ["BuildingBlocks.Domain/BuildingBlocks.Domain.csproj", "BuildingBlocks.Domain/"]
-COPY ["BuildingBlocks.Utilities/BuildingBlocks.Utilities.csproj", "BuildingBlocks.Utilities/"]
+COPY ["BuildingBlocks.ServiceCollection.Extensions/BuildingBlocks.ServiceCollection.Extensions.csproj", "BuildingBlocks.ServiceCollection.Extensions/"]
 COPY ["BuildingBlocks.Common/BuildingBlocks.Common.csproj", "BuildingBlocks.Common/"]
 COPY ["BuildingBlocks.Contracts/BuildingBlocks.Contracts.csproj", "BuildingBlocks.Contracts/"]
+COPY ["BuildingBlocks.Domain/BuildingBlocks.Domain.csproj", "BuildingBlocks.Domain/"]
+COPY ["BuildingBlocks.Utilities/BuildingBlocks.Utilities.csproj", "BuildingBlocks.Utilities/"]
 COPY ["BuildingBlocks.Extensions/BuildingBlocks.Extensions.csproj", "BuildingBlocks.Extensions/"]
+COPY ["BuildingBlocks.Infrastructure/BuildingBlocks.Infrastructure.csproj", "BuildingBlocks.Infrastructure/"]
+COPY ["Orders.Infrastructure/Orders.Infrastructure.csproj", "Orders.Infrastructure/"]
 COPY ["Orders.Domain/Orders.Domain.csproj", "Orders.Domain/"]
 RUN dotnet restore "./Orders.API/Orders.API.csproj"
 COPY . .
