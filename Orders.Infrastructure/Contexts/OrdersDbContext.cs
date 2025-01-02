@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Orders.Domain.Aggregates;
 using Orders.Domain.Aggregates.Entities;
 using Orders.Domain.Aggregates.Entities.ValueObjects;
-using Orders.Infrastructure.FakeSeed;
 
 namespace Orders.Infrastructure.Contexts;
 
@@ -16,10 +15,4 @@ public class OrdersDbContext(DbContextOptions<OrdersDbContext> options, ITenantS
     public DbSet<OrderDocument>? OrderDocuments { get; set; }
     public DbSet<OrderItem>? OrderItems { get; set; }
     public DbSet<OrderTimeFrame>? OrderTimeFrames { get; set; }
-
-    public static List<Order> SeedOrdersData()
-    {
-        var seedOrders = OrderGenerator.GenerateMinimumTenOrders();
-        return seedOrders;
-    }
 }

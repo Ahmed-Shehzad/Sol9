@@ -3,7 +3,6 @@ using BuildingBlocks.Domain.Aggregates.Entities.ValueObjects;
 using Orders.Application.Dtos;
 using Orders.Domain.Aggregates;
 using Orders.Domain.Aggregates.Entities;
-using Orders.Domain.Aggregates.Entities.Enums;
 using Orders.Domain.Aggregates.Entities.ValueObjects;
 
 namespace Orders.Application.Mappings;

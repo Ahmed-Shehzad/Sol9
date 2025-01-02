@@ -1,4 +1,5 @@
-﻿using BuildingBlocks.Contracts.Types;
+﻿using System.Globalization;
+using BuildingBlocks.Contracts.Types;
 using BuildingBlocks.Extensions.Types;
 using BuildingBlocks.Infrastructure.BackgroundServices.OutboxProcessor;
 using BuildingBlocks.Infrastructure.Extensions;
@@ -12,6 +13,7 @@ using Orders.Infrastructure.Contexts;
 using Orders.Infrastructure.Contexts.Contracts;
 using Hangfire;
 using Hangfire.PostgreSql;
+using Hangfire.PostgreSql.Factories;
 using Hangfire.Redis.StackExchange;
 using Npgsql;
 using Orders.Infrastructure.Repositories;
@@ -51,14 +53,17 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<IOrderOutboxRepository, OrderOutboxRepository>();
         services.AddScoped<IOrderOutboxService, OrderOutboxService>();
-
+        
         // Add Hangfire services
-        services.AddHangfire(x => x
-            .UsePostgreSqlStorage(bootstrapperOptions =>
-            {
-                bootstrapperOptions.UseNpgsqlConnection(configuration.GetConnectionString("DefaultConnection"));
-            })
-            .UseRedisStorage(configuration["REDIS_CONNECTION_STRING"]));
+        services.AddHangfire(options =>
+        {
+            options.UsePostgreSqlStorage(bootstrapperOptions =>
+                {
+                    bootstrapperOptions.UseNpgsqlConnection(configuration.GetConnectionString("DefaultConnection"));
+                })
+                .UseDashboardMetrics()
+                .UseRedisStorage(configuration["REDIS_CONNECTION_STRING"]);
+        });
 
         // Add Hangfire server
         services.AddHangfireServer();

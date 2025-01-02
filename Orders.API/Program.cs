@@ -1,11 +1,9 @@
 using System.Reflection;
 using BuildingBlocks.Contracts.Services.Tenants;
 using BuildingBlocks.Contracts.Services.Users;
-using BuildingBlocks.Contracts.Types;
 using BuildingBlocks.Extensions.Types;
 using BuildingBlocks.ServiceCollection.Extensions;
 using BuildingBlocks.Utilities.Behaviors;
-using BuildingBlocks.Utilities.Filters.Swashbuckle;
 using BuildingBlocks.Utilities.Middlewares;
 using CorrelationId;
 using CorrelationId.DependencyInjection;
@@ -14,23 +12,17 @@ using Hangfire;
 using HealthChecks.UI.Client;
 using Keycloak.AuthServices.Authentication;
 using Keycloak.AuthServices.Authorization;
-using Keycloak.AuthServices.Common;
 using MediatR;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Rewrite;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using Orders.API.Configurations;
 using Orders.Application.Extensions;
-using Orders.Infrastructure.Contexts;
-using Orders.Infrastructure.Repositories.Contracts;
 using Serilog;
 using Serilog.Enrichers.AspNetCore;
 using StackExchange.Redis;
 using static BuildingBlocks.ServiceCollection.Extensions.LoggerConfigurationExtension;
-using Order = Orders.Domain.Aggregates.Order;
 
 namespace Orders.API;
 
@@ -105,7 +97,7 @@ public class Program
             options.HeaderName = "X-XSRF-TOKEN";
             options.FormFieldName = "__RequestVerificationToken";
             options.Cookie.Name = "__Host-X-XSRF-TOKEN";
-            options.Cookie.SameSite = SameSiteMode.Unspecified;
+            options.Cookie.SameSite = SameSiteMode.Strict;
             options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
             options.Cookie.HttpOnly = true;
             options.Cookie.Expiration = TimeSpan.FromDays(1);
@@ -236,7 +228,7 @@ public class Program
         builder.Services.AddTransient<SecurityHeadersMiddleware>();
         builder.Services.AddTransient<TenantMiddleware>();
         builder.Services.AddTransient<UserMiddleware>();
-
+        
         var app = builder.Build();
 
         // if (environment.IsDevelopment())
@@ -246,7 +238,7 @@ public class Program
         //     var orderRepo = scope.ServiceProvider.GetRequiredService<IOrderRepository>();
         //     var unitOfwork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
         //     
-        //     var orders = OrdersDbContext.SeedOrdersData();
+        //     var orders = OrderGenerator.GenerateMinimumTenOrders();
         //     
         //     orderRepo.AddRange(orders);
         //     unitOfwork.CommitAsync().GetAwaiter().GetResult();
@@ -284,7 +276,7 @@ public class Program
             options.DisplayOperationId();
             options.ShowExtensions();
             options.ShowCommonExtensions();
-
+            
             var descriptions = app.DescribeApiVersions().Reverse();
             foreach (var description in descriptions)
             {
@@ -353,9 +345,12 @@ public class Program
         {
             Predicate = r => r.Name.Contains("self")
         });
-
-        // Map Hangfire dashboard route
-        app.MapHangfireDashboard("/hangfire");
+        
+        // Run Hangfire server
+        app.MapHangfireDashboard(pattern: "/hangfire", options: new DashboardOptions
+        {
+            IgnoreAntiforgeryToken = environment.IsDevelopment(),
+        });
 
         app.MapSwagger();
 

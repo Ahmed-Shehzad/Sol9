@@ -44,7 +44,7 @@ public class ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider, IC
                 Implicit = new OpenApiOAuthFlow
                 {
                     AuthorizationUrl = new Uri(configuration["Keycloak:AuthorizationEndpoint"]!),
-                    Scopes = new Dictionary<string, string>()
+                    Scopes = new Dictionary<string, string>
                     {
                         { "openid", "openid" },
                         { "profile", "profile" }
