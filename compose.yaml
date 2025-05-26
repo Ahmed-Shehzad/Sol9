@@ -1,0 +1,21 @@
+﻿services:
+  testapi:
+    image: testapi
+    container_name: testapi
+    ports:
+      - "8080:8080"
+    build:
+      context: .
+      dockerfile: TestApi/Dockerfile
+      
+  rabbitmq:
+    image: rabbitmq:3.13-alpine
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"      # AMQP
+      - "15672:15672"    # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - ./rabbitmq_data:/var/lib/rabbitmq

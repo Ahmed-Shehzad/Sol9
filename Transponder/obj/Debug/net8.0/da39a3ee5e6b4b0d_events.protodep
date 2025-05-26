@@ -1,0 +1,2 @@
+obj/Debug/net8.0/Events.cs \
+obj/Debug/net8.0/EventsGrpc.cs: events.proto

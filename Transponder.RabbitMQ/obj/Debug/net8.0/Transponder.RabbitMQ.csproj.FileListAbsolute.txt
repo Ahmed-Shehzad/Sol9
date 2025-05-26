@@ -1,0 +1,15 @@
+/Users/muhammadahmedshehzad/Personal/RiderProjects/Sol9/Transponder.RabbitMQ/bin/Debug/net8.0/Transponder.RabbitMQ.deps.json
+/Users/muhammadahmedshehzad/Personal/RiderProjects/Sol9/Transponder.RabbitMQ/bin/Debug/net8.0/Transponder.RabbitMQ.dll
+/Users/muhammadahmedshehzad/Personal/RiderProjects/Sol9/Transponder.RabbitMQ/bin/Debug/net8.0/Transponder.RabbitMQ.pdb
+/Users/muhammadahmedshehzad/Personal/RiderProjects/Sol9/Transponder.RabbitMQ/bin/Debug/net8.0/Transponder.dll
+/Users/muhammadahmedshehzad/Personal/RiderProjects/Sol9/Transponder.RabbitMQ/bin/Debug/net8.0/Transponder.pdb
+/Users/muhammadahmedshehzad/Personal/RiderProjects/Sol9/Transponder.RabbitMQ/obj/Debug/net8.0/Transponder.RabbitMQ.csproj.AssemblyReference.cache
+/Users/muhammadahmedshehzad/Personal/RiderProjects/Sol9/Transponder.RabbitMQ/obj/Debug/net8.0/Transponder.RabbitMQ.GeneratedMSBuildEditorConfig.editorconfig
+/Users/muhammadahmedshehzad/Personal/RiderProjects/Sol9/Transponder.RabbitMQ/obj/Debug/net8.0/Transponder.RabbitMQ.AssemblyInfoInputs.cache
+/Users/muhammadahmedshehzad/Personal/RiderProjects/Sol9/Transponder.RabbitMQ/obj/Debug/net8.0/Transponder.RabbitMQ.AssemblyInfo.cs
+/Users/muhammadahmedshehzad/Personal/RiderProjects/Sol9/Transponder.RabbitMQ/obj/Debug/net8.0/Transponder.RabbitMQ.csproj.CoreCompileInputs.cache
+/Users/muhammadahmedshehzad/Personal/RiderProjects/Sol9/Transponder.RabbitMQ/obj/Debug/net8.0/Transpon.1ADDEAEA.Up2Date
+/Users/muhammadahmedshehzad/Personal/RiderProjects/Sol9/Transponder.RabbitMQ/obj/Debug/net8.0/Transponder.RabbitMQ.dll
+/Users/muhammadahmedshehzad/Personal/RiderProjects/Sol9/Transponder.RabbitMQ/obj/Debug/net8.0/refint/Transponder.RabbitMQ.dll
+/Users/muhammadahmedshehzad/Personal/RiderProjects/Sol9/Transponder.RabbitMQ/obj/Debug/net8.0/Transponder.RabbitMQ.pdb
+/Users/muhammadahmedshehzad/Personal/RiderProjects/Sol9/Transponder.RabbitMQ/obj/Debug/net8.0/ref/Transponder.RabbitMQ.dll
