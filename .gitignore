@@ -623,6 +623,8 @@ bin/
 bin-debug/
 bin-release/
 
+obj/
+
 # Build Folders
 **/bin/
 **/obj/
