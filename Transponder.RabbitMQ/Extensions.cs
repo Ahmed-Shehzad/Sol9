@@ -31,7 +31,7 @@ public static class Extensions
             services.AddSingleton(typeof(IHostedService), consumerType);
         }
         
-        services.AddScoped<IBusPublisher, RabbitMqEventBus>();
+        services.AddScoped<IBusPublisher, RabbitMqBusPublisher>();
         
         return services;
     }

@@ -1,10 +1,13 @@
-namespace Sol9.Core;
+namespace Transponder.Core.Types;
 
 public abstract class AuditableEntity<TId> : Entity<TId>, IAuditableEntity where TId : struct
 {
     protected AuditableEntity(TId id) : base(id)
     {
-
+        var now = DateTime.UtcNow;
+        
+        CreatedDateUtcAt = DateOnly.FromDateTime(now);
+        CreatedTimeUtcAt = TimeOnly.FromDateTime(now);
     }
     
     public DateOnly CreatedDateUtcAt { get; init; }

@@ -5,15 +5,13 @@ using Transponder.Abstractions;
 
 namespace Transponder.RabbitMQ;
 
-public class RabbitMqEventBus : IBusPublisher
+public class RabbitMqBusPublisher : IBusPublisher
 {
     private readonly IRabbitMqConnectionFactory _rabbitMqConnectionFactory;
-    private readonly Dictionary<Type, object> _channels;
-    
-    public RabbitMqEventBus(IRabbitMqConnectionFactory rabbitMqConnectionFactory)
+
+    public RabbitMqBusPublisher(IRabbitMqConnectionFactory rabbitMqConnectionFactory)
     {
         _rabbitMqConnectionFactory = rabbitMqConnectionFactory;
-        _channels = new Dictionary<Type, object>();
     }
     
     public async Task PublishAsync<TEvent>(TEvent @event, CancellationToken cancellationToken = default) where TEvent : IIntegrationEvent

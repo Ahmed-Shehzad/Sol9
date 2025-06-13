@@ -1,4 +1,4 @@
-namespace Sol9.Core;
+namespace Transponder.Core.Types;
 
 public interface ISoftDeletableEntity
 {

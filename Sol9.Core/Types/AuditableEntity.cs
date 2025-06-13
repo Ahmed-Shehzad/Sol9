@@ -1,4 +1,4 @@
-namespace Sol9.Common;
+namespace Sol9.Core;
 
 public abstract class AuditableEntity<TId> : Entity<TId>, IAuditableEntity where TId : struct
 {

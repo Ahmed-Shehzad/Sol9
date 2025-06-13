@@ -11,6 +11,7 @@ public sealed class CreateUserCommandHandler : ICommandHandler<CreateUserCommand
 {
     private readonly IBusPublisher _publisher;
     private readonly ILogger<CreateUserCommandHandler> _logger;
+    
     public CreateUserCommandHandler(IBusPublisher publisher, ILogger<CreateUserCommandHandler> logger)
     {
         _logger = logger;

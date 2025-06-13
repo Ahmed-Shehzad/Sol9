@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 
-namespace Transponder.Core;
+namespace Sol9.Core;
 
 public class ConcurrentList<T>
 {

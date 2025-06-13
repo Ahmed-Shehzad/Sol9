@@ -24,10 +24,9 @@ public class BackgroundConsumerService<TNotification> : BackgroundService, IBusC
     
     protected async override Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        await using var scope = _serviceProvider.CreateAsyncScope();
-        
         while (!cancellationToken.IsCancellationRequested)
         {
+            await using var scope = _serviceProvider.CreateAsyncScope();
             await foreach (var item in ConsumeAsync<TNotification>(cancellationToken))
             {
                 var handler = scope.ServiceProvider.GetRequiredService<IIntegrationEventHandler<TNotification>>();

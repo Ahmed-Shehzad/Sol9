@@ -4,7 +4,7 @@ namespace TestApi.IntegrationEvents;
 
 public sealed class UserCreatedEventHandler : IIntegrationEventHandler<UserCreatedEvent>
 {
-    private  readonly ILogger<UserCreatedEventHandler> _logger;
+    private readonly ILogger<UserCreatedEventHandler> _logger;
     public UserCreatedEventHandler(ILogger<UserCreatedEventHandler> logger)
     {
         _logger = logger;

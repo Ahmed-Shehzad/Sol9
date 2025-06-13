@@ -1,4 +1,4 @@
-﻿namespace Transponder.Core.Types;
+﻿namespace Sol9.Core;
 
 public abstract class Entity<TId> : IEntity<TId> where TId : struct
 {

@@ -1,6 +1,6 @@
 using Transponder.Abstractions;
 
-namespace Sol9.Common;
+namespace Sol9.Core;
 
 public interface IAggregateRoot;
 

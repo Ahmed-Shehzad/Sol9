@@ -1,5 +1,7 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Transponder.Abstractions;
+using Transponder.Storage.Outbox;
 
 namespace Transponder;
 
@@ -17,8 +19,17 @@ internal class BusPublisher : IBusPublisher
     public async Task PublishAsync<TEvent>(TEvent @event, CancellationToken cancellationToken = default) where TEvent : IIntegrationEvent
     {
         var notificationType = typeof(TEvent);
-        var handlerType = typeof(IIntegrationEventHandler<>).MakeGenericType(notificationType);
+        // var outboxService = _serviceProvider.GetService<IOutboxService>();
+        //
+        // var message = new OutboxMessage();
+        // message.SetMessage(@event);
+        //
+        // if (outboxService != null)
+        // {
+        //     await outboxService.AddAsync(message, cancellationToken);
+        // }
 
+        var handlerType = typeof(IIntegrationEventHandler<>).MakeGenericType(notificationType);
         var handlers = (_serviceProvider.GetService(typeof(IEnumerable<>).MakeGenericType(handlerType)) as IEnumerable<object>
                         ?? [])
             .Cast<dynamic>()
