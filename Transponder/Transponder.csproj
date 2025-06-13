@@ -8,10 +8,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.5" />
-      <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="9.0.5" />
-      <PackageReference Include="Microsoft.Extensions.Resilience" Version="9.5.0" />
-      <PackageReference Include="Scrutor" Version="6.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.5" />
+        <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="9.0.5" />
+        <PackageReference Include="Microsoft.Extensions.Resilience" Version="9.5.0" />
+        <PackageReference Include="Scrutor" Version="6.0.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Transponder.Storage\Transponder.Storage.csproj" />
     </ItemGroup>
     
 </Project>

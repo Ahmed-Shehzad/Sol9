@@ -18,4 +18,4 @@
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
     volumes:
-      - ./rabbitmq_data:/var/lib/rabbitmq
+      - ./rabbitmq:/var/lib/rabbitmq
