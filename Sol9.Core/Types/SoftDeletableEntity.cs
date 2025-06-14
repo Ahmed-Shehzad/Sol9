@@ -1,4 +1,4 @@
-namespace Sol9.Core;
+namespace Sol9.Core.Types;
 
 public abstract class SoftDeletableEntity<TId> : AuditableEntity<TId>, ISoftDeletableEntity where TId : struct
 {

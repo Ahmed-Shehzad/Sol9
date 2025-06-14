@@ -1,4 +1,4 @@
-using Transponder.Abstractions;
+using Transponder.Core.Abstractions;
 
 namespace TestApi.IntegrationEvents
 {

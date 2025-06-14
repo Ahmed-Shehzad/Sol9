@@ -3,24 +3,21 @@ using System.Threading;
 using System.Threading.Tasks;
 using Intercessor.Abstractions;
 using TestApi.IntegrationEvents;
-using Transponder.Abstractions;
+using Transponder.Core.Abstractions;
 
 namespace TestApi.Commands;
 
 public sealed class CreateUserCommandHandler : ICommandHandler<CreateUserCommand>
 {
-    private readonly IBusPublisher _publisher;
     private readonly ILogger<CreateUserCommandHandler> _logger;
     
-    public CreateUserCommandHandler(IBusPublisher publisher, ILogger<CreateUserCommandHandler> logger)
+    public CreateUserCommandHandler(ILogger<CreateUserCommandHandler> logger)
     {
         _logger = logger;
-        _publisher = publisher;
     }
 
     public async Task HandleAsync(CreateUserCommand request, CancellationToken cancellationToken = default)
     {
-        await _publisher.PublishAsync(new UserCreatedEvent(request.Name), cancellationToken);
         await Task.CompletedTask;
     }
 }

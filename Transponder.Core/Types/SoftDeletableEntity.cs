@@ -1,6 +1,6 @@
 namespace Transponder.Core.Types;
 
-public abstract class SoftDeletableEntity<TId> : AuditableEntity<TId>, ISoftDeletableEntity where TId : struct
+public class SoftDeletableEntity<TId> : AuditableEntity<TId>, ISoftDeletableEntity where TId : struct
 {
     protected SoftDeletableEntity(TId id) : base(id)
     {
@@ -9,7 +9,7 @@ public abstract class SoftDeletableEntity<TId> : AuditableEntity<TId>, ISoftDele
     
     public bool IsDeleted { get; private set; }
 
-    protected override void Delete()
+    public new void Delete()
     {
         IsDeleted = true;
         base.Delete();

@@ -12,11 +12,16 @@ public class OutboxService : IOutboxService
         _messages = new ConcurrentList<OutboxMessage>();
     }
     
-    public async Task<IReadOnlyList<OutboxMessage>> GetMessagesAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<OutboxMessage>> GetUnprocessedMessagesAsync(CancellationToken cancellationToken = default)
     {
-        return _messages.AsReadOnly();
+        return _messages.Where(m => m.IsUnprocessed()).AsReadOnly();
     }
     
+    public async Task<IReadOnlyList<OutboxMessage>> GetFailedMessagesAsync(CancellationToken cancellationToken = default)
+    {
+        return _messages.Where(m => m.IsFailed()).AsReadOnly();
+    }
+
     public async Task AddAsync(OutboxMessage message, CancellationToken cancellationToken = default)
     {
         _messages.Add(message);
@@ -27,18 +32,26 @@ public class OutboxService : IOutboxService
         _messages.AddRange(messages);
     }
     
-    public async Task<OutboxMessage?> GetByMessageIdAsync(Ulid messageId, CancellationToken cancellationToken = default)
+    private async Task<OutboxMessage?> GetByMessageIdAsync(Ulid messageId, CancellationToken cancellationToken = default)
     {
         return _messages.Find(m => m.Id == messageId);
     }
     
-    public async Task MarkAsPublishedAsync(Ulid messageId, CancellationToken cancellationToken = default)
+    public async Task MarkAsProcessedAsync(IEnumerable<OutboxMessage> messages, CancellationToken cancellationToken = default)
     {
-        var outbox = await GetByMessageIdAsync(messageId, cancellationToken);
-        if (outbox is not null)
+        var outboxMessages = messages.ToList();
+        
+        var publishedMessages = outboxMessages.Where(m => m.IsPublished());
+        _messages.RemoveAll(publishedMessages);
+        
+        var failedMessages = outboxMessages.Where(m => m.IsFailed());
+        foreach (var message in failedMessages)
         {
-            outbox.MarkAsPublished();
-            _messages.Remove(outbox);
+            var storedMessage = await GetByMessageIdAsync(message.Id, cancellationToken);
+            if (storedMessage == null) continue;
+
+            _messages.Remove(storedMessage);
+            _messages.Add(message);
         }
     }
 }

@@ -1,6 +1,6 @@
 namespace Transponder.Core.Types;
 
-public abstract class AuditableEntity<TId> : Entity<TId>, IAuditableEntity where TId : struct
+public class AuditableEntity<TId> : Entity<TId>, IAuditableEntity where TId : struct
 {
     protected AuditableEntity(TId id) : base(id)
     {
@@ -18,15 +18,15 @@ public abstract class AuditableEntity<TId> : Entity<TId>, IAuditableEntity where
 
     public DateOnly? DeletedDateUtcAt { get; private set; }
     public TimeOnly? DeletedTimeUtcAt { get; private set; }
-    
-    protected virtual void Update()
+
+    public void Update()
     {
         var now = DateTime.UtcNow;
         UpdatedDateUtcAt = DateOnly.FromDateTime(now);
         UpdatedTimeUtcAt = TimeOnly.FromDateTime(now);
     }
 
-    protected virtual void Delete()
+    protected void Delete()
     {
         var now = DateTime.UtcNow;
         DeletedDateUtcAt = DateOnly.FromDateTime(now);

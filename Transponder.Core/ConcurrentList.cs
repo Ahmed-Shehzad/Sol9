@@ -29,6 +29,27 @@ public class ConcurrentList<T>
         }
     }
     
+    public void RemoveAll(IEnumerable<T> items)
+    {
+        lock (_lock)
+        {
+            foreach (var item in items)
+            {
+                _list.Remove(item);
+            }
+        }
+    }
+    
+    public ConcurrentList<T> Where(Func<T, bool> predicate)
+    {
+        lock (_lock)
+        {
+            var list = new ConcurrentList<T>();
+            list.AddRange(_list.Where(predicate));
+            return list;
+        }
+    }
+    
     public ReadOnlyCollection<T> AsReadOnly()
     {
         lock (_lock)

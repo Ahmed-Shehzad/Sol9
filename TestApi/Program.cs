@@ -1,7 +1,6 @@
 using Intercessor;
 using Intercessor.Abstractions;
 using RabbitMQ.Client;
-using Transponder.Abstractions;
 using Transponder.RabbitMQ;
 
 var builder = WebApplication.CreateBuilder(args);

@@ -1,6 +1,6 @@
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
-using Transponder.Abstractions;
+using Transponder.Core.Abstractions;
 
 namespace Transponder;
 

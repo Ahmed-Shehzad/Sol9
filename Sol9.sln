@@ -33,7 +33,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Transports", "Transports", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Transponder.Storage.InMemory", "Transponder.Storage.InMemory\Transponder.Storage.InMemory.csproj", "{78EC2A47-067D-4B59-A2CB-AABE087C1A01}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Transponder.Storage.Npgsql", "Transponder.Storage.Npgsql\Transponder.Storage.Npgsql.csproj", "{5187D629-AB1A-4FA3-93CF-6091F4F85825}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Transponder.Storage.EntityFrameworkCore", "Transponder.Storage.EntityFrameworkCore\Transponder.Storage.EntityFrameworkCore.csproj", "{5187D629-AB1A-4FA3-93CF-6091F4F85825}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sol9.Core", "Sol9.Core\Sol9.Core.csproj", "{5A46D1CC-B153-4877-8523-4612C3AB7DF6}"
 EndProject
@@ -42,6 +42,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{1A3B330D-D9E5-4CAE-81E6-B41637981045}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Transponder.Core", "Transponder.Core\Transponder.Core.csproj", "{41513A42-918C-4299-A120-4F0898217ECA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Jobs", "Jobs", "{836E9F2B-CEA3-4052-9162-0AF85549C49B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Transponder.Hangfire", "Transponder.Hangfire\Transponder.Hangfire.csproj", "{A0573379-57DA-4966-A193-A1F6F7DDBEF9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -65,6 +69,8 @@ Global
 		{5A46D1CC-B153-4877-8523-4612C3AB7DF6} = {DEB83757-3471-479F-8A47-5B7D1E34801D}
 		{1A3B330D-D9E5-4CAE-81E6-B41637981045} = {E1964BF1-B928-4798-962A-1C60F4EB1354}
 		{41513A42-918C-4299-A120-4F0898217ECA} = {1A3B330D-D9E5-4CAE-81E6-B41637981045}
+		{836E9F2B-CEA3-4052-9162-0AF85549C49B} = {E1964BF1-B928-4798-962A-1C60F4EB1354}
+		{A0573379-57DA-4966-A193-A1F6F7DDBEF9} = {836E9F2B-CEA3-4052-9162-0AF85549C49B}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{03C03790-2E70-475C-AAC1-73AFE14B5055}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -111,5 +117,9 @@ Global
 		{41513A42-918C-4299-A120-4F0898217ECA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{41513A42-918C-4299-A120-4F0898217ECA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{41513A42-918C-4299-A120-4F0898217ECA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0573379-57DA-4966-A193-A1F6F7DDBEF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0573379-57DA-4966-A193-A1F6F7DDBEF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0573379-57DA-4966-A193-A1F6F7DDBEF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0573379-57DA-4966-A193-A1F6F7DDBEF9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

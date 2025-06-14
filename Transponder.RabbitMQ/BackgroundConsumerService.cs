@@ -7,7 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Polly;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using Transponder.Abstractions;
+using Transponder.Core.Abstractions;
 
 namespace Transponder.RabbitMQ;
 

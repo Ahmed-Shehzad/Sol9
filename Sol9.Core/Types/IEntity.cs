@@ -1,4 +1,4 @@
-namespace Sol9.Core;
+namespace Sol9.Core.Types;
 
 public interface IEntity<TId> where TId : struct
 {

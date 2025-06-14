@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Transponder.Abstractions;
+using Transponder.Core.Abstractions;
 
 namespace Transponder.RabbitMQ;
 
