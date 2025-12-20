@@ -1,3 +1,9 @@
 {
-  "sqltools.connections": []
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": true,
+    "source.fixAll": true
+  },
+  "csharp.format.enable": true,
+  "csharp.organizeImportsOnFormat": true
 }
