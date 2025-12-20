@@ -1,0 +1,64 @@
+using Transponder.Transports.Abstractions;
+
+namespace Transponder.Transports;
+
+/// <summary>
+/// Default registry for transport factories.
+/// </summary>
+public sealed class TransportRegistry : ITransportRegistry
+{
+    private readonly List<ITransportFactory> _factories = [];
+
+    public TransportRegistry()
+    {
+    }
+
+    public TransportRegistry(IEnumerable<ITransportFactory> factories)
+    {
+        ArgumentNullException.ThrowIfNull(factories);
+
+        foreach (var factory in factories)
+        {
+            Register(factory);
+        }
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyCollection<ITransportFactory> Factories => _factories.AsReadOnly();
+
+    /// <inheritdoc />
+    public void Register(ITransportFactory factory)
+    {
+        ArgumentNullException.ThrowIfNull(factory);
+
+        if (_factories.Contains(factory))
+        {
+            return;
+        }
+
+        _factories.Add(factory);
+    }
+
+    /// <inheritdoc />
+    public bool TryResolve(Uri address, out ITransportFactory? factory)
+    {
+        ArgumentNullException.ThrowIfNull(address);
+
+        var scheme = address.Scheme;
+
+        foreach (var candidate in _factories)
+        {
+            foreach (var supported in candidate.SupportedSchemes)
+            {
+                if (string.Equals(supported, scheme, StringComparison.OrdinalIgnoreCase))
+                {
+                    factory = candidate;
+                    return true;
+                }
+            }
+        }
+
+        factory = null;
+        return false;
+    }
+}

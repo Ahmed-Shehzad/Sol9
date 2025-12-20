@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Transponder.Transports\Transponder.Transports.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="Abstractions\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Grpc.AspNetCore" Version="2.76.0" />
+      <PackageReference Include="Grpc.Net.Client" Version="2.76.0" />
+      <PackageReference Include="Grpc.Tools" Version="2.76.0" PrivateAssets="all" />
+      <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.1.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Protobuf Include="Protos/transponder_transport.proto" GrpcServices="Both" />
+    </ItemGroup>
+
+</Project>

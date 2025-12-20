@@ -1,0 +1,23 @@
+<Solution>
+  <Folder Name="/Clients/" />
+  <Folder Name="/Intercessor/">
+    <Project Path="Intercessor/Intercessor.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/" />
+  <Folder Name="/Transponder/">
+    <Project Path="Transponder.Persistence.EntityFramework.SqlServer\Transponder.Persistence.EntityFramework.SqlServer.csproj" />
+    <Project Path="Transponder.Persistence.EntityFramework\Transponder.Persistence.EntityFramework.csproj" />
+    <Project Path="Transponder.Persistence\Transponder.Persistence.csproj" />
+    <Project Path="Transponder.Transports.Aws\Transponder.Transports.Aws.csproj" />
+    <Project Path="Transponder.Transports.AzureServiceBus\Transponder.Transports.AzureServiceBus.csproj" />
+    <Project Path="Transponder.Transports.Grpc\Transponder.Transports.Grpc.csproj" />
+    <Project Path="Transponder.Transports.Kafka\Transponder.Transports.Kafka.csproj" />
+    <Project Path="Transponder.Transports.RabbitMq\Transponder.Transports.RabbitMq.csproj" />
+    <Project Path="Transponder.Transports\Transponder.Transports.csproj" />
+    <Project Path="Transponder/Transponder.csproj" />
+    <Project Path="Transponder.Persistence.EntityFramework.PostgreSql\Transponder.Persistence.EntityFramework.PostgreSql.csproj" />
+  </Folder>
+  <Folder Name="/Verifier/">
+    <Project Path="Verifier/Verifier.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+option csharp_namespace = "Transponder.Transports.Grpc";
+
+package transponder.transport;
+
+message GrpcTransportMessage {
+  bytes body = 1;
+  map<string, string> headers = 2;
+  string contentType = 3;
+  string messageId = 4;
+  string correlationId = 5;
+  string conversationId = 6;
+  string messageType = 7;
+  int64 sentTimeUnixMs = 8;
+}
+
+message SendRequest {
+  string destination = 1;
+  GrpcTransportMessage message = 2;
+}
+
+message SendResponse {
+}
+
+message PublishRequest {
+  GrpcTransportMessage message = 1;
+}
+
+message PublishResponse {
+}
+
+service Transport {
+  rpc Send(SendRequest) returns (SendResponse);
+  rpc Publish(PublishRequest) returns (PublishResponse);
+}
