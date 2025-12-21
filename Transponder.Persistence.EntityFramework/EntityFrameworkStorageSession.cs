@@ -34,10 +34,7 @@ public sealed class EntityFrameworkStorageSession : IStorageSession
 
         await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
-        if (_transaction != null)
-        {
-            await _transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
-        }
+        if (_transaction != null) await _transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -45,10 +42,7 @@ public sealed class EntityFrameworkStorageSession : IStorageSession
     {
         ThrowIfDisposed();
 
-        if (_transaction != null)
-        {
-            await _transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
-        }
+        if (_transaction != null) await _transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
 
         _context.ChangeTracker.Clear();
     }
@@ -56,26 +50,17 @@ public sealed class EntityFrameworkStorageSession : IStorageSession
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        if (_disposed)
-        {
-            return;
-        }
+        if (_disposed) return;
 
         _disposed = true;
 
-        if (_transaction != null)
-        {
-            await _transaction.DisposeAsync().ConfigureAwait(false);
-        }
+        if (_transaction != null) await _transaction.DisposeAsync().ConfigureAwait(false);
 
         await _context.DisposeAsync().ConfigureAwait(false);
     }
 
     private void ThrowIfDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(EntityFrameworkStorageSession));
-        }
+        if (_disposed) throw new ObjectDisposedException(nameof(EntityFrameworkStorageSession));
     }
 }

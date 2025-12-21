@@ -21,10 +21,7 @@ public sealed class AwsTransportHostSettings : TransportHostSettings, IAwsTransp
         TransportResilienceOptions? resilienceOptions = null)
         : base(address, settings, resilienceOptions)
     {
-        if (string.IsNullOrWhiteSpace(region))
-        {
-            throw new ArgumentException("Region must be provided.", nameof(region));
-        }
+        if (string.IsNullOrWhiteSpace(region)) throw new ArgumentException("Region must be provided.", nameof(region));
 
         Region = region;
         Topology = topology ?? new AwsTopology();

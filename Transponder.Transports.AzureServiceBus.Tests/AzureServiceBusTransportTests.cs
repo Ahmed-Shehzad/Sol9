@@ -1,5 +1,4 @@
 using Transponder.Transports.Abstractions;
-using Transponder.Transports.AzureServiceBus;
 
 namespace Transponder.Transports.AzureServiceBus.Tests;
 

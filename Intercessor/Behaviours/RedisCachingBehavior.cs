@@ -34,10 +34,7 @@ public class RedisCachingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequ
     {
         string key = request.CacheKey;
 
-        if (string.IsNullOrWhiteSpace(key))
-        {
-            await next();
-        }
+        if (string.IsNullOrWhiteSpace(key)) await next();
 
         RedisValue cachedData = await _redisDb.StringGetAsync(key);
         if (cachedData.HasValue)

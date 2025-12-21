@@ -1,5 +1,4 @@
 using Transponder.Transports.Abstractions;
-using Transponder.Transports.Kafka;
 
 namespace Transponder.Transports.Kafka.Tests;
 

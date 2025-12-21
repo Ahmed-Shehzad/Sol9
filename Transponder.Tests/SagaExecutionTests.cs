@@ -1,5 +1,4 @@
 using Transponder.Abstractions;
-using Transponder.Persistence.Abstractions;
 
 namespace Transponder.Tests;
 

@@ -22,10 +22,7 @@ public sealed class RabbitMqHostSettings : TransportHostSettings, IRabbitMqHostS
         TransportResilienceOptions? resilienceOptions = null)
         : base(address, settings, resilienceOptions)
     {
-        if (string.IsNullOrWhiteSpace(host))
-        {
-            throw new ArgumentException("Host must be provided.", nameof(host));
-        }
+        if (string.IsNullOrWhiteSpace(host)) throw new ArgumentException("Host must be provided.", nameof(host));
 
         Host = host;
         Topology = topology ?? new RabbitMqTopology();

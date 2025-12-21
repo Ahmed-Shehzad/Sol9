@@ -23,10 +23,7 @@ public sealed class InMemorySagaRepository<TState> : ISagaRepository<TState>
     {
         ArgumentNullException.ThrowIfNull(state);
 
-        if (state.CorrelationId == Guid.Empty)
-        {
-            throw new ArgumentException("CorrelationId must be provided.", nameof(state));
-        }
+        if (state.CorrelationId == Guid.Empty) throw new ArgumentException("CorrelationId must be provided.", nameof(state));
 
         _states[state.CorrelationId] = state;
         return Task.CompletedTask;

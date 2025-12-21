@@ -13,15 +13,9 @@ public sealed class InboxState : IInboxState
         DateTimeOffset? receivedTime = null,
         DateTimeOffset? processedTime = null)
     {
-        if (messageId == Guid.Empty)
-        {
-            throw new ArgumentException("MessageId must be provided.", nameof(messageId));
-        }
+        if (messageId == Guid.Empty) throw new ArgumentException("MessageId must be provided.", nameof(messageId));
 
-        if (string.IsNullOrWhiteSpace(consumerId))
-        {
-            throw new ArgumentException("ConsumerId must be provided.", nameof(consumerId));
-        }
+        if (string.IsNullOrWhiteSpace(consumerId)) throw new ArgumentException("ConsumerId must be provided.", nameof(consumerId));
 
         MessageId = messageId;
         ConsumerId = consumerId;

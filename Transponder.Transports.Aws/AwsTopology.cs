@@ -11,10 +11,7 @@ public sealed class AwsTopology : IAwsTopology
     {
         ArgumentNullException.ThrowIfNull(address);
 
-        if (!string.IsNullOrWhiteSpace(address.AbsolutePath) && address.AbsolutePath != "/")
-        {
-            return address.AbsolutePath.Trim('/'); 
-        }
+        if (!string.IsNullOrWhiteSpace(address.AbsolutePath) && address.AbsolutePath != "/") return address.AbsolutePath.Trim('/');
 
         return address.Host;
     }

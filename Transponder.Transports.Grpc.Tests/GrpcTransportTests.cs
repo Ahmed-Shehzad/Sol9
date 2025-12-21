@@ -1,5 +1,4 @@
 using Transponder.Transports.Abstractions;
-using Transponder.Transports.Grpc;
 
 namespace Transponder.Transports.Grpc.Tests;
 

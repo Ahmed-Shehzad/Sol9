@@ -83,10 +83,7 @@ public sealed class OutboxMessageEntity : IOutboxMessage
 
     private IReadOnlyDictionary<string, object?> GetHeaders()
     {
-        if (_headersCache != null)
-        {
-            return _headersCache;
-        }
+        if (_headersCache != null) return _headersCache;
 
         if (string.IsNullOrWhiteSpace(_headers))
         {
@@ -111,20 +108,14 @@ public sealed class OutboxMessageEntity : IOutboxMessage
 
     private static string? SerializeHeaders(IReadOnlyDictionary<string, object?> headers)
     {
-        if (headers == null || headers.Count == 0)
-        {
-            return null;
-        }
+        if (headers == null || headers.Count == 0) return null;
 
         return JsonSerializer.Serialize(headers, SerializerOptions);
     }
 
     private static Uri? CreateUri(string? value)
     {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return null;
-        }
+        if (string.IsNullOrWhiteSpace(value)) return null;
 
         return Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out Uri? uri) ? uri : null;
     }

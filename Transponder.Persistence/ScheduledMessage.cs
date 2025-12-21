@@ -20,15 +20,9 @@ public sealed class ScheduledMessage : IScheduledMessage
         DateTimeOffset? createdTime = null,
         DateTimeOffset? dispatchedTime = null)
     {
-        if (tokenId == Guid.Empty)
-        {
-            throw new ArgumentException("TokenId must be provided.", nameof(tokenId));
-        }
+        if (tokenId == Guid.Empty) throw new ArgumentException("TokenId must be provided.", nameof(tokenId));
 
-        if (string.IsNullOrWhiteSpace(messageType))
-        {
-            throw new ArgumentException("MessageType must be provided.", nameof(messageType));
-        }
+        if (string.IsNullOrWhiteSpace(messageType)) throw new ArgumentException("MessageType must be provided.", nameof(messageType));
 
         TokenId = tokenId;
         MessageType = messageType;

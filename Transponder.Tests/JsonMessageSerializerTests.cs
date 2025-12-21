@@ -1,5 +1,3 @@
-using Transponder;
-
 namespace Transponder.Tests;
 
 public sealed class JsonMessageSerializerTests

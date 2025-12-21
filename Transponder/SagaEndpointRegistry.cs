@@ -10,24 +10,22 @@ internal sealed class SagaEndpointRegistry
             StringComparer.OrdinalIgnoreCase);
 
         foreach (SagaRegistration registration in registrations)
+        foreach (SagaMessageRegistration message in registration.Registrations)
         {
-            foreach (SagaMessageRegistration message in registration.Registrations)
+            string addressKey = message.InputAddress.ToString();
+            if (!_registrations.TryGetValue(addressKey, out Dictionary<string, List<SagaMessageRegistration>>? byMessageType))
             {
-                string addressKey = message.InputAddress.ToString();
-                if (!_registrations.TryGetValue(addressKey, out Dictionary<string, List<SagaMessageRegistration>>? byMessageType))
-                {
-                    byMessageType = new Dictionary<string, List<SagaMessageRegistration>>(StringComparer.OrdinalIgnoreCase);
-                    _registrations[addressKey] = byMessageType;
-                }
-
-                if (!byMessageType.TryGetValue(message.MessageTypeName, out List<SagaMessageRegistration>? list))
-                {
-                    list = [];
-                    byMessageType[message.MessageTypeName] = list;
-                }
-
-                list.Add(message);
+                byMessageType = new Dictionary<string, List<SagaMessageRegistration>>(StringComparer.OrdinalIgnoreCase);
+                _registrations[addressKey] = byMessageType;
             }
+
+            if (!byMessageType.TryGetValue(message.MessageTypeName, out List<SagaMessageRegistration>? list))
+            {
+                list = [];
+                byMessageType[message.MessageTypeName] = list;
+            }
+
+            list.Add(message);
         }
     }
 
@@ -42,15 +40,9 @@ internal sealed class SagaEndpointRegistry
         registrations = Array.Empty<SagaMessageRegistration>();
 
         string addressKey = inputAddress.ToString();
-        if (!_registrations.TryGetValue(addressKey, out Dictionary<string, List<SagaMessageRegistration>>? byMessageType))
-        {
-            return false;
-        }
+        if (!_registrations.TryGetValue(addressKey, out Dictionary<string, List<SagaMessageRegistration>>? byMessageType)) return false;
 
-        if (!byMessageType.TryGetValue(messageTypeName, out List<SagaMessageRegistration>? list))
-        {
-            return false;
-        }
+        if (!byMessageType.TryGetValue(messageTypeName, out List<SagaMessageRegistration>? list)) return false;
 
         registrations = list;
         return true;

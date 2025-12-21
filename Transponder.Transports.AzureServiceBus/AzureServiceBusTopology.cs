@@ -27,12 +27,8 @@ public sealed class AzureServiceBusTopology : IAzureServiceBusTopology
             .Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         for (int i = 0; i < segments.Length - 1; i++)
-        {
             if (string.Equals(segments[i], "subscriptions", StringComparison.OrdinalIgnoreCase))
-            {
                 return segments[i + 1];
-            }
-        }
 
         return null;
     }

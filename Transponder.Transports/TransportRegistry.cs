@@ -17,10 +17,7 @@ public sealed class TransportRegistry : ITransportRegistry
     {
         ArgumentNullException.ThrowIfNull(factories);
 
-        foreach (ITransportFactory factory in factories)
-        {
-            Register(factory);
-        }
+        foreach (ITransportFactory factory in factories) Register(factory);
     }
 
     /// <inheritdoc />
@@ -31,10 +28,7 @@ public sealed class TransportRegistry : ITransportRegistry
     {
         ArgumentNullException.ThrowIfNull(factory);
 
-        if (_factories.Contains(factory))
-        {
-            return;
-        }
+        if (_factories.Contains(factory)) return;
 
         _factories.Add(factory);
     }
@@ -47,16 +41,12 @@ public sealed class TransportRegistry : ITransportRegistry
         string scheme = address.Scheme;
 
         foreach (ITransportFactory candidate in _factories)
-        {
-            foreach (string supported in candidate.SupportedSchemes)
+        foreach (string supported in candidate.SupportedSchemes)
+            if (string.Equals(supported, scheme, StringComparison.OrdinalIgnoreCase))
             {
-                if (string.Equals(supported, scheme, StringComparison.OrdinalIgnoreCase))
-                {
-                    factory = candidate;
-                    return true;
-                }
+                factory = candidate;
+                return true;
             }
-        }
 
         factory = null;
         return false;

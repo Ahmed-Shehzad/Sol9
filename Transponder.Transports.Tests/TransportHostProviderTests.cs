@@ -1,5 +1,4 @@
 using Transponder.Transports.Abstractions;
-using Transponder.Transports;
 
 namespace Transponder.Transports.Tests;
 
@@ -31,7 +30,7 @@ public sealed class TransportHostProviderTests
     }
 
     [Fact]
-    public void GetHost_Returns_Registered_Host()
+    public void GetHost_Returns_Registered_Host_By_Scheme()
     {
         var host = new StubTransportHost(new Uri("foo://host"));
         var provider = new TransportHostProvider([host]);
@@ -39,6 +38,30 @@ public sealed class TransportHostProviderTests
         ITransportHost resolved = provider.GetHost(new Uri("foo://other"));
 
         Assert.Same(host, resolved);
+    }
+
+    [Fact]
+    public void GetHost_Returns_Registered_Host_By_Authority()
+    {
+        var hostA = new StubTransportHost(new Uri("http://service-a:8080"));
+        var hostB = new StubTransportHost(new Uri("http://service-b:8080"));
+        var provider = new TransportHostProvider([hostA, hostB]);
+
+        ITransportHost resolved = provider.GetHost(new Uri("http://service-b:8080/requests/ping"));
+
+        Assert.Same(hostB, resolved);
+    }
+
+    [Fact]
+    public void GetHost_Prefers_Most_Specific_Base_Path()
+    {
+        var rootHost = new StubTransportHost(new Uri("http://service:8080"));
+        var apiHost = new StubTransportHost(new Uri("http://service:8080/api"));
+        var provider = new TransportHostProvider([rootHost, apiHost]);
+
+        ITransportHost resolved = provider.GetHost(new Uri("http://service:8080/api/requests/ping"));
+
+        Assert.Same(apiHost, resolved);
     }
 
     [Fact]

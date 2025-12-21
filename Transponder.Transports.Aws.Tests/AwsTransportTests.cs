@@ -1,5 +1,4 @@
 using Transponder.Transports.Abstractions;
-using Transponder.Transports.Aws;
 
 namespace Transponder.Transports.Aws.Tests;
 

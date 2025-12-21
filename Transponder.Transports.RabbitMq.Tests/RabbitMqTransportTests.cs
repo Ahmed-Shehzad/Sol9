@@ -1,5 +1,4 @@
 using Transponder.Transports.Abstractions;
-using Transponder.Transports.RabbitMq;
 
 namespace Transponder.Transports.RabbitMq.Tests;
 

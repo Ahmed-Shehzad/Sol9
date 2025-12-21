@@ -23,10 +23,7 @@ public sealed class OutboxMessage : IOutboxMessage
         string? contentType = null,
         DateTimeOffset? sentTime = null)
     {
-        if (messageId == Guid.Empty)
-        {
-            throw new ArgumentException("MessageId must be provided.", nameof(messageId));
-        }
+        if (messageId == Guid.Empty) throw new ArgumentException("MessageId must be provided.", nameof(messageId));
 
         MessageId = messageId;
         CorrelationId = correlationId;

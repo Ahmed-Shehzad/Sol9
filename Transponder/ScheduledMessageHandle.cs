@@ -11,10 +11,7 @@ public sealed class ScheduledMessageHandle : IScheduledMessageHandle
 
     public ScheduledMessageHandle(Guid tokenId, CancellationTokenSource cancellationTokenSource)
     {
-        if (tokenId == Guid.Empty)
-        {
-            throw new ArgumentException("TokenId must be provided.", nameof(tokenId));
-        }
+        if (tokenId == Guid.Empty) throw new ArgumentException("TokenId must be provided.", nameof(tokenId));
 
         TokenId = tokenId;
         _cancellationTokenSource = cancellationTokenSource
@@ -27,10 +24,7 @@ public sealed class ScheduledMessageHandle : IScheduledMessageHandle
     /// <inheritdoc />
     public Task CancelAsync(CancellationToken cancellationToken = default)
     {
-        if (!cancellationToken.IsCancellationRequested)
-        {
-            _cancellationTokenSource.Cancel();
-        }
+        if (!cancellationToken.IsCancellationRequested) _cancellationTokenSource.Cancel();
 
         return Task.CompletedTask;
     }

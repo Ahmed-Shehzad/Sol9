@@ -1,5 +1,5 @@
 using System.Text;
-using System.Linq;
+
 using Confluent.Kafka;
 using Transponder.Transports.Abstractions;
 

@@ -23,10 +23,7 @@ public sealed class KafkaHostSettings : TransportHostSettings, IKafkaHostSetting
     {
         ArgumentNullException.ThrowIfNull(bootstrapServers);
 
-        if (bootstrapServers.Count == 0)
-        {
-            throw new ArgumentException("At least one bootstrap server is required.", nameof(bootstrapServers));
-        }
+        if (bootstrapServers.Count == 0) throw new ArgumentException("At least one bootstrap server is required.", nameof(bootstrapServers));
 
         BootstrapServers = bootstrapServers;
         Topology = topology ?? new KafkaTopology();

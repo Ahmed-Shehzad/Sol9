@@ -18,9 +18,7 @@ internal sealed class InMemoryPublishTransport : IPublishTransport
         IReadOnlyCollection<ReceiveEndpoint> endpoints = _host.GetEndpoints();
 
         foreach (ReceiveEndpoint endpoint in endpoints)
-        {
             await endpoint.HandleAsync(message, _host.Address, endpoint.InputAddress, cancellationToken)
                 .ConfigureAwait(false);
-        }
     }
 }

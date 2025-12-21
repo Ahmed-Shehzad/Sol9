@@ -22,10 +22,8 @@ public sealed class RuleBuilder<T, TProperty> : IValidationRule<T>
         {
             TProperty value = _getter(obj);
             if (value is null)
-            {
                 return new ValidationFailure(
                     _propertyName, message ?? $"{_propertyName} must not be null.");
-            }
 
             return null;
         });
@@ -43,10 +41,8 @@ public sealed class RuleBuilder<T, TProperty> : IValidationRule<T>
                 (value is string s && string.IsNullOrWhiteSpace(s));
 
             if (isEmpty)
-            {
                 return new ValidationFailure(
                     _propertyName, message ?? $"{_propertyName} must not be empty.");
-            }
 
             return null;
         });
@@ -58,26 +54,10 @@ public sealed class RuleBuilder<T, TProperty> : IValidationRule<T>
         _rules.Add(obj =>
         {
             TProperty value = _getter(obj);
-            if (!predicate(value))
-            {
-                return new ValidationFailure(_propertyName, message);
-            }
-
-            return null;
+            return !predicate(value) ? new ValidationFailure(_propertyName, message) : null;
         });
         return this;
     }
 
-    public IEnumerable<ValidationFailure> Validate(T instance)
-    {
-        foreach (Func<T, ValidationFailure?> rule in _rules)
-        {
-            ValidationFailure? failure = rule(instance);
-            if (failure is not null)
-            {
-                yield return failure;
-            }
-        }
-    }
-
+    public IEnumerable<ValidationFailure> Validate(T instance) => _rules.Select(rule => rule(instance)).OfType<ValidationFailure>();
 }

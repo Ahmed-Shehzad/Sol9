@@ -17,10 +17,7 @@ public sealed class KafkaTopology : IKafkaTopology
     {
         ArgumentNullException.ThrowIfNull(address);
 
-        if (!string.IsNullOrWhiteSpace(address.AbsolutePath) && address.AbsolutePath != "/")
-        {
-            return address.AbsolutePath.Trim('/');
-        }
+        if (!string.IsNullOrWhiteSpace(address.AbsolutePath) && address.AbsolutePath != "/") return address.AbsolutePath.Trim('/');
 
         return address.Host;
     }

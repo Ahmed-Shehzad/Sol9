@@ -16,10 +16,7 @@ public sealed class InMemoryInboxStore : IInboxStore
         string consumerId,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(consumerId))
-        {
-            throw new ArgumentException("ConsumerId must be provided.", nameof(consumerId));
-        }
+        if (string.IsNullOrWhiteSpace(consumerId)) throw new ArgumentException("ConsumerId must be provided.", nameof(consumerId));
 
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -40,10 +37,7 @@ public sealed class InMemoryInboxStore : IInboxStore
         {
             (Guid MessageId, string ConsumerId) key = (state.MessageId, state.ConsumerId);
 
-            if (_states.ContainsKey(key))
-            {
-                return Task.FromResult(false);
-            }
+            if (_states.ContainsKey(key)) return Task.FromResult(false);
 
             _states[key] = InboxState.FromState(state);
             return Task.FromResult(true);
@@ -57,20 +51,13 @@ public sealed class InMemoryInboxStore : IInboxStore
         DateTimeOffset processedTime,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(consumerId))
-        {
-            throw new ArgumentException("ConsumerId must be provided.", nameof(consumerId));
-        }
+        if (string.IsNullOrWhiteSpace(consumerId)) throw new ArgumentException("ConsumerId must be provided.", nameof(consumerId));
 
         cancellationToken.ThrowIfCancellationRequested();
 
         lock (_sync)
-        {
             if (_states.TryGetValue((messageId, consumerId), out InboxState? state))
-            {
                 state.MarkProcessed(processedTime);
-            }
-        }
 
         return Task.CompletedTask;
     }

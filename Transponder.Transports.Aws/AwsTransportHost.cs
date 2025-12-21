@@ -10,8 +10,6 @@ using Polly;
 using Transponder.Transports.Abstractions;
 using Transponder.Transports.Aws.Abstractions;
 
-using MessageAttributeValue = Amazon.SimpleNotificationService.Model.MessageAttributeValue;
-
 namespace Transponder.Transports.Aws;
 
 /// <summary>

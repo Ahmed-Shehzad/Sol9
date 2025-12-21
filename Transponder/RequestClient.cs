@@ -107,9 +107,8 @@ internal sealed class RequestClient<TRequest> : IRequestClient<TRequest>
     {
         ITransportMessage message = context.Message;
 
-        if (!TryGetRequestId(message, out Guid requestId)) return Task.CompletedTask;
-
-        if (!_pendingRequests.TryGetValue(requestId, out PendingRequest? pending)) return Task.CompletedTask;
+        if (!TryGetRequestId(message, out Guid requestId) || !_pendingRequests.TryGetValue(requestId, out PendingRequest? pending))
+            return Task.CompletedTask;
 
         try
         {

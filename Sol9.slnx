@@ -1,5 +1,8 @@
 <Solution>
-  <Folder Name="/Clients/" />
+  <Folder Name="/Clients/">
+    <Project Path="WebApplication1/WebApplication1.csproj" />
+    <Project Path="WebApplication2/WebApplication2.csproj" />
+  </Folder>
   <Folder Name="/Intercessor/">
     <Project Path="Intercessor/Intercessor.csproj" />
   </Folder>
@@ -8,6 +11,7 @@
     <Project Path="Transponder.Persistence.EntityFramework.SqlServer\Transponder.Persistence.EntityFramework.SqlServer.csproj" />
     <Project Path="Transponder.Persistence.EntityFramework\Transponder.Persistence.EntityFramework.csproj" />
     <Project Path="Transponder.Persistence\Transponder.Persistence.csproj" />
+    <Project Path="Transponder.Samples/Transponder.Samples.csproj" />
     <Project Path="Transponder.Transports.Aws\Transponder.Transports.Aws.csproj" />
     <Project Path="Transponder.Transports.AzureServiceBus\Transponder.Transports.AzureServiceBus.csproj" />
     <Project Path="Transponder.Transports.Grpc\Transponder.Transports.Grpc.csproj" />

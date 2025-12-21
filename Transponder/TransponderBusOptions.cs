@@ -14,6 +14,8 @@ public sealed class TransponderBusOptions
 
     public Uri Address { get; }
 
+    public TransponderTransportRegistrationOptions TransportBuilder { get; } = new();
+
     public TimeSpan DefaultRequestTimeout { get; set; } = TimeSpan.FromSeconds(30);
 
     public Func<Type, Uri?>? RequestAddressResolver { get; set; }

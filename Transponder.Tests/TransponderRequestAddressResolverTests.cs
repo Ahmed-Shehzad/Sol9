@@ -1,5 +1,3 @@
-using Transponder;
-
 namespace Transponder.Tests;
 
 public sealed class TransponderRequestAddressResolverTests
@@ -27,6 +25,43 @@ public sealed class TransponderRequestAddressResolverTests
         Uri? resolved = resolver(typeof(TestMessage));
 
         Assert.Equal(new Uri("https://localhost/api/custom/sample-message"), resolved);
+    }
+
+    [Fact]
+    public void Create_With_Address_List_Defaults_To_First_Address()
+    {
+        var addresses = new[]
+        {
+            new Uri("https://host-a/api"),
+            new Uri("https://host-b/api")
+        };
+
+        Func<Type, Uri?> resolver = TransponderRequestAddressResolver.Create(addresses);
+
+        Uri? resolved = resolver(typeof(TestMessage));
+
+        Assert.Equal("host-a", resolved?.Host);
+    }
+
+    [Fact]
+    public void Create_With_Address_List_RoundRobins()
+    {
+        var addresses = new[]
+        {
+            new Uri("https://host-a/api"),
+            new Uri("https://host-b/api")
+        };
+
+        Func<Type, Uri?> resolver = TransponderRequestAddressResolver.Create(
+            addresses,
+            RemoteAddressStrategy.RoundRobin);
+
+        Uri? first = resolver(typeof(TestMessage));
+        Uri? second = resolver(typeof(TestMessage));
+
+        Assert.NotNull(first);
+        Assert.NotNull(second);
+        Assert.NotEqual(first?.Host, second?.Host);
     }
 
     [Fact]

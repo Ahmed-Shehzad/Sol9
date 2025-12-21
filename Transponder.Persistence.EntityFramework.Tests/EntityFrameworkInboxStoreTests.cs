@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Transponder.Persistence;
 
 namespace Transponder.Persistence.EntityFramework.Tests;
 

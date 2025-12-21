@@ -32,6 +32,9 @@ public static class Extensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(options);
 
+        if (options.TransportBuilder.HasRegistrations)
+            options.TransportBuilder.Apply(services);
+
         services.TryAddSingleton<IMessageSerializer, JsonMessageSerializer>();
 
         services.AddSingleton(sp =>

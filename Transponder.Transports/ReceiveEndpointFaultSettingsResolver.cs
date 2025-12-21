@@ -9,16 +9,10 @@ public static class ReceiveEndpointFaultSettingsResolver
         ArgumentNullException.ThrowIfNull(configuration);
 
         if (configuration is IReceiveEndpointConfigurationWithFaults withFaults &&
-            withFaults.FaultSettings is not null)
-        {
-            return withFaults.FaultSettings;
-        }
+            withFaults.FaultSettings is not null) return withFaults.FaultSettings;
 
         if (configuration.Settings.TryGetValue(ReceiveEndpointSettingsKeys.FaultSettings, out object? value) &&
-            value is ReceiveEndpointFaultSettings faultSettings)
-        {
-            return faultSettings;
-        }
+            value is ReceiveEndpointFaultSettings faultSettings) return faultSettings;
 
         return null;
     }
