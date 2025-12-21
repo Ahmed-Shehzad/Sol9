@@ -11,8 +11,8 @@ internal sealed record AzureServiceBusEntityAddress(string EntityPath, string? S
         ArgumentNullException.ThrowIfNull(address);
         ArgumentNullException.ThrowIfNull(topology);
 
-        var entityPath = topology.GetQueueName(address);
-        var subscriptionName = topology.GetSubscriptionName(address);
+        string entityPath = topology.GetQueueName(address);
+        string? subscriptionName = topology.GetSubscriptionName(address);
         return new AzureServiceBusEntityAddress(entityPath, subscriptionName);
     }
 }

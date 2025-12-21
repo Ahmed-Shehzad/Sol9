@@ -32,11 +32,14 @@ public class RedisCachingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequ
     /// <inheritdoc />
     public async Task<TResponse> HandleAsync(TRequest request, Func<Task<TResponse>> next, CancellationToken cancellationToken = default)
     {
-        var key = request.CacheKey;
+        string key = request.CacheKey;
 
-        if (string.IsNullOrWhiteSpace(key)) await next();
-        
-        var cachedData = await _redisDb.StringGetAsync(key);
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            await next();
+        }
+
+        RedisValue cachedData = await _redisDb.StringGetAsync(key);
         if (cachedData.HasValue)
         {
             _logger.LogTrace("[Redis] Cache hit for {Name}", typeof(TRequest).Name);
@@ -44,7 +47,7 @@ public class RedisCachingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequ
         }
 
         _logger.LogTrace("[Redis] Cache miss for {Name}", typeof(TRequest).Name);
-        var response = await next();
+        TResponse response = await next();
 
         await _redisDb.StringSetAsync(key, JsonSerializer.Serialize(response), _cacheDuration);
         return response;

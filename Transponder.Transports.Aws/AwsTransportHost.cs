@@ -10,6 +10,8 @@ using Polly;
 using Transponder.Transports.Abstractions;
 using Transponder.Transports.Aws.Abstractions;
 
+using MessageAttributeValue = Amazon.SimpleNotificationService.Model.MessageAttributeValue;
+
 namespace Transponder.Transports.Aws;
 
 /// <summary>
@@ -40,10 +42,7 @@ public sealed class AwsTransportHost : TransportHostBase
             UseHttp = !settings.UseTls
         };
 
-        if (!string.IsNullOrWhiteSpace(settings.ServiceUrl))
-        {
-            sqsConfig.ServiceURL = settings.ServiceUrl;
-        }
+        if (!string.IsNullOrWhiteSpace(settings.ServiceUrl)) sqsConfig.ServiceURL = settings.ServiceUrl;
 
         _sqsClient = credentials is null
             ? new AmazonSQSClient(sqsConfig)
@@ -55,10 +54,7 @@ public sealed class AwsTransportHost : TransportHostBase
             UseHttp = !settings.UseTls
         };
 
-        if (!string.IsNullOrWhiteSpace(settings.ServiceUrl))
-        {
-            snsConfig.ServiceURL = settings.ServiceUrl;
-        }
+        if (!string.IsNullOrWhiteSpace(settings.ServiceUrl)) snsConfig.ServiceURL = settings.ServiceUrl;
 
         _snsClient = credentials is null
             ? new AmazonSimpleNotificationServiceClient(snsConfig)
@@ -98,12 +94,9 @@ public sealed class AwsTransportHost : TransportHostBase
         return endpoint;
     }
 
-    public override async Task StopAsync(CancellationToken cancellationToken = default)
+    public async override Task StopAsync(CancellationToken cancellationToken = default)
     {
-        foreach (AwsReceiveEndpoint endpoint in _receiveEndpoints)
-        {
-            await endpoint.StopAsync(cancellationToken).ConfigureAwait(false);
-        }
+        foreach (AwsReceiveEndpoint endpoint in _receiveEndpoints) await endpoint.StopAsync(cancellationToken).ConfigureAwait(false);
 
         await base.StopAsync(cancellationToken).ConfigureAwait(false);
     }
@@ -114,17 +107,11 @@ public sealed class AwsTransportHost : TransportHostBase
 
     internal async Task<string> ResolveQueueUrlAsync(Uri address, CancellationToken cancellationToken)
     {
-        if (address.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
-        {
-            return address.ToString();
-        }
+        if (address.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase)) return address.ToString();
 
         string queueName = Settings.Topology.GetQueueName(address);
 
-        if (_queueUrls.TryGetValue(queueName, out string? cachedUrl))
-        {
-            return cachedUrl;
-        }
+        if (_queueUrls.TryGetValue(queueName, out string? cachedUrl)) return cachedUrl;
 
         GetQueueUrlResponse? response = await _sqsClient.GetQueueUrlAsync(queueName, cancellationToken).ConfigureAwait(false);
         _queueUrls[queueName] = response.QueueUrl;
@@ -135,10 +122,7 @@ public sealed class AwsTransportHost : TransportHostBase
     {
         string topicName = Settings.Topology.GetTopicName(messageType);
 
-        if (_topicArns.TryGetValue(topicName, out string? cachedArn))
-        {
-            return cachedArn;
-        }
+        if (_topicArns.TryGetValue(topicName, out string? cachedArn)) return cachedArn;
 
         CreateTopicResponse? response = await _snsClient.CreateTopicAsync(topicName, cancellationToken).ConfigureAwait(false);
         _topicArns[topicName] = response.TopicArn;
@@ -152,56 +136,43 @@ public sealed class AwsTransportHost : TransportHostBase
             StringComparer.OrdinalIgnoreCase);
 
         if (!string.IsNullOrWhiteSpace(message.ContentType))
-        {
             attributes["ContentType"] = new Amazon.SimpleNotificationService.Model.MessageAttributeValue
             {
                 DataType = "String",
                 StringValue = message.ContentType
             };
-        }
 
         if (!string.IsNullOrWhiteSpace(message.MessageType))
-        {
             attributes["MessageType"] = new Amazon.SimpleNotificationService.Model.MessageAttributeValue
             {
                 DataType = "String",
                 StringValue = message.MessageType
             };
-        }
 
         if (message.MessageId.HasValue)
-        {
             attributes["MessageId"] = new Amazon.SimpleNotificationService.Model.MessageAttributeValue
             {
                 DataType = "String",
                 StringValue = message.MessageId.Value.ToString("D")
             };
-        }
 
         if (message.CorrelationId.HasValue)
-        {
             attributes["CorrelationId"] = new Amazon.SimpleNotificationService.Model.MessageAttributeValue
             {
                 DataType = "String",
                 StringValue = message.CorrelationId.Value.ToString("D")
             };
-        }
 
         if (message.ConversationId.HasValue)
-        {
             attributes["ConversationId"] = new Amazon.SimpleNotificationService.Model.MessageAttributeValue
             {
                 DataType = "String",
                 StringValue = message.ConversationId.Value.ToString("D")
             };
-        }
 
         foreach (KeyValuePair<string, object?> header in message.Headers)
         {
-            if (header.Value is null)
-            {
-                continue;
-            }
+            if (header.Value is null) continue;
 
             attributes[header.Key] = new Amazon.SimpleNotificationService.Model.MessageAttributeValue
             {
@@ -213,7 +184,7 @@ public sealed class AwsTransportHost : TransportHostBase
         return attributes;
     }
 
-    public override async ValueTask DisposeAsync()
+    public async override ValueTask DisposeAsync()
     {
         await StopAsync().ConfigureAwait(false);
         _sqsClient.Dispose();
@@ -226,12 +197,10 @@ public sealed class AwsTransportHost : TransportHostBase
             !string.IsNullOrWhiteSpace(settings.SecretAccessKey))
         {
             if (!string.IsNullOrWhiteSpace(settings.SessionToken))
-            {
                 return new SessionAWSCredentials(
                     settings.AccessKeyId,
                     settings.SecretAccessKey,
                     settings.SessionToken);
-            }
 
             return new BasicAWSCredentials(settings.AccessKeyId, settings.SecretAccessKey);
         }

@@ -17,7 +17,7 @@ internal sealed class InMemorySendTransport : ISendTransport
     {
         ArgumentNullException.ThrowIfNull(message);
 
-        if (!_host.TryGetEndpoint(_address, out var endpoint))
+        if (!_host.TryGetEndpoint(_address, out ReceiveEndpoint endpoint))
         {
             throw new InvalidOperationException($"No receive endpoint configured for '{_address}'.");
         }

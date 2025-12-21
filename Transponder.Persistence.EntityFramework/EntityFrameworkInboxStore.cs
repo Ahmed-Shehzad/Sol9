@@ -21,10 +21,7 @@ public sealed class EntityFrameworkInboxStore : IInboxStore
         string consumerId,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(consumerId))
-        {
-            throw new ArgumentException("ConsumerId must be provided.", nameof(consumerId));
-        }
+        if (string.IsNullOrWhiteSpace(consumerId)) throw new ArgumentException("ConsumerId must be provided.", nameof(consumerId));
 
         return await _context.Set<InboxStateEntity>()
             .AsNoTracking()
@@ -39,17 +36,14 @@ public sealed class EntityFrameworkInboxStore : IInboxStore
     {
         ArgumentNullException.ThrowIfNull(state);
 
-        var exists = await _context.Set<InboxStateEntity>()
+        bool exists = await _context.Set<InboxStateEntity>()
             .AsNoTracking()
             .AnyAsync(
                 existing => existing.MessageId == state.MessageId && existing.ConsumerId == state.ConsumerId,
                 cancellationToken)
             .ConfigureAwait(false);
 
-        if (exists)
-        {
-            return false;
-        }
+        if (exists) return false;
 
         var entity = InboxStateEntity.FromState(state);
 
@@ -67,21 +61,15 @@ public sealed class EntityFrameworkInboxStore : IInboxStore
         DateTimeOffset processedTime,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(consumerId))
-        {
-            throw new ArgumentException("ConsumerId must be provided.", nameof(consumerId));
-        }
+        if (string.IsNullOrWhiteSpace(consumerId)) throw new ArgumentException("ConsumerId must be provided.", nameof(consumerId));
 
-        var state = await _context.Set<InboxStateEntity>()
+        InboxStateEntity? state = await _context.Set<InboxStateEntity>()
             .FirstOrDefaultAsync(
                 entry => entry.MessageId == messageId && entry.ConsumerId == consumerId,
                 cancellationToken)
             .ConfigureAwait(false);
 
-        if (state == null)
-        {
-            return;
-        }
+        if (state == null) return;
 
         state.ProcessedTime = processedTime;
     }

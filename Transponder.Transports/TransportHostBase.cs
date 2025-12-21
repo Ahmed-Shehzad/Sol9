@@ -27,10 +27,7 @@ public abstract class TransportHostBase : ITransportHost
     {
         var endpoints = new List<ReceiveEndpoint>(_endpoints.Values);
 
-        foreach (var endpoint in endpoints)
-        {
-            await endpoint.StopAsync(cancellationToken).ConfigureAwait(false);
-        }
+        foreach (ReceiveEndpoint endpoint in endpoints) await endpoint.StopAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -41,10 +38,8 @@ public abstract class TransportHostBase : ITransportHost
         var endpoint = new ReceiveEndpoint(configuration);
 
         if (!_endpoints.TryAdd(configuration.InputAddress, endpoint))
-        {
             throw new InvalidOperationException(
                 $"A receive endpoint is already registered for '{configuration.InputAddress}'.");
-        }
 
         return endpoint;
     }

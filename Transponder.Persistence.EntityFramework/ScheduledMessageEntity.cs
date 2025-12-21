@@ -76,8 +76,8 @@ public sealed class ScheduledMessageEntity : IScheduledMessage
 
         try
         {
-            var parsed = JsonSerializer.Deserialize<Dictionary<string, object?>>(_headers, SerializerOptions)
-                ?? new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, object?> parsed = JsonSerializer.Deserialize<Dictionary<string, object?>>(_headers, SerializerOptions)
+                                                 ?? new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
             _headersCache = new Dictionary<string, object?>(parsed, StringComparer.OrdinalIgnoreCase);
         }

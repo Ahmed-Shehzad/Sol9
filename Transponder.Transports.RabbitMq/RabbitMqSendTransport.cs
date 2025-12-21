@@ -18,10 +18,10 @@ internal sealed class RabbitMqSendTransport : ISendTransport
     {
         ArgumentNullException.ThrowIfNull(message);
 
-        using var channel = _connection.CreateModel();
+        using IModel? channel = _connection.CreateModel();
         channel.QueueDeclare(_queueName, durable: true, exclusive: false, autoDelete: false);
 
-        var properties = channel.CreateBasicProperties();
+        IBasicProperties? properties = channel.CreateBasicProperties();
         properties.ContentType = message.ContentType;
         properties.MessageId = message.MessageId?.ToString();
         properties.CorrelationId = message.CorrelationId?.ToString();

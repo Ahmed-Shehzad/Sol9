@@ -21,11 +21,8 @@ public sealed class InMemoryMessageScheduler : IMessageScheduler
         CancellationToken cancellationToken = default)
         where TMessage : class, IMessage
     {
-        var delay = scheduledTime - DateTimeOffset.UtcNow;
-        if (delay < TimeSpan.Zero)
-        {
-            delay = TimeSpan.Zero;
-        }
+        TimeSpan delay = scheduledTime - DateTimeOffset.UtcNow;
+        if (delay < TimeSpan.Zero) delay = TimeSpan.Zero;
 
         return ScheduleSendAsync(destinationAddress, message, delay, cancellationToken);
     }
@@ -36,11 +33,8 @@ public sealed class InMemoryMessageScheduler : IMessageScheduler
         CancellationToken cancellationToken = default)
         where TMessage : class, IMessage
     {
-        var delay = scheduledTime - DateTimeOffset.UtcNow;
-        if (delay < TimeSpan.Zero)
-        {
-            delay = TimeSpan.Zero;
-        }
+        TimeSpan delay = scheduledTime - DateTimeOffset.UtcNow;
+        if (delay < TimeSpan.Zero) delay = TimeSpan.Zero;
 
         return SchedulePublishAsync(message, delay, cancellationToken);
     }
@@ -82,22 +76,16 @@ public sealed class InMemoryMessageScheduler : IMessageScheduler
         return Task.FromResult<IScheduledMessageHandle>(handle);
     }
 
-    private static async Task ExecuteAsync(
+    private async static Task ExecuteAsync(
         TimeSpan delay,
         CancellationToken cancellationToken,
         Func<Task> operation)
     {
         try
         {
-            if (delay > TimeSpan.Zero)
-            {
-                await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
-            }
+            if (delay > TimeSpan.Zero) await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
 
-            if (!cancellationToken.IsCancellationRequested)
-            {
-                await operation().ConfigureAwait(false);
-            }
+            if (!cancellationToken.IsCancellationRequested) await operation().ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {

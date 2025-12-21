@@ -30,10 +30,7 @@ internal sealed class SagaReceiveEndpointGroup : IReceiveEndpoint
 
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
-        if (_started)
-        {
-            return;
-        }
+        if (_started) return;
 
         _started = true;
         foreach (Uri inputAddress in _registry.GetInputAddresses())
@@ -53,18 +50,12 @@ internal sealed class SagaReceiveEndpointGroup : IReceiveEndpoint
             _endpoints.Add(endpoint);
         }
 
-        foreach (IReceiveEndpoint endpoint in _endpoints)
-        {
-            await endpoint.StartAsync(cancellationToken).ConfigureAwait(false);
-        }
+        foreach (IReceiveEndpoint endpoint in _endpoints) await endpoint.StartAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public async Task StopAsync(CancellationToken cancellationToken = default)
     {
-        if (!_started)
-        {
-            return;
-        }
+        if (!_started) return;
 
         foreach (IReceiveEndpoint endpoint in _endpoints)
         {

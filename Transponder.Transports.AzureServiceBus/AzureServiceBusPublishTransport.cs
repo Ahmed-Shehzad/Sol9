@@ -10,10 +10,7 @@ internal sealed class AzureServiceBusPublishTransport : IPublishTransport
     public AzureServiceBusPublishTransport(ServiceBusClient client, string topicName)
     {
         ArgumentNullException.ThrowIfNull(client);
-        if (string.IsNullOrWhiteSpace(topicName))
-        {
-            throw new ArgumentException("Topic name must be provided.", nameof(topicName));
-        }
+        if (string.IsNullOrWhiteSpace(topicName)) throw new ArgumentException("Topic name must be provided.", nameof(topicName));
 
         _sender = client.CreateSender(topicName);
     }
@@ -29,22 +26,13 @@ internal sealed class AzureServiceBusPublishTransport : IPublishTransport
             CorrelationId = message.CorrelationId?.ToString()
         };
 
-        if (!string.IsNullOrWhiteSpace(message.MessageType))
-        {
-            serviceBusMessage.ApplicationProperties["MessageType"] = message.MessageType;
-        }
+        if (!string.IsNullOrWhiteSpace(message.MessageType)) serviceBusMessage.ApplicationProperties["MessageType"] = message.MessageType;
 
-        if (message.ConversationId.HasValue)
-        {
-            serviceBusMessage.ApplicationProperties["ConversationId"] = message.ConversationId.Value.ToString("D");
-        }
+        if (message.ConversationId.HasValue) serviceBusMessage.ApplicationProperties["ConversationId"] = message.ConversationId.Value.ToString("D");
 
         foreach (KeyValuePair<string, object?> header in message.Headers)
         {
-            if (header.Value is null)
-            {
-                continue;
-            }
+            if (header.Value is null) continue;
 
             serviceBusMessage.ApplicationProperties[header.Key] = header.Value;
         }

@@ -20,12 +20,9 @@ internal static class GrpcTransportMessageMapper
             SentTimeUnixMs = message.SentTime?.ToUnixTimeMilliseconds() ?? 0
         };
 
-        foreach (var header in message.Headers)
+        foreach (KeyValuePair<string, object?> header in message.Headers)
         {
-            if (header.Value is null)
-            {
-                continue;
-            }
+            if (header.Value is null) continue;
 
             proto.Headers[header.Key] = header.Value.ToString() ?? string.Empty;
         }
@@ -36,24 +33,18 @@ internal static class GrpcTransportMessageMapper
     public static ITransportMessage FromProto(GrpcTransportMessage message)
     {
         var headers = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
-        foreach (var header in message.Headers)
-        {
-            headers[header.Key] = header.Value;
-        }
+        foreach (KeyValuePair<string, string> header in message.Headers) headers[header.Key] = header.Value;
 
         DateTimeOffset? sentTime = null;
-        if (message.SentTimeUnixMs > 0)
-        {
-            sentTime = DateTimeOffset.FromUnixTimeMilliseconds(message.SentTimeUnixMs);
-        }
+        if (message.SentTimeUnixMs > 0) sentTime = DateTimeOffset.FromUnixTimeMilliseconds(message.SentTimeUnixMs);
 
         return new TransportMessage(
             message.Body.ToByteArray(),
             string.IsNullOrWhiteSpace(message.ContentType) ? null : message.ContentType,
             headers,
-            Guid.TryParse(message.MessageId, out var messageId) ? messageId : null,
-            Guid.TryParse(message.CorrelationId, out var correlationId) ? correlationId : null,
-            Guid.TryParse(message.ConversationId, out var conversationId) ? conversationId : null,
+            Guid.TryParse(message.MessageId, out Guid messageId) ? messageId : null,
+            Guid.TryParse(message.CorrelationId, out Guid correlationId) ? correlationId : null,
+            Guid.TryParse(message.ConversationId, out Guid conversationId) ? conversationId : null,
             string.IsNullOrWhiteSpace(message.MessageType) ? null : message.MessageType,
             sentTime);
     }

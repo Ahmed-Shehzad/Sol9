@@ -11,8 +11,8 @@ public abstract class AbstractValidator<T> : IValidator<T>
     protected RuleBuilder<T, TProperty> RuleFor<TProperty>(
         Expression<Func<T, TProperty>> expression)
     {
-        var propertyName = GetPropertyName(expression) ?? "Unknown";
-        var getter = expression.Compile();
+        string propertyName = GetPropertyName(expression) ?? "Unknown";
+        Func<T, TProperty> getter = expression.Compile();
 
         var builder = new RuleBuilder<T, TProperty>(propertyName, getter);
         _rules.Add(builder);
@@ -22,8 +22,8 @@ public abstract class AbstractValidator<T> : IValidator<T>
     protected AsyncRuleBuilder<T, TProperty> RuleForAsync<TProperty>(
         Expression<Func<T, TProperty>> expression)
     {
-        var propertyName = GetPropertyName(expression) ?? "Unknown";
-        var getter = expression.Compile();
+        string propertyName = GetPropertyName(expression) ?? "Unknown";
+        Func<T, TProperty> getter = expression.Compile();
 
         var builder = new AsyncRuleBuilder<T, TProperty>(propertyName, getter);
         _asyncRules.Add(builder);
@@ -34,10 +34,7 @@ public abstract class AbstractValidator<T> : IValidator<T>
     {
         var result = new ValidationResult();
 
-        foreach (var rule in _rules)
-        {
-            result.Errors.AddRange(rule.Validate(instance));
-        }
+        foreach (IValidationRule<T> rule in _rules) result.Errors.AddRange(rule.Validate(instance));
 
         return result;
     }
@@ -46,20 +43,14 @@ public abstract class AbstractValidator<T> : IValidator<T>
     {
         var result = new ValidationResult();
 
-        foreach (var rule in _rules)
-        {
-            result.Errors.AddRange(rule.Validate(instance));
-        }
+        foreach (IValidationRule<T> rule in _rules) result.Errors.AddRange(rule.Validate(instance));
 
         if (_asyncRules.Count == 0) return result;
 
-        var failures = await Task.WhenAll(_asyncRules.Select(r => r.ValidateAsync(instance, ct)));
-        
-        foreach (var failureGroup in failures)
-        {
-            result.Errors.AddRange(failureGroup);
-        }
-        
+        IEnumerable<ValidationFailure>[] failures = await Task.WhenAll(_asyncRules.Select(r => r.ValidateAsync(instance, ct)));
+
+        foreach (IEnumerable<ValidationFailure> failureGroup in failures) result.Errors.AddRange(failureGroup);
+
         return result;
     }
 

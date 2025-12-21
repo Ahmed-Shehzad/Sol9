@@ -10,10 +10,7 @@ internal sealed class AzureServiceBusSendTransport : ISendTransport
     public AzureServiceBusSendTransport(ServiceBusClient client, string entityPath)
     {
         ArgumentNullException.ThrowIfNull(client);
-        if (string.IsNullOrWhiteSpace(entityPath))
-        {
-            throw new ArgumentException("Entity path must be provided.", nameof(entityPath));
-        }
+        if (string.IsNullOrWhiteSpace(entityPath)) throw new ArgumentException("Entity path must be provided.", nameof(entityPath));
 
         _sender = client.CreateSender(entityPath);
     }
@@ -29,22 +26,13 @@ internal sealed class AzureServiceBusSendTransport : ISendTransport
             CorrelationId = message.CorrelationId?.ToString()
         };
 
-        if (!string.IsNullOrWhiteSpace(message.MessageType))
-        {
-            serviceBusMessage.ApplicationProperties["MessageType"] = message.MessageType;
-        }
+        if (!string.IsNullOrWhiteSpace(message.MessageType)) serviceBusMessage.ApplicationProperties["MessageType"] = message.MessageType;
 
-        if (message.ConversationId.HasValue)
-        {
-            serviceBusMessage.ApplicationProperties["ConversationId"] = message.ConversationId.Value.ToString("D");
-        }
+        if (message.ConversationId.HasValue) serviceBusMessage.ApplicationProperties["ConversationId"] = message.ConversationId.Value.ToString("D");
 
         foreach (KeyValuePair<string, object?> header in message.Headers)
         {
-            if (header.Value is null)
-            {
-                continue;
-            }
+            if (header.Value is null) continue;
 
             serviceBusMessage.ApplicationProperties[header.Key] = header.Value;
         }

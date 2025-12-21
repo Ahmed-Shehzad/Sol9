@@ -21,10 +21,7 @@ public sealed class AzureServiceBusTransportHost : TransportHostBase
         Settings = settings;
         _resilienceOptions = (settings as ITransportHostResilienceSettings)?.ResilienceOptions;
         _resiliencePipeline = TransportResiliencePipeline.Create(_resilienceOptions);
-        if (string.IsNullOrWhiteSpace(settings.ConnectionString))
-        {
-            throw new InvalidOperationException("Azure Service Bus connection string must be provided.");
-        }
+        if (string.IsNullOrWhiteSpace(settings.ConnectionString)) throw new InvalidOperationException("Azure Service Bus connection string must be provided.");
 
         var options = new ServiceBusClientOptions
         {
@@ -76,17 +73,14 @@ public sealed class AzureServiceBusTransportHost : TransportHostBase
         return endpoint;
     }
 
-    public override async Task StopAsync(CancellationToken cancellationToken = default)
+    public async override Task StopAsync(CancellationToken cancellationToken = default)
     {
-        foreach (AzureServiceBusReceiveEndpoint endpoint in _receiveEndpoints)
-        {
-            await endpoint.StopAsync(cancellationToken).ConfigureAwait(false);
-        }
+        foreach (AzureServiceBusReceiveEndpoint endpoint in _receiveEndpoints) await endpoint.StopAsync(cancellationToken).ConfigureAwait(false);
 
         await base.StopAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public override async ValueTask DisposeAsync()
+    public async override ValueTask DisposeAsync()
     {
         await StopAsync().ConfigureAwait(false);
         await _client.DisposeAsync().ConfigureAwait(false);

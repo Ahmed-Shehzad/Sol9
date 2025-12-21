@@ -44,10 +44,7 @@ internal sealed class KafkaReceiveEndpoint : IReceiveEndpoint
 
     public Task StartAsync(CancellationToken cancellationToken = default)
     {
-        if (_loop is not null)
-        {
-            return Task.CompletedTask;
-        }
+        if (_loop is not null) return Task.CompletedTask;
 
         _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         _loop = Task.Run(() => ReceiveLoopAsync(_cts.Token), _cts.Token);
@@ -56,16 +53,10 @@ internal sealed class KafkaReceiveEndpoint : IReceiveEndpoint
 
     public async Task StopAsync(CancellationToken cancellationToken = default)
     {
-        if (_cts is null)
-        {
-            return;
-        }
+        if (_cts is null) return;
 
         await _cts.CancelAsync();
-        if (_loop is not null)
-        {
-            await _loop.ConfigureAwait(false);
-        }
+        if (_loop is not null) await _loop.ConfigureAwait(false);
 
         _cts.Dispose();
         _cts = null;
@@ -88,10 +79,7 @@ internal sealed class KafkaReceiveEndpoint : IReceiveEndpoint
             while (!cancellationToken.IsCancellationRequested)
             {
                 ConsumeResult<string, byte[]>? result = consumer.Consume(cancellationToken);
-                if (result?.Message is null)
-                {
-                    continue;
-                }
+                if (result?.Message is null) continue;
 
                 Dictionary<string, object?> headers = KafkaTransportHeaders.ReadHeaders(result.Message.Headers);
                 string? contentType = headers.TryGetValue("ContentType", out object? ct) ? ct as string : null;
@@ -135,10 +123,7 @@ internal sealed class KafkaReceiveEndpoint : IReceiveEndpoint
                 }
                 catch
                 {
-                    if (_deadLetterTransport is null)
-                    {
-                        continue;
-                    }
+                    if (_deadLetterTransport is null) continue;
 
                     try
                     {

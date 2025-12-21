@@ -37,10 +37,7 @@ internal sealed class AwsReceiveEndpoint : IReceiveEndpoint
 
     public Task StartAsync(CancellationToken cancellationToken = default)
     {
-        if (_loop is not null)
-        {
-            return Task.CompletedTask;
-        }
+        if (_loop is not null) return Task.CompletedTask;
 
         _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         _loop = Task.Run(() => ReceiveLoopAsync(_cts.Token), _cts.Token);
@@ -49,17 +46,11 @@ internal sealed class AwsReceiveEndpoint : IReceiveEndpoint
 
     public async Task StopAsync(CancellationToken cancellationToken = default)
     {
-        if (_cts is null)
-        {
-            return;
-        }
+        if (_cts is null) return;
 
         await _cts.CancelAsync();
 
-        if (_loop is not null)
-        {
-            await _loop.ConfigureAwait(false);
-        }
+        if (_loop is not null) await _loop.ConfigureAwait(false);
 
         _cts.Dispose();
         _cts = null;
@@ -70,7 +61,7 @@ internal sealed class AwsReceiveEndpoint : IReceiveEndpoint
 
     private async Task ReceiveLoopAsync(CancellationToken cancellationToken)
     {
-        var queueUrl = await _host.ResolveQueueUrlAsync(_inputAddress, cancellationToken).ConfigureAwait(false);
+        string queueUrl = await _host.ResolveQueueUrlAsync(_inputAddress, cancellationToken).ConfigureAwait(false);
 
         while (!cancellationToken.IsCancellationRequested)
         {
@@ -82,12 +73,12 @@ internal sealed class AwsReceiveEndpoint : IReceiveEndpoint
                 MessageAttributeNames = ["All"]
             };
 
-            var response = await _host.SqsClient.ReceiveMessageAsync(request, cancellationToken)
+            ReceiveMessageResponse? response = await _host.SqsClient.ReceiveMessageAsync(request, cancellationToken)
                 .ConfigureAwait(false);
 
-            foreach (var message in response.Messages)
+            foreach (Message? message in response.Messages)
             {
-                var transportMessage = CreateTransportMessage(message);
+                ITransportMessage transportMessage = CreateTransportMessage(message);
                 var context = new AwsReceiveContext(
                     transportMessage,
                     _host.Address,
@@ -105,10 +96,7 @@ internal sealed class AwsReceiveEndpoint : IReceiveEndpoint
                 }
                 catch
                 {
-                    if (_deadLetterTransport is null)
-                    {
-                        continue;
-                    }
+                    if (_deadLetterTransport is null) continue;
 
                     try
                     {
@@ -130,40 +118,33 @@ internal sealed class AwsReceiveEndpoint : IReceiveEndpoint
     {
         var headers = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var attribute in message.MessageAttributes)
-        {
-            headers[attribute.Key] = attribute.Value.StringValue;
-        }
+        foreach (KeyValuePair<string, MessageAttributeValue> attribute in message.MessageAttributes) headers[attribute.Key] = attribute.Value.StringValue;
 
-        var contentType = headers.TryGetValue("ContentType", out var ct) ? ct as string : null;
+        string? contentType = headers.TryGetValue("ContentType", out object? ct) ? ct as string : null;
         headers.Remove("ContentType");
 
-        var messageType = headers.TryGetValue("MessageType", out var mt) ? mt as string : null;
+        string? messageType = headers.TryGetValue("MessageType", out object? mt) ? mt as string : null;
         headers.Remove("MessageType");
 
         Guid? correlationId = null;
-        if (headers.TryGetValue("CorrelationId", out var corr) &&
-            Guid.TryParse(corr as string, out var corrId))
-        {
-            correlationId = corrId;
-        }
+        if (headers.TryGetValue("CorrelationId", out object? corr) &&
+            Guid.TryParse(corr as string, out Guid corrId)) correlationId = corrId;
+
         headers.Remove("CorrelationId");
 
         Guid? conversationId = null;
-        if (headers.TryGetValue("ConversationId", out var conv) &&
-            Guid.TryParse(conv as string, out var convId))
-        {
-            conversationId = convId;
-        }
+        if (headers.TryGetValue("ConversationId", out object? conv) &&
+            Guid.TryParse(conv as string, out Guid convId)) conversationId = convId;
+
         headers.Remove("ConversationId");
 
-        var bodyBytes = DecodeBody(message.Body);
+        ReadOnlyMemory<byte> bodyBytes = DecodeBody(message.Body);
 
         return new TransportMessage(
             bodyBytes,
             contentType,
             headers,
-            Guid.TryParse(message.MessageId, out var parsedMessageId) ? parsedMessageId : null,
+            Guid.TryParse(message.MessageId, out Guid parsedMessageId) ? parsedMessageId : null,
             correlationId,
             conversationId,
             messageType,

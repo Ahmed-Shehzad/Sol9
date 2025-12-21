@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+
 using Transponder.Persistence.Abstractions;
 using Transponder.Persistence.EntityFramework.Abstractions;
 
@@ -24,9 +26,9 @@ public sealed class EntityFrameworkStorageSessionFactory<TContext> : IStorageSes
     /// <inheritdoc />
     public async Task<IStorageSession> CreateSessionAsync(CancellationToken cancellationToken = default)
     {
-        var context = _contextFactory.CreateDbContext();
+        TContext context = _contextFactory.CreateDbContext();
 
-        var transaction = _useTransaction
+        IDbContextTransaction? transaction = _useTransaction
             ? await context.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false)
             : null;
 

@@ -20,10 +20,12 @@ public sealed class RuleBuilder<T, TProperty> : IValidationRule<T>
     {
         _rules.Add(obj =>
         {
-            var value = _getter(obj);
+            TProperty value = _getter(obj);
             if (value is null)
+            {
                 return new ValidationFailure(
                     _propertyName, message ?? $"{_propertyName} must not be null.");
+            }
 
             return null;
         });
@@ -34,15 +36,17 @@ public sealed class RuleBuilder<T, TProperty> : IValidationRule<T>
     {
         _rules.Add(obj =>
         {
-            var value = _getter(obj);
+            TProperty value = _getter(obj);
 
-            var isEmpty =
+            bool isEmpty =
                 value is null ||
                 (value is string s && string.IsNullOrWhiteSpace(s));
 
             if (isEmpty)
+            {
                 return new ValidationFailure(
                     _propertyName, message ?? $"{_propertyName} must not be empty.");
+            }
 
             return null;
         });
@@ -53,7 +57,7 @@ public sealed class RuleBuilder<T, TProperty> : IValidationRule<T>
     {
         _rules.Add(obj =>
         {
-            var value = _getter(obj);
+            TProperty value = _getter(obj);
             if (!predicate(value))
             {
                 return new ValidationFailure(_propertyName, message);
@@ -66,10 +70,13 @@ public sealed class RuleBuilder<T, TProperty> : IValidationRule<T>
 
     public IEnumerable<ValidationFailure> Validate(T instance)
     {
-        foreach (var rule in _rules)
+        foreach (Func<T, ValidationFailure?> rule in _rules)
         {
-            var failure = rule(instance);
-            if (failure is not null) yield return failure;
+            ValidationFailure? failure = rule(instance);
+            if (failure is not null)
+            {
+                yield return failure;
+            }
         }
     }
 

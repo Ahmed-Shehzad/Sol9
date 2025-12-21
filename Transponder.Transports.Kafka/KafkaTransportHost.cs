@@ -64,17 +64,14 @@ public sealed class KafkaTransportHost : TransportHostBase
         return endpoint;
     }
 
-    public override async Task StopAsync(CancellationToken cancellationToken = default)
+    public async override Task StopAsync(CancellationToken cancellationToken = default)
     {
-        foreach (KafkaReceiveEndpoint endpoint in _receiveEndpoints)
-        {
-            await endpoint.StopAsync(cancellationToken).ConfigureAwait(false);
-        }
+        foreach (KafkaReceiveEndpoint endpoint in _receiveEndpoints) await endpoint.StopAsync(cancellationToken).ConfigureAwait(false);
 
         await base.StopAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public override async ValueTask DisposeAsync()
+    public async override ValueTask DisposeAsync()
     {
         await StopAsync().ConfigureAwait(false);
         _producer.Flush(TimeSpan.FromSeconds(5));
@@ -113,36 +110,21 @@ public sealed class KafkaTransportHost : TransportHostBase
     private static void ApplySecuritySettings(ClientConfig config, IKafkaHostSettings settings)
     {
         if (!string.IsNullOrWhiteSpace(settings.SecurityProtocol) &&
-            Enum.TryParse<SecurityProtocol>(settings.SecurityProtocol, true, out SecurityProtocol securityProtocol))
-        {
-            config.SecurityProtocol = securityProtocol;
-        }
+            Enum.TryParse<SecurityProtocol>(settings.SecurityProtocol, true, out SecurityProtocol securityProtocol)) config.SecurityProtocol = securityProtocol;
 
         if (!string.IsNullOrWhiteSpace(settings.SaslMechanism) &&
-            Enum.TryParse<SaslMechanism>(settings.SaslMechanism, true, out SaslMechanism saslMechanism))
-        {
-            config.SaslMechanism = saslMechanism;
-        }
+            Enum.TryParse<SaslMechanism>(settings.SaslMechanism, true, out SaslMechanism saslMechanism)) config.SaslMechanism = saslMechanism;
 
-        if (!string.IsNullOrWhiteSpace(settings.SaslUsername))
-        {
-            config.SaslUsername = settings.SaslUsername;
-        }
+        if (!string.IsNullOrWhiteSpace(settings.SaslUsername)) config.SaslUsername = settings.SaslUsername;
 
-        if (!string.IsNullOrWhiteSpace(settings.SaslPassword))
-        {
-            config.SaslPassword = settings.SaslPassword;
-        }
+        if (!string.IsNullOrWhiteSpace(settings.SaslPassword)) config.SaslPassword = settings.SaslPassword;
     }
 
     private static void ApplyCustomSettings(ClientConfig config, IReadOnlyDictionary<string, object?> settings)
     {
         foreach (KeyValuePair<string, object?> entry in settings)
         {
-            if (entry.Value is null)
-            {
-                continue;
-            }
+            if (entry.Value is null) continue;
 
             config.Set(entry.Key, entry.Value.ToString());
         }

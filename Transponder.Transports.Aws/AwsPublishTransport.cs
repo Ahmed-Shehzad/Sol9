@@ -18,7 +18,7 @@ internal sealed class AwsPublishTransport : IPublishTransport
     {
         ArgumentNullException.ThrowIfNull(message);
 
-        var topicArn = await _host.ResolveTopicArnAsync(_messageType, cancellationToken).ConfigureAwait(false);
+        string topicArn = await _host.ResolveTopicArnAsync(_messageType, cancellationToken).ConfigureAwait(false);
         var request = new PublishRequest
         {
             TopicArn = topicArn,

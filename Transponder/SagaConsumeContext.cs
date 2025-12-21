@@ -32,6 +32,11 @@ public sealed class SagaConsumeContext<TState, TMessage> : ISagaConsumeContext<T
 
     public bool IsCompleted { get; private set; }
 
+    public Task<SagaStatus> ExecuteStepsAsync(
+        IEnumerable<SagaStep<TState>> steps,
+        CancellationToken cancellationToken = default)
+        => SagaExecution.ExecuteAsync(Style, Saga, steps, cancellationToken);
+
     public void MarkCompleted() => IsCompleted = true;
 
     public Guid? MessageId => _consumeContext.MessageId;

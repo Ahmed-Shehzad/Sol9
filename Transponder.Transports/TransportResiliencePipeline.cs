@@ -12,44 +12,26 @@ public static class TransportResiliencePipeline
 {
     public static ResiliencePipeline Create(TransportResilienceOptions? options)
     {
-        if (options is null || (!options.EnableRetry && !options.EnableCircuitBreaker))
-        {
-            return ResiliencePipeline.Empty;
-        }
+        if (options is null || (!options.EnableRetry && !options.EnableCircuitBreaker)) return ResiliencePipeline.Empty;
 
         var builder = new ResiliencePipelineBuilder();
 
-        if (options.EnableCircuitBreaker)
-        {
-            builder.AddCircuitBreaker(CreateCircuitBreakerOptions(options.CircuitBreaker));
-        }
+        if (options.EnableCircuitBreaker) builder.AddCircuitBreaker(CreateCircuitBreakerOptions(options.CircuitBreaker));
 
-        if (options.EnableRetry)
-        {
-            builder.AddRetry(CreateRetryOptions(options.Retry));
-        }
+        if (options.EnableRetry) builder.AddRetry(CreateRetryOptions(options.Retry));
 
         return builder.Build();
     }
 
     public static ResiliencePipeline<HttpResponseMessage> CreateHttpPipeline(TransportResilienceOptions? options)
     {
-        if (options is null || (!options.EnableRetry && !options.EnableCircuitBreaker))
-        {
-            return ResiliencePipeline<HttpResponseMessage>.Empty;
-        }
+        if (options is null || (!options.EnableRetry && !options.EnableCircuitBreaker)) return ResiliencePipeline<HttpResponseMessage>.Empty;
 
         var builder = new ResiliencePipelineBuilder<HttpResponseMessage>();
 
-        if (options.EnableCircuitBreaker)
-        {
-            builder.AddCircuitBreaker(CreateCircuitBreakerOptions<HttpResponseMessage>(options.CircuitBreaker));
-        }
+        if (options.EnableCircuitBreaker) builder.AddCircuitBreaker(CreateCircuitBreakerOptions<HttpResponseMessage>(options.CircuitBreaker));
 
-        if (options.EnableRetry)
-        {
-            builder.AddRetry(CreateRetryOptions<HttpResponseMessage>(options.Retry));
-        }
+        if (options.EnableRetry) builder.AddRetry(CreateRetryOptions<HttpResponseMessage>(options.Retry));
 
         return builder.Build();
     }
@@ -59,10 +41,7 @@ public static class TransportResiliencePipeline
         ArgumentNullException.ThrowIfNull(transport);
         ArgumentNullException.ThrowIfNull(pipeline);
 
-        if (ReferenceEquals(pipeline, ResiliencePipeline.Empty))
-        {
-            return transport;
-        }
+        if (ReferenceEquals(pipeline, ResiliencePipeline.Empty)) return transport;
 
         return new ResilientSendTransport(transport, pipeline);
     }
@@ -72,10 +51,7 @@ public static class TransportResiliencePipeline
         ArgumentNullException.ThrowIfNull(transport);
         ArgumentNullException.ThrowIfNull(pipeline);
 
-        if (ReferenceEquals(pipeline, ResiliencePipeline.Empty))
-        {
-            return transport;
-        }
+        if (ReferenceEquals(pipeline, ResiliencePipeline.Empty)) return transport;
 
         return new ResilientPublishTransport(transport, pipeline);
     }

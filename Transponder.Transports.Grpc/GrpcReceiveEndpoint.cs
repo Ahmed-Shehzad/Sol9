@@ -58,12 +58,9 @@ internal sealed class GrpcReceiveEndpoint : IReceiveEndpoint
         }
         catch
         {
-            if (_deadLetterAddress is null)
-            {
-                throw;
-            }
+            if (_deadLetterAddress is null) throw;
 
-            var sendTransport = await _host.GetSendTransportAsync(_deadLetterAddress, cancellationToken)
+            ISendTransport sendTransport = await _host.GetSendTransportAsync(_deadLetterAddress, cancellationToken)
                 .ConfigureAwait(false);
             await sendTransport.SendAsync(message, cancellationToken).ConfigureAwait(false);
         }

@@ -29,25 +29,13 @@ public sealed class RabbitMqTransportHost : TransportHostBase
             DispatchConsumersAsync = true
         };
 
-        if (!string.IsNullOrWhiteSpace(settings.Username))
-        {
-            factory.UserName = settings.Username;
-        }
+        if (!string.IsNullOrWhiteSpace(settings.Username)) factory.UserName = settings.Username;
 
-        if (!string.IsNullOrWhiteSpace(settings.Password))
-        {
-            factory.Password = settings.Password;
-        }
+        if (!string.IsNullOrWhiteSpace(settings.Password)) factory.Password = settings.Password;
 
-        if (settings.UseTls)
-        {
-            factory.Ssl.Enabled = true;
-        }
+        if (settings.UseTls) factory.Ssl.Enabled = true;
 
-        if (settings.RequestedHeartbeat.HasValue)
-        {
-            factory.RequestedHeartbeat = settings.RequestedHeartbeat.Value;
-        }
+        if (settings.RequestedHeartbeat.HasValue) factory.RequestedHeartbeat = settings.RequestedHeartbeat.Value;
 
         _connection = factory.CreateConnection();
     }
@@ -96,17 +84,14 @@ public sealed class RabbitMqTransportHost : TransportHostBase
         return endpoint;
     }
 
-    public override async Task StopAsync(CancellationToken cancellationToken = default)
+    public async override Task StopAsync(CancellationToken cancellationToken = default)
     {
-        foreach (RabbitMqReceiveEndpoint endpoint in _receiveEndpoints)
-        {
-            await endpoint.StopAsync(cancellationToken).ConfigureAwait(false);
-        }
+        foreach (RabbitMqReceiveEndpoint endpoint in _receiveEndpoints) await endpoint.StopAsync(cancellationToken).ConfigureAwait(false);
 
         await base.StopAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public override async ValueTask DisposeAsync()
+    public async override ValueTask DisposeAsync()
     {
         await StopAsync().ConfigureAwait(false);
         _connection.Dispose();

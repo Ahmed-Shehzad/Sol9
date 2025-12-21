@@ -1,5 +1,7 @@
 using Intercessor.Abstractions;
 using Microsoft.Extensions.Logging;
+
+using Verifier;
 using Verifier.Abstractions;
 using Verifier.Exceptions;
 
@@ -33,7 +35,7 @@ public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TReques
     {
         if (!_validators.Any()) return await next();
 
-        var validationResults = await Task.WhenAll(_validators.Select(x => x.ValidateAsync(request, cancellationToken)));
+        ValidationResult[] validationResults = await Task.WhenAll(_validators.Select(x => x.ValidateAsync(request, cancellationToken)));
 
         var failures = validationResults.SelectMany(x => x.Errors).ToList();
 
@@ -76,7 +78,7 @@ public class ValidationBehavior<TRequest> : IPipelineBehavior<TRequest> where TR
             return;
         }
 
-        var validationResults = await Task.WhenAll(_validators.Select(x => x.ValidateAsync(request, cancellationToken)));
+        ValidationResult[] validationResults = await Task.WhenAll(_validators.Select(x => x.ValidateAsync(request, cancellationToken)));
 
         var failures = validationResults.SelectMany(x => x.Errors).ToList();
 

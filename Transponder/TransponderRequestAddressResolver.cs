@@ -16,26 +16,20 @@ public static class TransponderRequestAddressResolver
     {
         ArgumentNullException.ThrowIfNull(busAddress);
 
-        var prefix = string.IsNullOrWhiteSpace(requestPathPrefix)
+        string prefix = string.IsNullOrWhiteSpace(requestPathPrefix)
             ? DefaultRequestPathPrefix
             : requestPathPrefix.Trim('/');
-        var formatter = pathFormatter ?? DefaultPathFormatter;
+        Func<Type, string> formatter = pathFormatter ?? DefaultPathFormatter;
 
         return messageType =>
         {
-            if (messageType is null)
-            {
-                return null;
-            }
+            if (messageType is null) return null;
 
-            var segment = formatter(messageType);
-            if (string.IsNullOrWhiteSpace(segment))
-            {
-                return null;
-            }
+            string segment = formatter(messageType);
+            if (string.IsNullOrWhiteSpace(segment)) return null;
 
             var builder = new UriBuilder(busAddress);
-            var basePath = builder.Path?.TrimEnd('/') ?? string.Empty;
+            string basePath = builder.Path?.TrimEnd('/') ?? string.Empty;
             builder.Path = $"{basePath}/{prefix}/{segment}";
             return builder.Uri;
         };
@@ -45,20 +39,17 @@ public static class TransponderRequestAddressResolver
     {
         ArgumentNullException.ThrowIfNull(messageType);
 
-        var raw = messageType.FullName ?? messageType.Name;
+        string raw = messageType.FullName ?? messageType.Name;
         return SanitizeSegment(raw);
     }
 
     private static string SanitizeSegment(string value)
     {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return string.Empty;
-        }
+        if (string.IsNullOrWhiteSpace(value)) return string.Empty;
 
         var builder = new StringBuilder(value.Length);
 
-        foreach (var ch in value)
+        foreach (char ch in value)
         {
             if (char.IsLetterOrDigit(ch) || ch == '-' || ch == '_')
             {
@@ -75,11 +66,8 @@ public static class TransponderRequestAddressResolver
             builder.Append('-');
         }
 
-        var normalized = builder.ToString().Trim('-');
-        if (string.IsNullOrWhiteSpace(normalized))
-        {
-            return string.Empty;
-        }
+        string normalized = builder.ToString().Trim('-');
+        if (string.IsNullOrWhiteSpace(normalized)) return string.Empty;
 
         return Uri.EscapeDataString(normalized);
     }

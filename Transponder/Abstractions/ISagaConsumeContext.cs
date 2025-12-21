@@ -7,7 +7,7 @@ namespace Transponder.Abstractions;
 /// </summary>
 /// <typeparam name="TState">The saga state type.</typeparam>
 /// <typeparam name="TMessage">The message type.</typeparam>
-public interface ISagaConsumeContext<out TState, out TMessage> : IConsumeContext<TMessage>
+public interface ISagaConsumeContext<TState, out TMessage> : IConsumeContext<TMessage>
     where TState : class, ISagaState
     where TMessage : class, IMessage
 {
@@ -30,6 +30,13 @@ public interface ISagaConsumeContext<out TState, out TMessage> : IConsumeContext
     /// Gets whether the saga should be completed after handling.
     /// </summary>
     bool IsCompleted { get; }
+
+    /// <summary>
+    /// Executes saga steps in order and compensates in reverse on failure.
+    /// </summary>
+    Task<SagaStatus> ExecuteStepsAsync(
+        IEnumerable<SagaStep<TState>> steps,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Marks the saga as completed after the handler finishes.

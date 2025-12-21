@@ -17,10 +17,7 @@ public sealed class InMemoryScheduledMessageStore : IScheduledMessageStore
 
         var stored = ScheduledMessage.FromMessage(message);
 
-        lock (_sync)
-        {
-            _messages[stored.TokenId] = stored;
-        }
+        lock (_sync) _messages[stored.TokenId] = stored;
 
         return Task.CompletedTask;
     }
@@ -32,22 +29,17 @@ public sealed class InMemoryScheduledMessageStore : IScheduledMessageStore
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (maxCount <= 0)
-        {
-            return Task.FromResult<IReadOnlyList<IScheduledMessage>>(Array.Empty<IScheduledMessage>());
-        }
+        if (maxCount <= 0) return Task.FromResult<IReadOnlyList<IScheduledMessage>>(Array.Empty<IScheduledMessage>());
 
         List<IScheduledMessage> results;
 
         lock (_sync)
-        {
             results = _messages.Values
                 .Where(message => message.DispatchedTime is null && message.ScheduledTime <= now)
                 .OrderBy(message => message.ScheduledTime)
                 .Take(maxCount)
                 .Cast<IScheduledMessage>()
                 .ToList();
-        }
 
         return Task.FromResult<IReadOnlyList<IScheduledMessage>>(results);
     }
@@ -60,12 +52,8 @@ public sealed class InMemoryScheduledMessageStore : IScheduledMessageStore
         cancellationToken.ThrowIfCancellationRequested();
 
         lock (_sync)
-        {
-            if (_messages.TryGetValue(tokenId, out var message))
-            {
+            if (_messages.TryGetValue(tokenId, out ScheduledMessage? message))
                 message.MarkDispatched(dispatchedTime);
-            }
-        }
 
         return Task.CompletedTask;
     }
@@ -74,10 +62,7 @@ public sealed class InMemoryScheduledMessageStore : IScheduledMessageStore
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        lock (_sync)
-        {
-            return Task.FromResult(_messages.Remove(tokenId));
-        }
+        lock (_sync) return Task.FromResult(_messages.Remove(tokenId));
     }
 
     public Task<IScheduledMessage?> GetAsync(Guid tokenId, CancellationToken cancellationToken = default)
@@ -86,7 +71,7 @@ public sealed class InMemoryScheduledMessageStore : IScheduledMessageStore
 
         lock (_sync)
         {
-            _messages.TryGetValue(tokenId, out var message);
+            _messages.TryGetValue(tokenId, out ScheduledMessage? message);
             return Task.FromResult<IScheduledMessage?>(message);
         }
     }

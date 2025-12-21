@@ -18,10 +18,7 @@ public sealed class InMemoryOutboxStore : IOutboxStore
 
         var stored = OutboxMessage.FromMessage(message);
 
-        lock (_sync)
-        {
-            _messages[stored.MessageId] = stored;
-        }
+        lock (_sync) _messages[stored.MessageId] = stored;
 
         return Task.CompletedTask;
     }
@@ -33,22 +30,17 @@ public sealed class InMemoryOutboxStore : IOutboxStore
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (maxCount <= 0)
-        {
-            return Task.FromResult<IReadOnlyList<IOutboxMessage>>(Array.Empty<IOutboxMessage>());
-        }
+        if (maxCount <= 0) return Task.FromResult<IReadOnlyList<IOutboxMessage>>(Array.Empty<IOutboxMessage>());
 
         List<IOutboxMessage> results;
 
         lock (_sync)
-        {
             results = _messages.Values
                 .Where(message => message.SentTime is null)
                 .OrderBy(message => message.EnqueuedTime)
                 .Take(maxCount)
                 .Cast<IOutboxMessage>()
                 .ToList();
-        }
 
         return Task.FromResult<IReadOnlyList<IOutboxMessage>>(results);
     }
@@ -59,12 +51,8 @@ public sealed class InMemoryOutboxStore : IOutboxStore
         cancellationToken.ThrowIfCancellationRequested();
 
         lock (_sync)
-        {
-            if (_messages.TryGetValue(messageId, out var message))
-            {
+            if (_messages.TryGetValue(messageId, out OutboxMessage? message))
                 message.MarkSent(sentTime);
-            }
-        }
 
         return Task.CompletedTask;
     }

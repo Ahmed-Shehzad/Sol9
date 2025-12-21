@@ -27,10 +27,10 @@ internal sealed class RabbitMqPublishTransport : IPublishTransport
     {
         ArgumentNullException.ThrowIfNull(message);
 
-        using var channel = _connection.CreateModel();
+        using IModel? channel = _connection.CreateModel();
         channel.ExchangeDeclare(_exchangeName, _topology.ExchangeType, durable: true, autoDelete: false);
 
-        var properties = channel.CreateBasicProperties();
+        IBasicProperties? properties = channel.CreateBasicProperties();
         properties.ContentType = message.ContentType;
         properties.MessageId = message.MessageId?.ToString();
         properties.CorrelationId = message.CorrelationId?.ToString();

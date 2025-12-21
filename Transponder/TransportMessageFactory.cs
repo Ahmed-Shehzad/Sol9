@@ -29,9 +29,9 @@ internal static class TransportMessageFactory
         ArgumentNullException.ThrowIfNull(message);
         ArgumentNullException.ThrowIfNull(serializer);
 
-        var messageType = message.GetType();
-        var body = serializer.Serialize(message, messageType);
-        var headerMap = headers is null
+        Type messageType = message.GetType();
+        ReadOnlyMemory<byte> body = serializer.Serialize(message, messageType);
+        Dictionary<string, object?> headerMap = headers is null
             ? new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase)
             : new Dictionary<string, object?>(headers, StringComparer.OrdinalIgnoreCase);
 

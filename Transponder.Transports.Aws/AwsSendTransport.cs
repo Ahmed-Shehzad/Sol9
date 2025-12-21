@@ -19,7 +19,7 @@ internal sealed class AwsSendTransport : ISendTransport
     {
         ArgumentNullException.ThrowIfNull(message);
 
-        var queueUrl = await _host.ResolveQueueUrlAsync(_address, cancellationToken).ConfigureAwait(false);
+        string queueUrl = await _host.ResolveQueueUrlAsync(_address, cancellationToken).ConfigureAwait(false);
         var request = new SendMessageRequest
         {
             QueueUrl = queueUrl,

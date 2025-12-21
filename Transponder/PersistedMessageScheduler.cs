@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Transponder.Abstractions;
 using Transponder.Persistence;
 using Transponder.Persistence.Abstractions;
@@ -6,7 +7,7 @@ using Transponder.Transports.Abstractions;
 namespace Transponder;
 
 /// <summary>
-/// Persists scheduled publish messages and dispatches them when due.
+/// Persists scheduled messages and dispatches them when due.
 /// </summary>
 public sealed class PersistedMessageScheduler : IMessageScheduler, IAsyncDisposable
 {
@@ -37,7 +38,14 @@ public sealed class PersistedMessageScheduler : IMessageScheduler, IAsyncDisposa
         DateTimeOffset scheduledTime,
         CancellationToken cancellationToken = default)
         where TMessage : class, IMessage
-        => throw new NotSupportedException("Persisted scheduler only supports publish operations.");
+    {
+        ArgumentNullException.ThrowIfNull(destinationAddress);
+        ArgumentNullException.ThrowIfNull(message);
+
+        return scheduledTime <= DateTimeOffset.UtcNow
+            ? throw new ArgumentException("Scheduled time must be in the future.", nameof(scheduledTime))
+            : ScheduleSendInternalAsync(destinationAddress, message, scheduledTime, cancellationToken);
+    }
 
     public Task<IScheduledMessageHandle> ScheduleSendAsync<TMessage>(
         Uri destinationAddress,
@@ -45,7 +53,15 @@ public sealed class PersistedMessageScheduler : IMessageScheduler, IAsyncDisposa
         TimeSpan delay,
         CancellationToken cancellationToken = default)
         where TMessage : class, IMessage
-        => throw new NotSupportedException("Persisted scheduler only supports publish operations.");
+    {
+        ArgumentNullException.ThrowIfNull(destinationAddress);
+        ArgumentNullException.ThrowIfNull(message);
+
+        if (delay <= TimeSpan.Zero) throw new ArgumentException("Delay must be greater than zero.", nameof(delay));
+
+        DateTimeOffset scheduledTime = DateTimeOffset.UtcNow.Add(delay);
+        return ScheduleSendInternalAsync(destinationAddress, message, scheduledTime, cancellationToken);
+    }
 
     public Task<IScheduledMessageHandle> SchedulePublishAsync<TMessage>(
         TMessage message,
@@ -55,12 +71,7 @@ public sealed class PersistedMessageScheduler : IMessageScheduler, IAsyncDisposa
     {
         ArgumentNullException.ThrowIfNull(message);
 
-        if (scheduledTime <= DateTimeOffset.UtcNow)
-        {
-            throw new ArgumentException("Scheduled time must be in the future.", nameof(scheduledTime));
-        }
-
-        return SchedulePublishInternalAsync(message, scheduledTime, cancellationToken);
+        return scheduledTime <= DateTimeOffset.UtcNow ? throw new ArgumentException("Scheduled time must be in the future.", nameof(scheduledTime)) : SchedulePublishInternalAsync(message, scheduledTime, cancellationToken);
     }
 
     public Task<IScheduledMessageHandle> SchedulePublishAsync<TMessage>(
@@ -71,12 +82,9 @@ public sealed class PersistedMessageScheduler : IMessageScheduler, IAsyncDisposa
     {
         ArgumentNullException.ThrowIfNull(message);
 
-        if (delay <= TimeSpan.Zero)
-        {
-            throw new ArgumentException("Delay must be greater than zero.", nameof(delay));
-        }
+        if (delay <= TimeSpan.Zero) throw new ArgumentException("Delay must be greater than zero.", nameof(delay));
 
-        var scheduledTime = DateTimeOffset.UtcNow.Add(delay);
+        DateTimeOffset scheduledTime = DateTimeOffset.UtcNow.Add(delay);
         return SchedulePublishInternalAsync(message, scheduledTime, cancellationToken);
     }
 
@@ -95,14 +103,37 @@ public sealed class PersistedMessageScheduler : IMessageScheduler, IAsyncDisposa
         _cts.Dispose();
     }
 
-    private async Task<IScheduledMessageHandle> SchedulePublishInternalAsync<TMessage>(
+    private Task<IScheduledMessageHandle> SchedulePublishInternalAsync<TMessage>(
+        TMessage message,
+        DateTimeOffset scheduledTime,
+        CancellationToken cancellationToken)
+        where TMessage : class, IMessage
+        => ScheduleInternalAsync(message, scheduledTime, null, cancellationToken);
+
+    private Task<IScheduledMessageHandle> ScheduleSendInternalAsync<TMessage>(
+        Uri destinationAddress,
         TMessage message,
         DateTimeOffset scheduledTime,
         CancellationToken cancellationToken)
         where TMessage : class, IMessage
     {
-        var messageType = message.GetType();
-        var body = _serializer.Serialize(message, messageType);
+        var headers = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase)
+        {
+            [TransponderMessageHeaders.DestinationAddress] = destinationAddress.ToString()
+        };
+
+        return ScheduleInternalAsync(message, scheduledTime, headers, cancellationToken);
+    }
+
+    private async Task<IScheduledMessageHandle> ScheduleInternalAsync<TMessage>(
+        TMessage message,
+        DateTimeOffset scheduledTime,
+        IReadOnlyDictionary<string, object?>? headers,
+        CancellationToken cancellationToken)
+        where TMessage : class, IMessage
+    {
+        Type messageType = message.GetType();
+        ReadOnlyMemory<byte> body = _serializer.Serialize(message, messageType);
         var tokenId = Guid.NewGuid();
 
         var stored = new ScheduledMessage(
@@ -110,6 +141,7 @@ public sealed class PersistedMessageScheduler : IMessageScheduler, IAsyncDisposa
             messageType.AssemblyQualifiedName ?? messageType.FullName ?? messageType.Name,
             body,
             scheduledTime,
+            headers,
             contentType: _serializer.ContentType);
 
         await _store.AddAsync(stored, cancellationToken).ConfigureAwait(false);
@@ -137,18 +169,15 @@ public sealed class PersistedMessageScheduler : IMessageScheduler, IAsyncDisposa
 
     private async Task DispatchDueMessagesAsync(CancellationToken cancellationToken)
     {
-        var due = await _store.GetDueAsync(DateTimeOffset.UtcNow, _options.BatchSize, cancellationToken)
+        IReadOnlyList<IScheduledMessage> due = await _store.GetDueAsync(DateTimeOffset.UtcNow, _options.BatchSize, cancellationToken)
             .ConfigureAwait(false);
 
-        foreach (var message in due)
+        foreach (IScheduledMessage message in due)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var messageType = ResolveMessageType(message.MessageType);
-            if (messageType is null)
-            {
-                continue;
-            }
+            Type? messageType = ResolveMessageType(message.MessageType);
+            if (messageType is null) continue;
 
             object? payload;
 
@@ -161,15 +190,26 @@ public sealed class PersistedMessageScheduler : IMessageScheduler, IAsyncDisposa
                 continue;
             }
 
-            if (payload is null)
+            Uri? destinationAddress = null;
+            if (message.Headers.TryGetValue(TransponderMessageHeaders.DestinationAddress, out object? destinationValue))
             {
-                continue;
+                if (!TryParseDestinationAddress(destinationValue, out Uri parsed)) continue;
+
+                destinationAddress = parsed;
             }
 
             try
             {
-                await _bus.PublishObjectAsync(payload, message.Headers, cancellationToken)
-                    .ConfigureAwait(false);
+                if (destinationAddress is null)
+                    await _bus.PublishObjectAsync(payload, message.Headers, cancellationToken)
+                        .ConfigureAwait(false);
+                else
+                {
+                    IReadOnlyDictionary<string, object?> dispatchHeaders = RemoveDestinationHeader(message.Headers);
+                    await _bus.SendObjectAsync(destinationAddress, payload, dispatchHeaders, cancellationToken)
+                        .ConfigureAwait(false);
+                }
+
                 await _store.MarkDispatchedAsync(message.TokenId, DateTimeOffset.UtcNow, cancellationToken)
                     .ConfigureAwait(false);
             }
@@ -182,12 +222,36 @@ public sealed class PersistedMessageScheduler : IMessageScheduler, IAsyncDisposa
 
     private static Type? ResolveMessageType(string messageType)
     {
-        if (string.IsNullOrWhiteSpace(messageType))
-        {
-            return null;
-        }
+        if (string.IsNullOrWhiteSpace(messageType)) return null;
 
         return Type.GetType(messageType, throwOnError: false);
+    }
+
+    private static bool TryParseDestinationAddress(object? value, out Uri destinationAddress)
+    {
+        destinationAddress = null!;
+
+        string? address = value switch
+        {
+            null => null,
+            Uri uri => uri.ToString(),
+            string text => text,
+            JsonElement element when element.ValueKind == JsonValueKind.String => element.GetString(),
+            JsonElement => null,
+            _ => value.ToString()
+        };
+
+        if (string.IsNullOrWhiteSpace(address)) return false;
+
+        return Uri.TryCreate(address, UriKind.RelativeOrAbsolute, out destinationAddress);
+    }
+
+    private static IReadOnlyDictionary<string, object?> RemoveDestinationHeader(
+        IReadOnlyDictionary<string, object?> headers)
+    {
+        var filtered = new Dictionary<string, object?>(headers, StringComparer.OrdinalIgnoreCase);
+        filtered.Remove(TransponderMessageHeaders.DestinationAddress);
+        return filtered;
     }
 
     private sealed class PersistedScheduledMessageHandle : IScheduledMessageHandle
@@ -197,10 +261,7 @@ public sealed class PersistedMessageScheduler : IMessageScheduler, IAsyncDisposa
         public PersistedScheduledMessageHandle(IScheduledMessageStore store, Guid tokenId)
         {
             _store = store ?? throw new ArgumentNullException(nameof(store));
-            if (tokenId == Guid.Empty)
-            {
-                throw new ArgumentException("TokenId must be provided.", nameof(tokenId));
-            }
+            if (tokenId == Guid.Empty) throw new ArgumentException("TokenId must be provided.", nameof(tokenId));
 
             TokenId = tokenId;
         }

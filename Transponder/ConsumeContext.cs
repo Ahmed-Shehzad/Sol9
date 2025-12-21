@@ -67,17 +67,11 @@ public sealed class ConsumeContext<TMessage> : IConsumeContext<TMessage>
     public Task RespondAsync<TResponse>(TResponse response, CancellationToken cancellationToken = default)
         where TResponse : class, IMessage
     {
-        if (_responseAddress is null)
-        {
-            throw new InvalidOperationException("Response address is not available for this context.");
-        }
+        if (_responseAddress is null) throw new InvalidOperationException("Response address is not available for this context.");
 
         var headers = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
-        if (MessageId.HasValue)
-        {
-            headers[TransponderMessageHeaders.RequestId] = MessageId.Value.ToString("D");
-        }
+        if (MessageId.HasValue) headers[TransponderMessageHeaders.RequestId] = MessageId.Value.ToString("D");
 
         return _bus.SendInternalAsync(
             _responseAddress,
@@ -92,10 +86,7 @@ public sealed class ConsumeContext<TMessage> : IConsumeContext<TMessage>
     private static Uri? ResolveResponseAddress(ITransportMessage transportMessage, Uri? sourceAddress)
     {
         if (transportMessage.Headers.TryGetValue(TransponderMessageHeaders.ResponseAddress, out object? value) &&
-            Uri.TryCreate(value?.ToString(), UriKind.RelativeOrAbsolute, out Uri? parsed))
-        {
-            return parsed;
-        }
+            Uri.TryCreate(value?.ToString(), UriKind.RelativeOrAbsolute, out Uri? parsed)) return parsed;
 
         return sourceAddress;
     }

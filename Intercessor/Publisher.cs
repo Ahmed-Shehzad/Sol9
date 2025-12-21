@@ -17,15 +17,15 @@ internal class Publisher : IPublisher
 
     public async Task PublishAsync<TNotification>(TNotification notification, CancellationToken cancellationToken = default) where TNotification : INotification
     {
-        var notificationType = typeof(TNotification);
-        var handlerType = typeof(INotificationHandler<>).MakeGenericType(notificationType);
+        Type notificationType = typeof(TNotification);
+        Type handlerType = typeof(INotificationHandler<>).MakeGenericType(notificationType);
 
         var handlers = (_serviceProvider.GetService(typeof(IEnumerable<>).MakeGenericType(handlerType)) as IEnumerable<object>
                         ?? [])
             .Cast<dynamic>()
             .ToList();
 
-        var tasks = handlers.Select(async handler =>
+        List<Task> tasks = handlers.Select(async handler =>
         {
             try
             {

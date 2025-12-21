@@ -17,7 +17,7 @@ public sealed class TransportRegistry : ITransportRegistry
     {
         ArgumentNullException.ThrowIfNull(factories);
 
-        foreach (var factory in factories)
+        foreach (ITransportFactory factory in factories)
         {
             Register(factory);
         }
@@ -44,11 +44,11 @@ public sealed class TransportRegistry : ITransportRegistry
     {
         ArgumentNullException.ThrowIfNull(address);
 
-        var scheme = address.Scheme;
+        string scheme = address.Scheme;
 
-        foreach (var candidate in _factories)
+        foreach (ITransportFactory candidate in _factories)
         {
-            foreach (var supported in candidate.SupportedSchemes)
+            foreach (string supported in candidate.SupportedSchemes)
             {
                 if (string.Equals(supported, scheme, StringComparison.OrdinalIgnoreCase))
                 {

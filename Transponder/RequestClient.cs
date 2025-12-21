@@ -51,10 +51,7 @@ internal sealed class RequestClient<TRequest> : IRequestClient<TRequest>
                 [TransponderMessageHeaders.RequestId] = requestId.ToString("D")
             };
 
-            if (_responseAddress is not null)
-            {
-                headers[TransponderMessageHeaders.ResponseAddress] = _responseAddress.ToString();
-            }
+            if (_responseAddress is not null) headers[TransponderMessageHeaders.ResponseAddress] = _responseAddress.ToString();
 
             await _bus.SendInternalAsync(
                     _destinationAddress,
@@ -67,7 +64,7 @@ internal sealed class RequestClient<TRequest> : IRequestClient<TRequest>
                 .ConfigureAwait(false);
 
             var delayTask = Task.Delay(_timeout, cancellationToken);
-            var completed = await Task.WhenAny(pending.Task, delayTask).ConfigureAwait(false);
+            Task completed = await Task.WhenAny(pending.Task, delayTask).ConfigureAwait(false);
 
             if (completed == delayTask)
             {
@@ -76,7 +73,7 @@ internal sealed class RequestClient<TRequest> : IRequestClient<TRequest>
                     $"Request timed out after {_timeout.TotalSeconds:F0} seconds for {typeof(TRequest).Name}.");
             }
 
-            var response = await pending.Task.ConfigureAwait(false);
+            object response = await pending.Task.ConfigureAwait(false);
             return (TResponse)response;
         }
         finally
@@ -87,20 +84,14 @@ internal sealed class RequestClient<TRequest> : IRequestClient<TRequest>
 
     private async Task EnsureResponseEndpointAsync(CancellationToken cancellationToken)
     {
-        if (_responseEndpoint is not null)
-        {
-            return;
-        }
+        if (_responseEndpoint is not null) return;
 
         lock (_sync)
         {
-            if (_responseEndpoint is not null)
-            {
-                return;
-            }
+            if (_responseEndpoint is not null) return;
 
             _responseAddress = _bus.CreateResponseAddress();
-            var host = _hostProvider.GetHost(_responseAddress);
+            ITransportHost host = _hostProvider.GetHost(_responseAddress);
 
             var configuration = new ReceiveEndpointConfiguration(
                 _responseAddress,
@@ -114,21 +105,15 @@ internal sealed class RequestClient<TRequest> : IRequestClient<TRequest>
 
     private Task HandleResponseAsync(IReceiveContext context)
     {
-        var message = context.Message;
+        ITransportMessage message = context.Message;
 
-        if (!TryGetRequestId(message, out var requestId))
-        {
-            return Task.CompletedTask;
-        }
+        if (!TryGetRequestId(message, out Guid requestId)) return Task.CompletedTask;
 
-        if (!_pendingRequests.TryGetValue(requestId, out var pending))
-        {
-            return Task.CompletedTask;
-        }
+        if (!_pendingRequests.TryGetValue(requestId, out PendingRequest? pending)) return Task.CompletedTask;
 
         try
         {
-            var response = _serializer.Deserialize(message.Body.Span, pending.ResponseType);
+            object response = _serializer.Deserialize(message.Body.Span, pending.ResponseType);
             pending.TrySetResult(response);
         }
         catch (Exception ex)
@@ -147,8 +132,8 @@ internal sealed class RequestClient<TRequest> : IRequestClient<TRequest>
             return true;
         }
 
-        if (message.Headers.TryGetValue(TransponderMessageHeaders.RequestId, out var headerValue) &&
-            Guid.TryParse(headerValue?.ToString(), out var parsed))
+        if (message.Headers.TryGetValue(TransponderMessageHeaders.RequestId, out object? headerValue) &&
+            Guid.TryParse(headerValue?.ToString(), out Guid parsed))
         {
             requestId = parsed;
             return true;

@@ -22,8 +22,8 @@ public sealed class AsyncRuleBuilder<T, TProperty> : IAsyncValidationRule<T>
     {
         _rules.Add(async (obj, ct) =>
         {
-            var value = _getter(obj);
-            var ok = await predicateAsync(value, ct);
+            TProperty value = _getter(obj);
+            bool ok = await predicateAsync(value, ct);
 
             return ok ? null : new ValidationFailure(_propertyName, message);
         });
@@ -34,10 +34,10 @@ public sealed class AsyncRuleBuilder<T, TProperty> : IAsyncValidationRule<T>
     {
         var failures = new List<ValidationFailure>();
 
-        foreach (var rule in _rules)
+        foreach (Func<T, CancellationToken, Task<ValidationFailure?>> rule in _rules)
         {
             ct.ThrowIfCancellationRequested();
-            var failure = await rule(instance, ct);
+            ValidationFailure? failure = await rule(instance, ct);
             if (failure is not null) failures.Add(failure);
         }
 

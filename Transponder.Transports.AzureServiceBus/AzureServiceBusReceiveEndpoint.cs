@@ -62,10 +62,7 @@ internal sealed class AzureServiceBusReceiveEndpoint : IReceiveEndpoint
     {
         await _processor.DisposeAsync().ConfigureAwait(false);
 
-        if (_deadLetterSender is not null)
-        {
-            await _deadLetterSender.DisposeAsync().ConfigureAwait(false);
-        }
+        if (_deadLetterSender is not null) await _deadLetterSender.DisposeAsync().ConfigureAwait(false);
     }
 
     private async Task ProcessMessageAsync(ProcessMessageEventArgs args)
@@ -73,10 +70,7 @@ internal sealed class AzureServiceBusReceiveEndpoint : IReceiveEndpoint
         ServiceBusReceivedMessage? message = args.Message;
         var headers = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (KeyValuePair<string, object> header in message.ApplicationProperties)
-        {
-            headers[header.Key] = header.Value;
-        }
+        foreach (KeyValuePair<string, object> header in message.ApplicationProperties) headers[header.Key] = header.Value;
 
         string? messageType = headers.TryGetValue("MessageType", out object? mt) ? mt as string : null;
         headers.Remove("MessageType");
@@ -151,10 +145,7 @@ internal sealed class AzureServiceBusReceiveEndpoint : IReceiveEndpoint
             Subject = message.Subject
         };
 
-        foreach (KeyValuePair<string, object> header in message.ApplicationProperties)
-        {
-            deadLetterMessage.ApplicationProperties[header.Key] = header.Value;
-        }
+        foreach (KeyValuePair<string, object> header in message.ApplicationProperties) deadLetterMessage.ApplicationProperties[header.Key] = header.Value;
 
         return deadLetterMessage;
     }

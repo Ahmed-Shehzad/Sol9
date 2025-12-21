@@ -1,6 +1,8 @@
+# Top-level EditorConfig file for this repository.
 root = true
 
 [*]
+# Global defaults for all files.
 charset = utf-8
 end_of_line = lf
 insert_final_newline = true
@@ -9,6 +11,7 @@ indent_style = space
 indent_size = 4
 
 [*.cs]
+# C# formatting and style preferences.
 csharp_new_line_before_open_brace = all
 csharp_new_line_before_else = true
 csharp_new_line_before_catch = true
@@ -18,12 +21,13 @@ csharp_new_line_before_members_in_anonymous_types = true
 csharp_indent_case_contents = true
 csharp_indent_switch_labels = true
 csharp_indent_labels = one_less_than_current
-csharp_preserve_single_line_statements = false
-csharp_preserve_single_line_blocks = true
 csharp_using_directive_placement = outside_namespace:suggestion
 csharp_style_namespace_declarations = file_scoped:suggestion
-csharp_prefer_braces = true:error
+csharp_preserve_single_line_statements = true
+csharp_preserve_single_line_blocks = true
+csharp_prefer_braces = false:error
 
+# .NET style conventions.
 dotnet_sort_system_directives_first = true
 dotnet_separate_import_directive_groups = true
 dotnet_style_qualification_for_field = false:suggestion
@@ -48,9 +52,12 @@ dotnet_style_prefer_conditional_expression_over_return = true:suggestion
 dotnet_style_prefer_coalesce_expression = true:suggestion
 dotnet_style_operator_placement_when_wrapping = beginning_of_line
 
+# C# implicit/explicit typing preferences.
 csharp_style_var_for_built_in_types = false:suggestion
 csharp_style_var_when_type_is_apparent = true:suggestion
 csharp_style_var_elsewhere = false:suggestion
+
+# Expression-bodied members and modern C# features.
 csharp_style_expression_bodied_methods = when_on_single_line:suggestion
 csharp_style_expression_bodied_properties = true:suggestion
 csharp_style_expression_bodied_constructors = false:suggestion
@@ -73,6 +80,7 @@ csharp_style_prefer_static_local_function = true:suggestion
 csharp_style_unused_value_expression_statement_preference = discard_variable:suggestion
 csharp_style_unused_value_assignment_preference = discard_variable:suggestion
 
+# Analyzer severities and code-quality settings.
 dotnet_diagnostic.IDE0005.severity = error
 dotnet_diagnostic.IDE0051.severity = error
 dotnet_diagnostic.IDE0052.severity = error
@@ -83,7 +91,10 @@ dotnet_diagnostic.CS0168.severity = error
 dotnet_diagnostic.CS0219.severity = error
 dotnet_diagnostic.CS0414.severity = error
 dotnet_code_quality_unused_parameters = non_public
+dotnet_diagnostic.IDE0011.severity = error
+dotnet_diagnostic.IDE0055.severity = error
 
+# Naming rules for async methods.
 dotnet_naming_rule.async_methods_should_be_suffixed_with_async.severity = error
 dotnet_naming_rule.async_methods_should_be_suffixed_with_async.symbols = async_methods
 dotnet_naming_rule.async_methods_should_be_suffixed_with_async.style = async_suffix
@@ -95,10 +106,13 @@ dotnet_naming_symbols.async_methods.required_modifiers = async
 dotnet_naming_style.async_suffix.required_suffix = Async
 
 [*.md]
+# Allow trailing whitespace in Markdown for hard line breaks.
 trim_trailing_whitespace = false
 
 [*.{json,yml,yaml}]
+# Two-space indent for data/config files.
 indent_size = 2
 
 [*.csproj]
+# Keep project files compact.
 indent_size = 2

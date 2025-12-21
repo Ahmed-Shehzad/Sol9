@@ -46,10 +46,7 @@ internal sealed class RabbitMqReceiveEndpoint : IReceiveEndpoint
 
     public Task StartAsync(CancellationToken cancellationToken = default)
     {
-        if (_channel is not null)
-        {
-            return Task.CompletedTask;
-        }
+        if (_channel is not null) return Task.CompletedTask;
 
         _channel = _connection.CreateModel();
         IDictionary<string, object>? arguments = null;
@@ -80,15 +77,9 @@ internal sealed class RabbitMqReceiveEndpoint : IReceiveEndpoint
 
     public Task StopAsync(CancellationToken cancellationToken = default)
     {
-        if (_channel is null)
-        {
-            return Task.CompletedTask;
-        }
+        if (_channel is null) return Task.CompletedTask;
 
-        if (!string.IsNullOrWhiteSpace(_consumerTag))
-        {
-            _channel.BasicCancel(_consumerTag);
-        }
+        if (!string.IsNullOrWhiteSpace(_consumerTag)) _channel.BasicCancel(_consumerTag);
 
         _channel.Close();
         _channel.Dispose();
@@ -101,10 +92,7 @@ internal sealed class RabbitMqReceiveEndpoint : IReceiveEndpoint
 
     private async Task OnReceivedAsync(object sender, BasicDeliverEventArgs args)
     {
-        if (_channel is null)
-        {
-            return;
-        }
+        if (_channel is null) return;
 
         Dictionary<string, object?> headers = RabbitMqTransportHeaders.ReadHeaders(args.BasicProperties.Headers);
         string? contentType = args.BasicProperties.ContentType;
@@ -142,14 +130,8 @@ internal sealed class RabbitMqReceiveEndpoint : IReceiveEndpoint
         }
         catch
         {
-            if (!string.IsNullOrWhiteSpace(_deadLetterQueueName))
-            {
-                _channel.BasicReject(args.DeliveryTag, false);
-            }
-            else
-            {
-                _channel.BasicNack(args.DeliveryTag, false, true);
-            }
+            if (!string.IsNullOrWhiteSpace(_deadLetterQueueName)) _channel.BasicReject(args.DeliveryTag, false);
+            else _channel.BasicNack(args.DeliveryTag, false, true);
         }
     }
 }

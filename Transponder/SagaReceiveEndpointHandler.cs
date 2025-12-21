@@ -1,5 +1,7 @@
 using System.Reflection;
+
 using Microsoft.Extensions.DependencyInjection;
+
 using Transponder.Abstractions;
 using Transponder.Persistence.Abstractions;
 using Transponder.Transports.Abstractions;
@@ -38,15 +40,9 @@ internal sealed class SagaReceiveEndpointHandler
         ITransportMessage transportMessage = context.Message;
         string? messageTypeName = transportMessage.MessageType;
 
-        if (string.IsNullOrWhiteSpace(messageTypeName))
-        {
-            return;
-        }
+        if (string.IsNullOrWhiteSpace(messageTypeName)) return;
 
-        if (!_registry.TryGetHandlers(_inputAddress, messageTypeName, out IReadOnlyList<SagaMessageRegistration> registrations))
-        {
-            return;
-        }
+        if (!_registry.TryGetHandlers(_inputAddress, messageTypeName, out IReadOnlyList<SagaMessageRegistration> registrations)) return;
 
         using IServiceScope scope = _scopeFactory.CreateScope();
 
@@ -61,8 +57,7 @@ internal sealed class SagaReceiveEndpointHandler
                     registration.MessageType)
                 .Invoke(
                     null,
-                    new object[]
-                    {
+                    [
                         scope.ServiceProvider,
                         registration,
                         message,
@@ -70,13 +65,13 @@ internal sealed class SagaReceiveEndpointHandler
                         context.SourceAddress,
                         context.DestinationAddress,
                         context.CancellationToken
-                    })!;
+                    ])!;
 
             await task.ConfigureAwait(false);
         }
     }
 
-    private static async Task InvokeInternalAsync<TSaga, TState, TMessage>(
+    private async static Task InvokeInternalAsync<TSaga, TState, TMessage>(
         IServiceProvider serviceProvider,
         SagaMessageRegistration registration,
         object message,
@@ -100,10 +95,7 @@ internal sealed class SagaReceiveEndpointHandler
             bus);
 
         Guid? correlationId = consumeContext.CorrelationId ?? consumeContext.ConversationId;
-        if (!correlationId.HasValue)
-        {
-            return;
-        }
+        if (!correlationId.HasValue) return;
 
         ISagaRepository<TState> repository = serviceProvider.GetRequiredService<ISagaRepository<TState>>();
         TState? state = await repository.GetAsync(correlationId.Value, cancellationToken).ConfigureAwait(false);
@@ -111,10 +103,7 @@ internal sealed class SagaReceiveEndpointHandler
         bool isNew = false;
         if (state is null)
         {
-            if (!registration.StartIfMissing)
-            {
-                return;
-            }
+            if (!registration.StartIfMissing) return;
 
             state = new TState
             {
@@ -125,23 +114,15 @@ internal sealed class SagaReceiveEndpointHandler
         }
         else
         {
-            if (state.CorrelationId == Guid.Empty)
-            {
-                state.CorrelationId = correlationId.Value;
-            }
+            if (state.CorrelationId == Guid.Empty) state.CorrelationId = correlationId.Value;
 
-            if (state.ConversationId == null && consumeContext.ConversationId.HasValue)
-            {
-                state.ConversationId = consumeContext.ConversationId;
-            }
+            if (state.ConversationId == null && consumeContext.ConversationId.HasValue) state.ConversationId = consumeContext.ConversationId;
         }
 
         TSaga saga = serviceProvider.GetRequiredService<TSaga>();
         if (saga is not ISagaMessageHandler<TState, TMessage> handler)
-        {
             throw new InvalidOperationException(
                 $"{typeof(TSaga).Name} does not implement ISagaMessageHandler<{typeof(TState).Name}, {typeof(TMessage).Name}>.");
-        }
 
         var sagaContext = new SagaConsumeContext<TState, TMessage>(
             consumeContext,
@@ -149,15 +130,18 @@ internal sealed class SagaReceiveEndpointHandler
             registration.Style,
             isNew);
 
-        await handler.HandleAsync(sagaContext).ConfigureAwait(false);
+        bool skipHandler = false;
+        if (saga is ISagaStepProvider<TState, TMessage> stepProvider)
+        {
+            IEnumerable<SagaStep<TState>> steps = stepProvider.GetSteps(sagaContext)
+                ?? [];
+            SagaStatus status = await sagaContext.ExecuteStepsAsync(steps, cancellationToken).ConfigureAwait(false);
+            skipHandler = status != SagaStatus.Completed;
+        }
 
-        if (sagaContext.IsCompleted)
-        {
-            await repository.DeleteAsync(state.CorrelationId, cancellationToken).ConfigureAwait(false);
-        }
-        else
-        {
-            await repository.SaveAsync(state, cancellationToken).ConfigureAwait(false);
-        }
+        if (!skipHandler) await handler.HandleAsync(sagaContext).ConfigureAwait(false);
+
+        if (sagaContext.IsCompleted) await repository.DeleteAsync(state.CorrelationId, cancellationToken).ConfigureAwait(false);
+        else await repository.SaveAsync(state, cancellationToken).ConfigureAwait(false);
     }
 }

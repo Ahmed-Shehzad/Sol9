@@ -15,10 +15,7 @@ public sealed class TransportHostProvider : ITransportHostProvider
 
         var map = new Dictionary<string, ITransportHost>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var host in hosts)
-        {
-            map[host.Address.Scheme] = host;
-        }
+        foreach (ITransportHost host in hosts) map[host.Address.Scheme] = host;
 
         _hostsByScheme = map;
     }
@@ -27,10 +24,7 @@ public sealed class TransportHostProvider : ITransportHostProvider
     {
         ArgumentNullException.ThrowIfNull(address);
 
-        if (!TryGetHost(address, out var host) || host is null)
-        {
-            throw new InvalidOperationException($"No transport host registered for scheme '{address.Scheme}'.");
-        }
+        if (!TryGetHost(address, out ITransportHost? host) || host is null) throw new InvalidOperationException($"No transport host registered for scheme '{address.Scheme}'.");
 
         return host;
     }

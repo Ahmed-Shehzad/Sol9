@@ -36,10 +36,7 @@ public sealed class EntityFrameworkSagaRepository<TState> : ISagaRepository<TSta
     {
         ArgumentNullException.ThrowIfNull(state);
 
-        if (state.CorrelationId == Guid.Empty)
-        {
-            throw new ArgumentException("CorrelationId must be provided.", nameof(state));
-        }
+        if (state.CorrelationId == Guid.Empty) throw new ArgumentException("CorrelationId must be provided.", nameof(state));
 
         SagaStateEntity? existing = await _context.Set<SagaStateEntity>()
             .FirstOrDefaultAsync(
@@ -71,10 +68,7 @@ public sealed class EntityFrameworkSagaRepository<TState> : ISagaRepository<TSta
                 cancellationToken)
             .ConfigureAwait(false);
 
-        if (entity is null)
-        {
-            return;
-        }
+        if (entity is null) return;
 
         _context.Set<SagaStateEntity>().Remove(entity);
     }

@@ -103,10 +103,7 @@ public class IntercessorBuilder
 
         _services.AddVerifier(x =>
         {
-            foreach (var assembly in distinctAssemblies)
-            {
-                x.RegisterFromAssembly(assembly);
-            }
+            foreach (Assembly assembly in distinctAssemblies) x.RegisterFromAssembly(assembly);
         });
 
         // Register Validation Pipeline Behavior

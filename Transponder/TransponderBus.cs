@@ -43,29 +43,17 @@ public sealed class TransponderBus : IBusControl
     /// <inheritdoc />
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
-        foreach (ITransportHost host in _hosts)
-        {
-            await host.StartAsync(cancellationToken).ConfigureAwait(false);
-        }
+        foreach (ITransportHost host in _hosts) await host.StartAsync(cancellationToken).ConfigureAwait(false);
 
-        foreach (IReceiveEndpoint endpoint in _receiveEndpoints)
-        {
-            await endpoint.StartAsync(cancellationToken).ConfigureAwait(false);
-        }
+        foreach (IReceiveEndpoint endpoint in _receiveEndpoints) await endpoint.StartAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
     public async Task StopAsync(CancellationToken cancellationToken = default)
     {
-        foreach (IReceiveEndpoint endpoint in _receiveEndpoints)
-        {
-            await endpoint.StopAsync(cancellationToken).ConfigureAwait(false);
-        }
+        foreach (IReceiveEndpoint endpoint in _receiveEndpoints) await endpoint.StopAsync(cancellationToken).ConfigureAwait(false);
 
-        foreach (ITransportHost host in _hosts)
-        {
-            await host.StopAsync(cancellationToken).ConfigureAwait(false);
-        }
+        foreach (ITransportHost host in _hosts) await host.StopAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -140,25 +128,16 @@ public sealed class TransponderBus : IBusControl
     {
         await StopAsync().ConfigureAwait(false);
 
-        if (_scheduler is IAsyncDisposable asyncDisposable)
-        {
-            await asyncDisposable.DisposeAsync().ConfigureAwait(false);
-        }
+        if (_scheduler is IAsyncDisposable asyncDisposable) await asyncDisposable.DisposeAsync().ConfigureAwait(false);
 
         await DisposeHostsAsync().ConfigureAwait(false);
 
-        foreach (IReceiveEndpoint endpoint in _receiveEndpoints)
-        {
-            await endpoint.DisposeAsync().ConfigureAwait(false);
-        }
+        foreach (IReceiveEndpoint endpoint in _receiveEndpoints) await endpoint.DisposeAsync().ConfigureAwait(false);
     }
 
     internal async Task DisposeHostsAsync()
     {
-        foreach (ITransportHost host in _hosts)
-        {
-            await host.DisposeAsync().ConfigureAwait(false);
-        }
+        foreach (ITransportHost host in _hosts) await host.DisposeAsync().ConfigureAwait(false);
     }
 
     internal async Task SendInternalAsync<TMessage>(
@@ -184,6 +163,21 @@ public sealed class TransponderBus : IBusControl
             conversationId,
             headers);
 
+        await transport.SendAsync(transportMessage, cancellationToken).ConfigureAwait(false);
+    }
+
+    internal async Task SendObjectAsync(
+        Uri address,
+        object message,
+        IReadOnlyDictionary<string, object?>? headers,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(address);
+        ArgumentNullException.ThrowIfNull(message);
+
+        ITransportHost host = _hostProvider.GetHost(address);
+        ISendTransport transport = await host.GetSendTransportAsync(address, cancellationToken).ConfigureAwait(false);
+        TransportMessage transportMessage = TransportMessageFactory.Create(message, _serializer, headers: headers);
         await transport.SendAsync(transportMessage, cancellationToken).ConfigureAwait(false);
     }
 

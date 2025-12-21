@@ -23,10 +23,10 @@ public sealed class AzureServiceBusTopology : IAzureServiceBusTopology
     {
         ArgumentNullException.ThrowIfNull(address);
 
-        var segments = address.AbsolutePath
+        string[] segments = address.AbsolutePath
             .Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-        for (var i = 0; i < segments.Length - 1; i++)
+        for (int i = 0; i < segments.Length - 1; i++)
         {
             if (string.Equals(segments[i], "subscriptions", StringComparison.OrdinalIgnoreCase))
             {
@@ -39,7 +39,7 @@ public sealed class AzureServiceBusTopology : IAzureServiceBusTopology
 
     private static string GetPrimaryEntityPath(Uri address)
     {
-        var segments = address.AbsolutePath
+        string[] segments = address.AbsolutePath
             .Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         return segments.Length > 0 ? segments[0] : address.Host;

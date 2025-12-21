@@ -31,12 +31,9 @@ public sealed class EntityFrameworkOutboxStore : IOutboxStore
         int maxCount,
         CancellationToken cancellationToken = default)
     {
-        if (maxCount <= 0)
-        {
-            return [];
-        }
+        if (maxCount <= 0) return [];
 
-        var messages = await _context.Set<OutboxMessageEntity>()
+        List<OutboxMessageEntity> messages = await _context.Set<OutboxMessageEntity>()
             .AsNoTracking()
             .Where(message => message.SentTime == null)
             .OrderBy(message => message.EnqueuedTime)
@@ -53,14 +50,11 @@ public sealed class EntityFrameworkOutboxStore : IOutboxStore
         DateTimeOffset sentTime,
         CancellationToken cancellationToken = default)
     {
-        var message = await _context.Set<OutboxMessageEntity>()
+        OutboxMessageEntity? message = await _context.Set<OutboxMessageEntity>()
             .FirstOrDefaultAsync(entity => entity.MessageId == messageId, cancellationToken)
             .ConfigureAwait(false);
 
-        if (message == null)
-        {
-            return;
-        }
+        if (message == null) return;
 
         message.SentTime = sentTime;
     }

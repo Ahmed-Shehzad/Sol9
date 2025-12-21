@@ -17,6 +17,19 @@
     <Project Path="Transponder/Transponder.csproj" />
     <Project Path="Transponder.Persistence.EntityFramework.PostgreSql\Transponder.Persistence.EntityFramework.PostgreSql.csproj" />
   </Folder>
+  <Folder Name="/Transponder.Tests/">
+    <Project Path="Transponder.Tests\Transponder.Tests.csproj" />
+    <Project Path="Transponder.Persistence.Tests\Transponder.Persistence.Tests.csproj" />
+    <Project Path="Transponder.Persistence.EntityFramework.Tests\Transponder.Persistence.EntityFramework.Tests.csproj" />
+    <Project Path="Transponder.Persistence.EntityFramework.PostgreSql.Tests\Transponder.Persistence.EntityFramework.PostgreSql.Tests.csproj" />
+    <Project Path="Transponder.Persistence.EntityFramework.SqlServer.Tests\Transponder.Persistence.EntityFramework.SqlServer.Tests.csproj" />
+    <Project Path="Transponder.Transports.Tests\Transponder.Transports.Tests.csproj" />
+    <Project Path="Transponder.Transports.Aws.Tests\Transponder.Transports.Aws.Tests.csproj" />
+    <Project Path="Transponder.Transports.AzureServiceBus.Tests\Transponder.Transports.AzureServiceBus.Tests.csproj" />
+    <Project Path="Transponder.Transports.Grpc.Tests\Transponder.Transports.Grpc.Tests.csproj" />
+    <Project Path="Transponder.Transports.Kafka.Tests\Transponder.Transports.Kafka.Tests.csproj" />
+    <Project Path="Transponder.Transports.RabbitMq.Tests\Transponder.Transports.RabbitMq.Tests.csproj" />
+  </Folder>
   <Folder Name="/Verifier/">
     <Project Path="Verifier/Verifier.csproj" />
   </Folder>

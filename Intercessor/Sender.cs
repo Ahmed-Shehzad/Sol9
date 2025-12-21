@@ -15,16 +15,13 @@ internal class Sender : ISender
     
     public async Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
     {
-        var requestType = request.GetType();
-        var responseType = typeof(TResponse);
-        var handlerType = typeof(IRequestHandler<,>).MakeGenericType(requestType, responseType);
+        Type requestType = request.GetType();
+        Type responseType = typeof(TResponse);
+        Type handlerType = typeof(IRequestHandler<,>).MakeGenericType(requestType, responseType);
         
         dynamic? handler = _serviceProvider.GetService(handlerType);
-        if (handler is null)
-        {
-            throw new InvalidOperationException($"No handler registered for {requestType.Name}");
-        }
-        
+        if (handler is null) throw new InvalidOperationException($"No handler registered for {requestType.Name}");
+
         var behaviors = _serviceProvider
             .GetServices(typeof(IPipelineBehavior<,>).MakeGenericType(requestType, responseType))
             .Cast<dynamic>()
@@ -33,28 +30,25 @@ internal class Sender : ISender
         
         Func<Task<TResponse>> handlerFunc = () => handler.HandleAsync((dynamic)request, cancellationToken);
         
-        foreach (var behavior in behaviors)
+        foreach (dynamic? behavior in behaviors)
         {
-            var next = handlerFunc;
+            Func<Task<TResponse>> next = handlerFunc;
             handlerFunc = () => behavior.HandleAsync((dynamic)request, next, cancellationToken);
         }
         
-        var response = await handlerFunc();
+        TResponse response = await handlerFunc();
             
         return response;
     }
     
     public async Task SendAsync(IRequest request, CancellationToken cancellationToken = default)
     {
-        var requestType = request.GetType();
-        var handlerType = typeof(IRequestHandler<>).MakeGenericType(requestType);
+        Type requestType = request.GetType();
+        Type handlerType = typeof(IRequestHandler<>).MakeGenericType(requestType);
         
         dynamic? handler = _serviceProvider.GetService(handlerType);
-        if (handler is null)
-        {
-            throw new InvalidOperationException($"No handler registered for {requestType.Name}");
-        }
-        
+        if (handler is null) throw new InvalidOperationException($"No handler registered for {requestType.Name}");
+
         var behaviors = _serviceProvider
             .GetServices(typeof(IPipelineBehavior<>).MakeGenericType(requestType))
             .Cast<dynamic>()
@@ -63,9 +57,9 @@ internal class Sender : ISender
         
         Func<Task> handlerFunc = () => handler.HandleAsync((dynamic)request, cancellationToken);
         
-        foreach (var behavior in behaviors)
+        foreach (dynamic? behavior in behaviors)
         {
-            var next = handlerFunc;
+            Func<Task> next = handlerFunc;
             handlerFunc = () => behavior.HandleAsync((dynamic)request, next, cancellationToken);
         }
         

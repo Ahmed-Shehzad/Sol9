@@ -25,7 +25,7 @@ public sealed class InMemoryInboxStore : IInboxStore
 
         lock (_sync)
         {
-            _states.TryGetValue((messageId, consumerId), out var state);
+            _states.TryGetValue((messageId, consumerId), out InboxState? state);
             return Task.FromResult<IInboxState?>(state);
         }
     }
@@ -38,7 +38,7 @@ public sealed class InMemoryInboxStore : IInboxStore
 
         lock (_sync)
         {
-            var key = (state.MessageId, state.ConsumerId);
+            (Guid MessageId, string ConsumerId) key = (state.MessageId, state.ConsumerId);
 
             if (_states.ContainsKey(key))
             {
@@ -66,7 +66,7 @@ public sealed class InMemoryInboxStore : IInboxStore
 
         lock (_sync)
         {
-            if (_states.TryGetValue((messageId, consumerId), out var state))
+            if (_states.TryGetValue((messageId, consumerId), out InboxState? state))
             {
                 state.MarkProcessed(processedTime);
             }

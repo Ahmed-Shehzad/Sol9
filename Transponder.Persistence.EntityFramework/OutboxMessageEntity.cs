@@ -96,8 +96,8 @@ public sealed class OutboxMessageEntity : IOutboxMessage
 
         try
         {
-            var parsed = JsonSerializer.Deserialize<Dictionary<string, object?>>(_headers, SerializerOptions)
-                ?? new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, object?> parsed = JsonSerializer.Deserialize<Dictionary<string, object?>>(_headers, SerializerOptions)
+                                                 ?? new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
             _headersCache = new Dictionary<string, object?>(parsed, StringComparer.OrdinalIgnoreCase);
         }
@@ -126,6 +126,6 @@ public sealed class OutboxMessageEntity : IOutboxMessage
             return null;
         }
 
-        return Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out var uri) ? uri : null;
+        return Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out Uri? uri) ? uri : null;
     }
 }
