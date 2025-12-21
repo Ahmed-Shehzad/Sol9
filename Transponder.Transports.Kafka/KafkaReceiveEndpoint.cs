@@ -76,35 +76,35 @@ internal sealed class KafkaReceiveEndpoint : IReceiveEndpoint
 
     private async Task ReceiveLoopAsync(CancellationToken cancellationToken)
     {
-        var topic = _settings.Topology.GetTopicName(_inputAddress);
-        var groupId = _settings.Topology.GetConsumerGroup(_inputAddress);
-        var config = KafkaTransportHost.BuildConsumerConfig(_settings, groupId);
+        string topic = _settings.Topology.GetTopicName(_inputAddress);
+        string groupId = _settings.Topology.GetConsumerGroup(_inputAddress);
+        ConsumerConfig config = KafkaTransportHost.BuildConsumerConfig(_settings, groupId);
 
-        using var consumer = new ConsumerBuilder<string, byte[]>(config).Build();
+        using IConsumer<string, byte[]>? consumer = new ConsumerBuilder<string, byte[]>(config).Build();
         consumer.Subscribe(topic);
 
         try
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                var result = consumer.Consume(cancellationToken);
+                ConsumeResult<string, byte[]>? result = consumer.Consume(cancellationToken);
                 if (result?.Message is null)
                 {
                     continue;
                 }
 
-                var headers = KafkaTransportHeaders.ReadHeaders(result.Message.Headers);
-                var contentType = headers.TryGetValue("ContentType", out var ct) ? ct as string : null;
+                Dictionary<string, object?> headers = KafkaTransportHeaders.ReadHeaders(result.Message.Headers);
+                string? contentType = headers.TryGetValue("ContentType", out object? ct) ? ct as string : null;
                 headers.Remove("ContentType");
-                var messageType = headers.TryGetValue("MessageType", out var mt) ? mt as string : null;
+                string? messageType = headers.TryGetValue("MessageType", out object? mt) ? mt as string : null;
                 headers.Remove("MessageType");
-                var correlationId = headers.TryGetValue("CorrelationId", out var corr)
-                    && Guid.TryParse(corr?.ToString(), out var parsedCorrelationId)
+                Guid? correlationId = headers.TryGetValue("CorrelationId", out object? corr)
+                                      && Guid.TryParse(corr?.ToString(), out Guid parsedCorrelationId)
                     ? parsedCorrelationId
                     : (Guid?)null;
                 headers.Remove("CorrelationId");
-                var conversationId = headers.TryGetValue("ConversationId", out var conv)
-                    && Guid.TryParse(conv?.ToString(), out var parsedConversationId)
+                Guid? conversationId = headers.TryGetValue("ConversationId", out object? conv)
+                                       && Guid.TryParse(conv?.ToString(), out Guid parsedConversationId)
                     ? parsedConversationId
                     : (Guid?)null;
                 headers.Remove("ConversationId");
@@ -113,7 +113,7 @@ internal sealed class KafkaReceiveEndpoint : IReceiveEndpoint
                     result.Message.Value ?? [],
                     contentType,
                     headers,
-                    Guid.TryParse(result.Message.Key, out var messageId) ? messageId : null,
+                    Guid.TryParse(result.Message.Key, out Guid messageId) ? messageId : null,
                     correlationId,
                     conversationId,
                     messageType,

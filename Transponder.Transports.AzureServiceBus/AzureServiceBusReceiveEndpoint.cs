@@ -70,18 +70,18 @@ internal sealed class AzureServiceBusReceiveEndpoint : IReceiveEndpoint
 
     private async Task ProcessMessageAsync(ProcessMessageEventArgs args)
     {
-        var message = args.Message;
+        ServiceBusReceivedMessage? message = args.Message;
         var headers = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var header in message.ApplicationProperties)
+        foreach (KeyValuePair<string, object> header in message.ApplicationProperties)
         {
             headers[header.Key] = header.Value;
         }
 
-        var messageType = headers.TryGetValue("MessageType", out var mt) ? mt as string : null;
+        string? messageType = headers.TryGetValue("MessageType", out object? mt) ? mt as string : null;
         headers.Remove("MessageType");
-        var conversationId = headers.TryGetValue("ConversationId", out var conv)
-            && Guid.TryParse(conv?.ToString(), out var parsedConversationId)
+        Guid? conversationId = headers.TryGetValue("ConversationId", out object? conv)
+                               && Guid.TryParse(conv?.ToString(), out Guid parsedConversationId)
             ? parsedConversationId
             : (Guid?)null;
         headers.Remove("ConversationId");
@@ -90,8 +90,8 @@ internal sealed class AzureServiceBusReceiveEndpoint : IReceiveEndpoint
             message.Body.ToMemory(),
             message.ContentType,
             headers,
-            Guid.TryParse(message.MessageId, out var messageId) ? messageId : null,
-            Guid.TryParse(message.CorrelationId, out var correlationId) ? correlationId : null,
+            Guid.TryParse(message.MessageId, out Guid messageId) ? messageId : null,
+            Guid.TryParse(message.CorrelationId, out Guid correlationId) ? correlationId : null,
             conversationId,
             messageType,
             null);
@@ -115,7 +115,7 @@ internal sealed class AzureServiceBusReceiveEndpoint : IReceiveEndpoint
         {
             if (_deadLetterSender is not null)
             {
-                var deadLetterMessage = CreateDeadLetterMessage(message);
+                ServiceBusMessage deadLetterMessage = CreateDeadLetterMessage(message);
                 await _deadLetterSender.SendMessageAsync(deadLetterMessage, args.CancellationToken)
                     .ConfigureAwait(false);
                 await args.CompleteMessageAsync(message, args.CancellationToken).ConfigureAwait(false);
@@ -151,7 +151,7 @@ internal sealed class AzureServiceBusReceiveEndpoint : IReceiveEndpoint
             Subject = message.Subject
         };
 
-        foreach (var header in message.ApplicationProperties)
+        foreach (KeyValuePair<string, object> header in message.ApplicationProperties)
         {
             deadLetterMessage.ApplicationProperties[header.Key] = header.Value;
         }

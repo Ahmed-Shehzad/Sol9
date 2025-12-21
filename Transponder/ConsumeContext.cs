@@ -91,8 +91,8 @@ public sealed class ConsumeContext<TMessage> : IConsumeContext<TMessage>
 
     private static Uri? ResolveResponseAddress(ITransportMessage transportMessage, Uri? sourceAddress)
     {
-        if (transportMessage.Headers.TryGetValue(TransponderMessageHeaders.ResponseAddress, out var value) &&
-            Uri.TryCreate(value?.ToString(), UriKind.RelativeOrAbsolute, out var parsed))
+        if (transportMessage.Headers.TryGetValue(TransponderMessageHeaders.ResponseAddress, out object? value) &&
+            Uri.TryCreate(value?.ToString(), UriKind.RelativeOrAbsolute, out Uri? parsed))
         {
             return parsed;
         }

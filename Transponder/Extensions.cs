@@ -36,14 +36,14 @@ public static class Extensions
 
         services.AddSingleton(sp =>
         {
-            var resolver = options.RequestAddressResolver
-                ?? TransponderRequestAddressResolver.Create(
-                    options.Address,
-                    options.RequestPathPrefix,
-                    options.RequestPathFormatter);
+            Func<Type, Uri?> resolver = options.RequestAddressResolver
+                                        ?? TransponderRequestAddressResolver.Create(
+                                            options.Address,
+                                            options.RequestPathPrefix,
+                                            options.RequestPathFormatter);
 
-            var schedulerFactory = options.SchedulerFactory
-                ?? ((_, bus) => new InMemoryMessageScheduler(bus));
+            Func<IServiceProvider, TransponderBus, IMessageScheduler> schedulerFactory = options.SchedulerFactory
+                                                                                         ?? ((_, bus) => new InMemoryMessageScheduler(bus));
 
             return new TransponderBus(
                 options.Address,

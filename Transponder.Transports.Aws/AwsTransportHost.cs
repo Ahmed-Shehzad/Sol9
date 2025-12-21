@@ -3,6 +3,9 @@ using Amazon;
 using Amazon.Runtime;
 using Amazon.SQS;
 using Amazon.SimpleNotificationService;
+using Amazon.SimpleNotificationService.Model;
+using Amazon.SQS.Model;
+
 using Polly;
 using Transponder.Transports.Abstractions;
 using Transponder.Transports.Aws.Abstractions;
@@ -28,7 +31,7 @@ public sealed class AwsTransportHost : TransportHostBase
         Settings = settings;
         _resilienceOptions = (settings as ITransportHostResilienceSettings)?.ResilienceOptions;
         _resiliencePipeline = TransportResiliencePipeline.Create(_resilienceOptions);
-        var credentials = CreateCredentials(settings);
+        AWSCredentials? credentials = CreateCredentials(settings);
         var region = RegionEndpoint.GetBySystemName(settings.Region);
 
         var sqsConfig = new AmazonSQSConfig
@@ -88,8 +91,8 @@ public sealed class AwsTransportHost : TransportHostBase
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
-        var faultSettings = ReceiveEndpointFaultSettingsResolver.Resolve(configuration);
-        var pipeline = TransportResiliencePipeline.Create(faultSettings?.ResilienceOptions ?? _resilienceOptions);
+        ReceiveEndpointFaultSettings? faultSettings = ReceiveEndpointFaultSettingsResolver.Resolve(configuration);
+        ResiliencePipeline pipeline = TransportResiliencePipeline.Create(faultSettings?.ResilienceOptions ?? _resilienceOptions);
         var endpoint = new AwsReceiveEndpoint(this, configuration, faultSettings, pipeline);
         _receiveEndpoints.Add(endpoint);
         return endpoint;
@@ -97,7 +100,7 @@ public sealed class AwsTransportHost : TransportHostBase
 
     public override async Task StopAsync(CancellationToken cancellationToken = default)
     {
-        foreach (var endpoint in _receiveEndpoints)
+        foreach (AwsReceiveEndpoint endpoint in _receiveEndpoints)
         {
             await endpoint.StopAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -116,28 +119,28 @@ public sealed class AwsTransportHost : TransportHostBase
             return address.ToString();
         }
 
-        var queueName = Settings.Topology.GetQueueName(address);
+        string queueName = Settings.Topology.GetQueueName(address);
 
-        if (_queueUrls.TryGetValue(queueName, out var cachedUrl))
+        if (_queueUrls.TryGetValue(queueName, out string? cachedUrl))
         {
             return cachedUrl;
         }
 
-        var response = await _sqsClient.GetQueueUrlAsync(queueName, cancellationToken).ConfigureAwait(false);
+        GetQueueUrlResponse? response = await _sqsClient.GetQueueUrlAsync(queueName, cancellationToken).ConfigureAwait(false);
         _queueUrls[queueName] = response.QueueUrl;
         return response.QueueUrl;
     }
 
     internal async Task<string> ResolveTopicArnAsync(Type messageType, CancellationToken cancellationToken)
     {
-        var topicName = Settings.Topology.GetTopicName(messageType);
+        string topicName = Settings.Topology.GetTopicName(messageType);
 
-        if (_topicArns.TryGetValue(topicName, out var cachedArn))
+        if (_topicArns.TryGetValue(topicName, out string? cachedArn))
         {
             return cachedArn;
         }
 
-        var response = await _snsClient.CreateTopicAsync(topicName, cancellationToken).ConfigureAwait(false);
+        CreateTopicResponse? response = await _snsClient.CreateTopicAsync(topicName, cancellationToken).ConfigureAwait(false);
         _topicArns[topicName] = response.TopicArn;
         return response.TopicArn;
     }
@@ -193,7 +196,7 @@ public sealed class AwsTransportHost : TransportHostBase
             };
         }
 
-        foreach (var header in message.Headers)
+        foreach (KeyValuePair<string, object?> header in message.Headers)
         {
             if (header.Value is null)
             {

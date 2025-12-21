@@ -54,7 +54,7 @@ public sealed class AzureServiceBusTransportHost : TransportHostBase
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(messageType);
-        var topicName = Settings.Topology.GetTopicName(messageType);
+        string topicName = Settings.Topology.GetTopicName(messageType);
         var transport = new AzureServiceBusPublishTransport(_client, topicName);
         IPublishTransport resilientTransport = TransportResiliencePipeline.WrapPublish(transport, _resiliencePipeline);
         return Task.FromResult(resilientTransport);
@@ -63,8 +63,8 @@ public sealed class AzureServiceBusTransportHost : TransportHostBase
     public override IReceiveEndpoint ConnectReceiveEndpoint(IReceiveEndpointConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
-        var faultSettings = ReceiveEndpointFaultSettingsResolver.Resolve(configuration);
-        var pipeline = TransportResiliencePipeline.Create(faultSettings?.ResilienceOptions ?? _resilienceOptions);
+        ReceiveEndpointFaultSettings? faultSettings = ReceiveEndpointFaultSettingsResolver.Resolve(configuration);
+        ResiliencePipeline pipeline = TransportResiliencePipeline.Create(faultSettings?.ResilienceOptions ?? _resilienceOptions);
         var endpoint = new AzureServiceBusReceiveEndpoint(
             _client,
             configuration,
@@ -78,7 +78,7 @@ public sealed class AzureServiceBusTransportHost : TransportHostBase
 
     public override async Task StopAsync(CancellationToken cancellationToken = default)
     {
-        foreach (var endpoint in _receiveEndpoints)
+        foreach (AzureServiceBusReceiveEndpoint endpoint in _receiveEndpoints)
         {
             await endpoint.StopAsync(cancellationToken).ConfigureAwait(false);
         }

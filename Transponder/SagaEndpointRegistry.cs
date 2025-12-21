@@ -9,18 +9,18 @@ internal sealed class SagaEndpointRegistry
         _registrations = new Dictionary<string, Dictionary<string, List<SagaMessageRegistration>>>(
             StringComparer.OrdinalIgnoreCase);
 
-        foreach (var registration in registrations)
+        foreach (SagaRegistration registration in registrations)
         {
-            foreach (var message in registration.Registrations)
+            foreach (SagaMessageRegistration message in registration.Registrations)
             {
-                var addressKey = message.InputAddress.ToString();
-                if (!_registrations.TryGetValue(addressKey, out var byMessageType))
+                string addressKey = message.InputAddress.ToString();
+                if (!_registrations.TryGetValue(addressKey, out Dictionary<string, List<SagaMessageRegistration>>? byMessageType))
                 {
                     byMessageType = new Dictionary<string, List<SagaMessageRegistration>>(StringComparer.OrdinalIgnoreCase);
                     _registrations[addressKey] = byMessageType;
                 }
 
-                if (!byMessageType.TryGetValue(message.MessageTypeName, out var list))
+                if (!byMessageType.TryGetValue(message.MessageTypeName, out List<SagaMessageRegistration>? list))
                 {
                     list = [];
                     byMessageType[message.MessageTypeName] = list;
@@ -41,13 +41,13 @@ internal sealed class SagaEndpointRegistry
     {
         registrations = Array.Empty<SagaMessageRegistration>();
 
-        var addressKey = inputAddress.ToString();
-        if (!_registrations.TryGetValue(addressKey, out var byMessageType))
+        string addressKey = inputAddress.ToString();
+        if (!_registrations.TryGetValue(addressKey, out Dictionary<string, List<SagaMessageRegistration>>? byMessageType))
         {
             return false;
         }
 
-        if (!byMessageType.TryGetValue(messageTypeName, out var list))
+        if (!byMessageType.TryGetValue(messageTypeName, out List<SagaMessageRegistration>? list))
         {
             return false;
         }

@@ -60,4 +60,5 @@ public sealed class SagaConsumeContext<TState, TMessage> : ISagaConsumeContext<T
     public Task RespondAsync<TResponse>(TResponse response, CancellationToken cancellationToken = default)
         where TResponse : class, IMessage
         => _consumeContext.RespondAsync(response, cancellationToken);
+    public TMessage Message => _consumeContext.Message;
 }

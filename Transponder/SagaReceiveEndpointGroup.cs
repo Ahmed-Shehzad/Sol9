@@ -1,3 +1,5 @@
+using Microsoft.Extensions.DependencyInjection;
+
 using Transponder.Transports.Abstractions;
 
 namespace Transponder;
@@ -34,7 +36,7 @@ internal sealed class SagaReceiveEndpointGroup : IReceiveEndpoint
         }
 
         _started = true;
-        foreach (var inputAddress in _registry.GetInputAddresses())
+        foreach (Uri inputAddress in _registry.GetInputAddresses())
         {
             var handler = new SagaReceiveEndpointHandler(
                 inputAddress,
@@ -46,12 +48,12 @@ internal sealed class SagaReceiveEndpointGroup : IReceiveEndpoint
                 inputAddress,
                 handler.HandleAsync);
 
-            var host = _hostProvider.GetHost(inputAddress);
-            var endpoint = host.ConnectReceiveEndpoint(configuration);
+            ITransportHost host = _hostProvider.GetHost(inputAddress);
+            IReceiveEndpoint endpoint = host.ConnectReceiveEndpoint(configuration);
             _endpoints.Add(endpoint);
         }
 
-        foreach (var endpoint in _endpoints)
+        foreach (IReceiveEndpoint endpoint in _endpoints)
         {
             await endpoint.StartAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -64,7 +66,7 @@ internal sealed class SagaReceiveEndpointGroup : IReceiveEndpoint
             return;
         }
 
-        foreach (var endpoint in _endpoints)
+        foreach (IReceiveEndpoint endpoint in _endpoints)
         {
             await endpoint.StopAsync(cancellationToken).ConfigureAwait(false);
             await endpoint.DisposeAsync().ConfigureAwait(false);

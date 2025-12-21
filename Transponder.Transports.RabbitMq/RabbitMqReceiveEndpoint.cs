@@ -106,12 +106,12 @@ internal sealed class RabbitMqReceiveEndpoint : IReceiveEndpoint
             return;
         }
 
-        var headers = RabbitMqTransportHeaders.ReadHeaders(args.BasicProperties.Headers);
-        var contentType = args.BasicProperties.ContentType;
-        var messageType = headers.TryGetValue("MessageType", out var typeValue) ? typeValue as string : null;
+        Dictionary<string, object?> headers = RabbitMqTransportHeaders.ReadHeaders(args.BasicProperties.Headers);
+        string? contentType = args.BasicProperties.ContentType;
+        string? messageType = headers.TryGetValue("MessageType", out object? typeValue) ? typeValue as string : null;
         headers.Remove("MessageType");
-        var conversationId = headers.TryGetValue("ConversationId", out var conv)
-            && Guid.TryParse(conv?.ToString(), out var parsedConversationId)
+        Guid? conversationId = headers.TryGetValue("ConversationId", out object? conv)
+                               && Guid.TryParse(conv?.ToString(), out Guid parsedConversationId)
             ? parsedConversationId
             : (Guid?)null;
         headers.Remove("ConversationId");
@@ -120,8 +120,8 @@ internal sealed class RabbitMqReceiveEndpoint : IReceiveEndpoint
             args.Body.ToArray(),
             contentType,
             headers,
-            Guid.TryParse(args.BasicProperties.MessageId, out var messageId) ? messageId : null,
-            Guid.TryParse(args.BasicProperties.CorrelationId, out var correlationId) ? correlationId : null,
+            Guid.TryParse(args.BasicProperties.MessageId, out Guid messageId) ? messageId : null,
+            Guid.TryParse(args.BasicProperties.CorrelationId, out Guid correlationId) ? correlationId : null,
             conversationId,
             messageType,
             null);

@@ -31,7 +31,7 @@ public sealed class KafkaTransportHost : TransportHostBase
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(address);
-        var topicName = Settings.Topology.GetTopicName(address);
+        string topicName = Settings.Topology.GetTopicName(address);
         var transport = new KafkaSendTransport(_producer, topicName);
         ISendTransport resilientTransport = TransportResiliencePipeline.WrapSend(transport, _resiliencePipeline);
         return Task.FromResult(resilientTransport);
@@ -42,7 +42,7 @@ public sealed class KafkaTransportHost : TransportHostBase
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(messageType);
-        var topicName = Settings.Topology.GetTopicName(messageType);
+        string topicName = Settings.Topology.GetTopicName(messageType);
         var transport = new KafkaPublishTransport(_producer, topicName);
         IPublishTransport resilientTransport = TransportResiliencePipeline.WrapPublish(transport, _resiliencePipeline);
         return Task.FromResult(resilientTransport);
@@ -51,8 +51,8 @@ public sealed class KafkaTransportHost : TransportHostBase
     public override IReceiveEndpoint ConnectReceiveEndpoint(IReceiveEndpointConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
-        var faultSettings = ReceiveEndpointFaultSettingsResolver.Resolve(configuration);
-        var pipeline = TransportResiliencePipeline.Create(faultSettings?.ResilienceOptions ?? _resilienceOptions);
+        ReceiveEndpointFaultSettings? faultSettings = ReceiveEndpointFaultSettingsResolver.Resolve(configuration);
+        ResiliencePipeline pipeline = TransportResiliencePipeline.Create(faultSettings?.ResilienceOptions ?? _resilienceOptions);
         var endpoint = new KafkaReceiveEndpoint(
             configuration,
             Settings,
@@ -66,7 +66,7 @@ public sealed class KafkaTransportHost : TransportHostBase
 
     public override async Task StopAsync(CancellationToken cancellationToken = default)
     {
-        foreach (var endpoint in _receiveEndpoints)
+        foreach (KafkaReceiveEndpoint endpoint in _receiveEndpoints)
         {
             await endpoint.StopAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -113,13 +113,13 @@ public sealed class KafkaTransportHost : TransportHostBase
     private static void ApplySecuritySettings(ClientConfig config, IKafkaHostSettings settings)
     {
         if (!string.IsNullOrWhiteSpace(settings.SecurityProtocol) &&
-            Enum.TryParse<SecurityProtocol>(settings.SecurityProtocol, true, out var securityProtocol))
+            Enum.TryParse<SecurityProtocol>(settings.SecurityProtocol, true, out SecurityProtocol securityProtocol))
         {
             config.SecurityProtocol = securityProtocol;
         }
 
         if (!string.IsNullOrWhiteSpace(settings.SaslMechanism) &&
-            Enum.TryParse<SaslMechanism>(settings.SaslMechanism, true, out var saslMechanism))
+            Enum.TryParse<SaslMechanism>(settings.SaslMechanism, true, out SaslMechanism saslMechanism))
         {
             config.SaslMechanism = saslMechanism;
         }
@@ -137,7 +137,7 @@ public sealed class KafkaTransportHost : TransportHostBase
 
     private static void ApplyCustomSettings(ClientConfig config, IReadOnlyDictionary<string, object?> settings)
     {
-        foreach (var entry in settings)
+        foreach (KeyValuePair<string, object?> entry in settings)
         {
             if (entry.Value is null)
             {

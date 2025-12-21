@@ -59,7 +59,7 @@ public sealed class RabbitMqTransportHost : TransportHostBase
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(address);
-        var queueName = Settings.Topology.GetQueueName(address);
+        string queueName = Settings.Topology.GetQueueName(address);
         var transport = new RabbitMqSendTransport(_connection, queueName);
         ISendTransport resilientTransport = TransportResiliencePipeline.WrapSend(transport, _resiliencePipeline);
         return Task.FromResult(resilientTransport);
@@ -70,7 +70,7 @@ public sealed class RabbitMqTransportHost : TransportHostBase
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(messageType);
-        var exchangeName = Settings.Topology.GetExchangeName(messageType);
+        string exchangeName = Settings.Topology.GetExchangeName(messageType);
         var transport = new RabbitMqPublishTransport(
             _connection,
             exchangeName,
@@ -83,8 +83,8 @@ public sealed class RabbitMqTransportHost : TransportHostBase
     public override IReceiveEndpoint ConnectReceiveEndpoint(IReceiveEndpointConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
-        var faultSettings = ReceiveEndpointFaultSettingsResolver.Resolve(configuration);
-        var pipeline = TransportResiliencePipeline.Create(faultSettings?.ResilienceOptions ?? _resilienceOptions);
+        ReceiveEndpointFaultSettings? faultSettings = ReceiveEndpointFaultSettingsResolver.Resolve(configuration);
+        ResiliencePipeline pipeline = TransportResiliencePipeline.Create(faultSettings?.ResilienceOptions ?? _resilienceOptions);
         var endpoint = new RabbitMqReceiveEndpoint(
             _connection,
             configuration,
@@ -98,7 +98,7 @@ public sealed class RabbitMqTransportHost : TransportHostBase
 
     public override async Task StopAsync(CancellationToken cancellationToken = default)
     {
-        foreach (var endpoint in _receiveEndpoints)
+        foreach (RabbitMqReceiveEndpoint endpoint in _receiveEndpoints)
         {
             await endpoint.StopAsync(cancellationToken).ConfigureAwait(false);
         }

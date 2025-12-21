@@ -14,7 +14,7 @@ public sealed class InMemorySagaRepository<TState> : ISagaRepository<TState>
     /// <inheritdoc />
     public Task<TState?> GetAsync(Guid correlationId, CancellationToken cancellationToken = default)
     {
-        _states.TryGetValue(correlationId, out var state);
+        _states.TryGetValue(correlationId, out TState? state);
         return Task.FromResult(state);
     }
 

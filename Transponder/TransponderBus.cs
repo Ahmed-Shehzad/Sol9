@@ -1,4 +1,5 @@
 using Transponder.Abstractions;
+using Transponder.Transports;
 using Transponder.Transports.Abstractions;
 
 namespace Transponder;
@@ -42,12 +43,12 @@ public sealed class TransponderBus : IBusControl
     /// <inheritdoc />
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
-        foreach (var host in _hosts)
+        foreach (ITransportHost host in _hosts)
         {
             await host.StartAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        foreach (var endpoint in _receiveEndpoints)
+        foreach (IReceiveEndpoint endpoint in _receiveEndpoints)
         {
             await endpoint.StartAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -56,12 +57,12 @@ public sealed class TransponderBus : IBusControl
     /// <inheritdoc />
     public async Task StopAsync(CancellationToken cancellationToken = default)
     {
-        foreach (var endpoint in _receiveEndpoints)
+        foreach (IReceiveEndpoint endpoint in _receiveEndpoints)
         {
             await endpoint.StopAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        foreach (var host in _hosts)
+        foreach (ITransportHost host in _hosts)
         {
             await host.StopAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -84,13 +85,13 @@ public sealed class TransponderBus : IBusControl
     public IRequestClient<TRequest> CreateRequestClient<TRequest>(TimeSpan? timeout = null)
         where TRequest : class, IMessage
     {
-        var resolver = _requestAddressResolver
-            ?? throw new InvalidOperationException("Request address resolver is not configured.");
+        Func<Type, Uri?> resolver = _requestAddressResolver
+                                    ?? throw new InvalidOperationException("Request address resolver is not configured.");
 
-        var address = resolver(typeof(TRequest))
-            ?? throw new InvalidOperationException($"No request address configured for {typeof(TRequest).Name}.");
+        Uri address = resolver(typeof(TRequest))
+                      ?? throw new InvalidOperationException($"No request address configured for {typeof(TRequest).Name}.");
 
-        var requestTimeout = timeout ?? _defaultRequestTimeout;
+        TimeSpan requestTimeout = timeout ?? _defaultRequestTimeout;
 
         return new RequestClient<TRequest>(
             this,
@@ -146,7 +147,7 @@ public sealed class TransponderBus : IBusControl
 
         await DisposeHostsAsync().ConfigureAwait(false);
 
-        foreach (var endpoint in _receiveEndpoints)
+        foreach (IReceiveEndpoint endpoint in _receiveEndpoints)
         {
             await endpoint.DisposeAsync().ConfigureAwait(false);
         }
@@ -154,7 +155,7 @@ public sealed class TransponderBus : IBusControl
 
     internal async Task DisposeHostsAsync()
     {
-        foreach (var host in _hosts)
+        foreach (ITransportHost host in _hosts)
         {
             await host.DisposeAsync().ConfigureAwait(false);
         }
@@ -173,9 +174,9 @@ public sealed class TransponderBus : IBusControl
         ArgumentNullException.ThrowIfNull(address);
         ArgumentNullException.ThrowIfNull(message);
 
-        var host = _hostProvider.GetHost(address);
-        var transport = await host.GetSendTransportAsync(address, cancellationToken).ConfigureAwait(false);
-        var transportMessage = TransportMessageFactory.Create(
+        ITransportHost host = _hostProvider.GetHost(address);
+        ISendTransport transport = await host.GetSendTransportAsync(address, cancellationToken).ConfigureAwait(false);
+        TransportMessage transportMessage = TransportMessageFactory.Create(
             message,
             _serializer,
             messageId,
@@ -203,10 +204,10 @@ public sealed class TransponderBus : IBusControl
     {
         ArgumentNullException.ThrowIfNull(message);
 
-        var host = _hostProvider.GetHost(Address);
-        var transport = await host.GetPublishTransportAsync(message.GetType(), cancellationToken)
+        ITransportHost host = _hostProvider.GetHost(Address);
+        IPublishTransport transport = await host.GetPublishTransportAsync(message.GetType(), cancellationToken)
             .ConfigureAwait(false);
-        var transportMessage = TransportMessageFactory.Create(
+        TransportMessage transportMessage = TransportMessageFactory.Create(
             message,
             _serializer,
             correlationId: correlationId,
@@ -223,7 +224,7 @@ public sealed class TransponderBus : IBusControl
     {
         ArgumentNullException.ThrowIfNull(message);
 
-        var host = _hostProvider.GetHost(Address);
+        ITransportHost host = _hostProvider.GetHost(Address);
         return PublishObjectAsync(host, message, headers, cancellationToken);
     }
 
@@ -233,16 +234,16 @@ public sealed class TransponderBus : IBusControl
         IReadOnlyDictionary<string, object?>? headers,
         CancellationToken cancellationToken)
     {
-        var messageType = message.GetType();
-        var transport = await host.GetPublishTransportAsync(messageType, cancellationToken).ConfigureAwait(false);
-        var transportMessage = TransportMessageFactory.Create(message, _serializer, headers: headers);
+        Type messageType = message.GetType();
+        IPublishTransport transport = await host.GetPublishTransportAsync(messageType, cancellationToken).ConfigureAwait(false);
+        TransportMessage transportMessage = TransportMessageFactory.Create(message, _serializer, headers: headers);
         await transport.PublishAsync(transportMessage, cancellationToken).ConfigureAwait(false);
     }
 
     internal Uri CreateResponseAddress()
     {
         var builder = new UriBuilder(Address);
-        var basePath = builder.Path?.TrimEnd('/') ?? string.Empty;
+        string basePath = builder.Path?.TrimEnd('/') ?? string.Empty;
         builder.Path = $"{basePath}/responses/{Guid.NewGuid():N}";
         return builder.Uri;
     }

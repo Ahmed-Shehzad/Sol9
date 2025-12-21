@@ -35,25 +35,25 @@ internal sealed class SagaReceiveEndpointHandler
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        var transportMessage = context.Message;
-        var messageTypeName = transportMessage.MessageType;
+        ITransportMessage transportMessage = context.Message;
+        string? messageTypeName = transportMessage.MessageType;
 
         if (string.IsNullOrWhiteSpace(messageTypeName))
         {
             return;
         }
 
-        if (!_registry.TryGetHandlers(_inputAddress, messageTypeName, out var registrations))
+        if (!_registry.TryGetHandlers(_inputAddress, messageTypeName, out IReadOnlyList<SagaMessageRegistration> registrations))
         {
             return;
         }
 
-        using var scope = _scopeFactory.CreateScope();
+        using IServiceScope scope = _scopeFactory.CreateScope();
 
-        var messageType = registrations[0].MessageType;
-        var message = _serializer.Deserialize(transportMessage.Body.Span, messageType);
+        Type messageType = registrations[0].MessageType;
+        object message = _serializer.Deserialize(transportMessage.Body.Span, messageType);
 
-        foreach (var registration in registrations)
+        foreach (SagaMessageRegistration registration in registrations)
         {
             var task = (Task)InvokeMethod.MakeGenericMethod(
                     registration.SagaType,
@@ -90,7 +90,7 @@ internal sealed class SagaReceiveEndpointHandler
     {
         var typedMessage = (TMessage)message;
 
-        var bus = serviceProvider.GetRequiredService<TransponderBus>();
+        TransponderBus bus = serviceProvider.GetRequiredService<TransponderBus>();
         var consumeContext = new ConsumeContext<TMessage>(
             typedMessage,
             transportMessage,
@@ -99,16 +99,16 @@ internal sealed class SagaReceiveEndpointHandler
             cancellationToken,
             bus);
 
-        var correlationId = consumeContext.CorrelationId ?? consumeContext.ConversationId;
+        Guid? correlationId = consumeContext.CorrelationId ?? consumeContext.ConversationId;
         if (!correlationId.HasValue)
         {
             return;
         }
 
-        var repository = serviceProvider.GetRequiredService<ISagaRepository<TState>>();
-        var state = await repository.GetAsync(correlationId.Value, cancellationToken).ConfigureAwait(false);
+        ISagaRepository<TState> repository = serviceProvider.GetRequiredService<ISagaRepository<TState>>();
+        TState? state = await repository.GetAsync(correlationId.Value, cancellationToken).ConfigureAwait(false);
 
-        var isNew = false;
+        bool isNew = false;
         if (state is null)
         {
             if (!registration.StartIfMissing)
@@ -136,7 +136,7 @@ internal sealed class SagaReceiveEndpointHandler
             }
         }
 
-        var saga = serviceProvider.GetRequiredService<TSaga>();
+        TSaga saga = serviceProvider.GetRequiredService<TSaga>();
         if (saga is not ISagaMessageHandler<TState, TMessage> handler)
         {
             throw new InvalidOperationException(

@@ -11,7 +11,7 @@ internal static class KafkaTransportHeaders
     {
         var headers = new Headers();
 
-        foreach (var header in message.Headers)
+        foreach (KeyValuePair<string, object?> header in message.Headers)
         {
             if (header.Value is null)
             {
@@ -53,7 +53,7 @@ internal static class KafkaTransportHeaders
             return result;
         }
 
-        foreach (var header in headers)
+        foreach (IHeader? header in headers)
         {
             result[header.Key] = header.GetValueBytes() is { Length: > 0 } bytes
                 ? Encoding.UTF8.GetString(bytes)

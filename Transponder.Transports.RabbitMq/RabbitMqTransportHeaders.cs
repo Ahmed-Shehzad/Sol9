@@ -9,7 +9,7 @@ internal static class RabbitMqTransportHeaders
     {
         var headers = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var header in message.Headers)
+        foreach (KeyValuePair<string, object?> header in message.Headers)
         {
             if (header.Value is null)
             {
@@ -51,7 +51,7 @@ internal static class RabbitMqTransportHeaders
             return result;
         }
 
-        foreach (var header in headers)
+        foreach (KeyValuePair<string, object> header in headers)
         {
             result[header.Key] = header.Value switch
             {

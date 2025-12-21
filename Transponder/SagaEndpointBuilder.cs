@@ -45,8 +45,8 @@ public sealed class SagaEndpointBuilder<TSaga, TState>
     {
         ArgumentNullException.ThrowIfNull(inputAddress);
 
-        var messageType = typeof(TMessage);
-        var messageTypeName = messageType.FullName ?? messageType.Name;
+        Type messageType = typeof(TMessage);
+        string messageTypeName = messageType.FullName ?? messageType.Name;
 
         _registrations.Add(new SagaMessageRegistration(
             inputAddress,

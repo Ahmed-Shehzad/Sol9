@@ -21,7 +21,7 @@ public sealed class EntityFrameworkSagaRepository<TState> : ISagaRepository<TSta
     /// <inheritdoc />
     public async Task<TState?> GetAsync(Guid correlationId, CancellationToken cancellationToken = default)
     {
-        var entity = await _context.Set<SagaStateEntity>()
+        SagaStateEntity? entity = await _context.Set<SagaStateEntity>()
             .AsNoTracking()
             .FirstOrDefaultAsync(
                 state => state.CorrelationId == correlationId && state.StateType == _stateType,
@@ -41,7 +41,7 @@ public sealed class EntityFrameworkSagaRepository<TState> : ISagaRepository<TSta
             throw new ArgumentException("CorrelationId must be provided.", nameof(state));
         }
 
-        var existing = await _context.Set<SagaStateEntity>()
+        SagaStateEntity? existing = await _context.Set<SagaStateEntity>()
             .FirstOrDefaultAsync(
                 entity => entity.CorrelationId == state.CorrelationId && entity.StateType == _stateType,
                 cancellationToken)
@@ -65,7 +65,7 @@ public sealed class EntityFrameworkSagaRepository<TState> : ISagaRepository<TSta
     /// <inheritdoc />
     public async Task DeleteAsync(Guid correlationId, CancellationToken cancellationToken = default)
     {
-        var entity = await _context.Set<SagaStateEntity>()
+        SagaStateEntity? entity = await _context.Set<SagaStateEntity>()
             .FirstOrDefaultAsync(
                 state => state.CorrelationId == correlationId && state.StateType == _stateType,
                 cancellationToken)

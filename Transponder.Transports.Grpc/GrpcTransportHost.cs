@@ -32,7 +32,7 @@ public sealed class GrpcTransportHost : TransportHostBase
         }
 
         HttpMessageHandler httpHandler = handler;
-        var httpPipeline = TransportResiliencePipeline.CreateHttpPipeline(_resilienceOptions);
+        ResiliencePipeline<HttpResponseMessage> httpPipeline = TransportResiliencePipeline.CreateHttpPipeline(_resilienceOptions);
 
         if (!ReferenceEquals(httpPipeline, ResiliencePipeline<HttpResponseMessage>.Empty))
         {
@@ -79,8 +79,8 @@ public sealed class GrpcTransportHost : TransportHostBase
     public override IReceiveEndpoint ConnectReceiveEndpoint(IReceiveEndpointConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
-        var faultSettings = ReceiveEndpointFaultSettingsResolver.Resolve(configuration);
-        var pipeline = TransportResiliencePipeline.Create(faultSettings?.ResilienceOptions ?? _resilienceOptions);
+        ReceiveEndpointFaultSettings? faultSettings = ReceiveEndpointFaultSettingsResolver.Resolve(configuration);
+        ResiliencePipeline pipeline = TransportResiliencePipeline.Create(faultSettings?.ResilienceOptions ?? _resilienceOptions);
         var endpoint = new GrpcReceiveEndpoint(this, configuration, faultSettings, pipeline);
         if (!_endpoints.TryAdd(configuration.InputAddress, endpoint))
         {

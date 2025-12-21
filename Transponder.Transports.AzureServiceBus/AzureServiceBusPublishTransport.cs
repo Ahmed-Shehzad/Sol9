@@ -39,7 +39,7 @@ internal sealed class AzureServiceBusPublishTransport : IPublishTransport
             serviceBusMessage.ApplicationProperties["ConversationId"] = message.ConversationId.Value.ToString("D");
         }
 
-        foreach (var header in message.Headers)
+        foreach (KeyValuePair<string, object?> header in message.Headers)
         {
             if (header.Value is null)
             {

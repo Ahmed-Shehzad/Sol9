@@ -28,7 +28,7 @@ public class TransponderDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        var schema = _storageOptions.Schema;
+        string? schema = _storageOptions.Schema;
 
         modelBuilder.Entity<OutboxMessageEntity>(entity =>
         {
