@@ -9,7 +9,7 @@ namespace Transponder.Transports.RabbitMq;
 public sealed class RabbitMqTransportFactory : ITransportFactory
 {
     private static readonly IReadOnlyCollection<string> Schemes =
-        new[] { "rabbitmq", "amqp", "amqps" };
+        ["rabbitmq", "amqp", "amqps"];
 
     public string Name => "RabbitMQ";
 
@@ -20,11 +20,9 @@ public sealed class RabbitMqTransportFactory : ITransportFactory
         ArgumentNullException.ThrowIfNull(settings);
 
         if (settings is not IRabbitMqHostSettings rabbitSettings)
-        {
             throw new ArgumentException(
                 $"Expected {nameof(IRabbitMqHostSettings)} but received {settings.GetType().Name}.",
                 nameof(settings));
-        }
 
         return new RabbitMqTransportHost(rabbitSettings);
     }

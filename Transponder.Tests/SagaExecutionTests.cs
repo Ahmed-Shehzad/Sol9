@@ -18,9 +18,9 @@ public sealed class SagaExecutionTests
         var state = new TestState { CorrelationId = Guid.NewGuid() };
         var executed = new List<int>();
 
-        SagaStep<TestState>[] steps = new[]
-        {
-            new SagaStep<TestState>(
+        SagaStep<TestState>[] steps =
+        [
+            new(
                 (_, _) =>
                 {
                     executed.Add(1);
@@ -31,7 +31,7 @@ public sealed class SagaExecutionTests
                     executed.Add(-1);
                     return Task.CompletedTask;
                 }),
-            new SagaStep<TestState>(
+            new(
                 (_, _) =>
                 {
                     executed.Add(2);
@@ -42,7 +42,7 @@ public sealed class SagaExecutionTests
                     executed.Add(-2);
                     return Task.CompletedTask;
                 })
-        };
+        ];
 
         SagaStatus result = await SagaExecution.ExecuteAsync(SagaStyle.Orchestration, state, steps);
 
@@ -57,9 +57,9 @@ public sealed class SagaExecutionTests
         var state = new TestState { CorrelationId = Guid.NewGuid() };
         var executed = new List<int>();
 
-        SagaStep<TestState>[] steps = new[]
-        {
-            new SagaStep<TestState>(
+        SagaStep<TestState>[] steps =
+        [
+            new(
                 (_, _) =>
                 {
                     executed.Add(1);
@@ -70,7 +70,7 @@ public sealed class SagaExecutionTests
                     executed.Add(-1);
                     return Task.CompletedTask;
                 }),
-            new SagaStep<TestState>(
+            new(
                 (_, _) =>
                 {
                     executed.Add(2);
@@ -81,7 +81,7 @@ public sealed class SagaExecutionTests
                     executed.Add(-2);
                     return Task.CompletedTask;
                 })
-        };
+        ];
 
         SagaStatus result = await SagaExecution.ExecuteAsync(SagaStyle.Orchestration, state, steps);
 

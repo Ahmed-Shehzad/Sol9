@@ -20,6 +20,6 @@ public sealed class InMemoryScheduledMessageStoreTests
 
         IReadOnlyList<IScheduledMessage> due = await store.GetDueAsync(now, 10);
 
-        Assert.Equal(new[] { dueFirst.TokenId, dueSecond.TokenId }, due.Select(message => message.TokenId));
+        Assert.Equal([dueFirst.TokenId, dueSecond.TokenId], due.Select(message => message.TokenId));
     }
 }

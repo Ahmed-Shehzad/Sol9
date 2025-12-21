@@ -9,7 +9,7 @@ namespace Transponder.Transports.Aws;
 public sealed class AwsTransportFactory : ITransportFactory
 {
     private static readonly IReadOnlyCollection<string> Schemes =
-        new[] { "aws", "sqs", "sns" };
+        ["aws", "sqs", "sns"];
 
     public string Name => "AWS";
 
@@ -20,11 +20,9 @@ public sealed class AwsTransportFactory : ITransportFactory
         ArgumentNullException.ThrowIfNull(settings);
 
         if (settings is not IAwsTransportHostSettings awsSettings)
-        {
             throw new ArgumentException(
                 $"Expected {nameof(IAwsTransportHostSettings)} but received {settings.GetType().Name}.",
                 nameof(settings));
-        }
 
         return new AwsTransportHost(awsSettings);
     }

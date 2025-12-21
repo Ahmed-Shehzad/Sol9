@@ -8,7 +8,7 @@ public sealed class TransportRegistryTests
     private sealed class TestTransportFactory : ITransportFactory
     {
         public string Name => "Test";
-        public IReadOnlyCollection<string> SupportedSchemes { get; } = new[] { "foo" };
+        public IReadOnlyCollection<string> SupportedSchemes { get; } = ["foo"];
         public ITransportHost CreateHost(ITransportHostSettings settings) => throw new NotImplementedException();
     }
 
@@ -28,7 +28,7 @@ public sealed class TransportRegistryTests
     public void TryResolve_Matches_Scheme_Ignoring_Case()
     {
         var factory = new TestTransportFactory();
-        var registry = new TransportRegistry(new[] { factory });
+        var registry = new TransportRegistry([factory]);
 
         bool resolved = registry.TryResolve(new Uri("FOO://localhost"), out ITransportFactory? resolvedFactory);
 

@@ -9,7 +9,7 @@ namespace Transponder.Transports.AzureServiceBus;
 public sealed class AzureServiceBusTransportFactory : ITransportFactory
 {
     private static readonly IReadOnlyCollection<string> Schemes =
-        new[] { "sb", "azureservicebus" };
+        ["sb", "azureservicebus"];
 
     public string Name => "AzureServiceBus";
 
@@ -20,11 +20,9 @@ public sealed class AzureServiceBusTransportFactory : ITransportFactory
         ArgumentNullException.ThrowIfNull(settings);
 
         if (settings is not IAzureServiceBusHostSettings azureSettings)
-        {
             throw new ArgumentException(
                 $"Expected {nameof(IAzureServiceBusHostSettings)} but received {settings.GetType().Name}.",
                 nameof(settings));
-        }
 
         return new AzureServiceBusTransportHost(azureSettings);
     }

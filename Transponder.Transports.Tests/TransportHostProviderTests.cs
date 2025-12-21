@@ -34,7 +34,7 @@ public sealed class TransportHostProviderTests
     public void GetHost_Returns_Registered_Host()
     {
         var host = new StubTransportHost(new Uri("foo://host"));
-        var provider = new TransportHostProvider(new[] { host });
+        var provider = new TransportHostProvider([host]);
 
         ITransportHost resolved = provider.GetHost(new Uri("foo://other"));
 
@@ -44,7 +44,7 @@ public sealed class TransportHostProviderTests
     [Fact]
     public void GetHost_Throws_When_Missing_Scheme()
     {
-        var provider = new TransportHostProvider(Array.Empty<ITransportHost>());
+        var provider = new TransportHostProvider([]);
 
         Assert.Throws<InvalidOperationException>(() => provider.GetHost(new Uri("missing://host")));
     }

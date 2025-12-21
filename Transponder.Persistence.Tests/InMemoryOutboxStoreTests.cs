@@ -20,6 +20,6 @@ public sealed class InMemoryOutboxStoreTests
 
         IReadOnlyList<IOutboxMessage> pending = await store.GetPendingAsync(10);
 
-        Assert.Equal(new[] { first.MessageId, second.MessageId }, pending.Select(message => message.MessageId));
+        Assert.Equal([first.MessageId, second.MessageId], pending.Select(message => message.MessageId));
     }
 }

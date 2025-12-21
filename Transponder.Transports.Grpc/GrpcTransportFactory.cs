@@ -9,7 +9,7 @@ namespace Transponder.Transports.Grpc;
 public sealed class GrpcTransportFactory : ITransportFactory
 {
     private static readonly IReadOnlyCollection<string> Schemes =
-        new[] { "grpc", "grpcs" };
+        ["grpc", "grpcs"];
 
     public string Name => "Grpc";
 
@@ -20,11 +20,9 @@ public sealed class GrpcTransportFactory : ITransportFactory
         ArgumentNullException.ThrowIfNull(settings);
 
         if (settings is not IGrpcHostSettings grpcSettings)
-        {
             throw new ArgumentException(
                 $"Expected {nameof(IGrpcHostSettings)} but received {settings.GetType().Name}.",
                 nameof(settings));
-        }
 
         return new GrpcTransportHost(grpcSettings);
     }
