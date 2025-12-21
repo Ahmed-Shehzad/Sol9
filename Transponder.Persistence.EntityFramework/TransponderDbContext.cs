@@ -22,6 +22,8 @@ public class TransponderDbContext : DbContext
 
     public DbSet<ScheduledMessageEntity> ScheduledMessages => Set<ScheduledMessageEntity>();
 
+    public DbSet<SagaStateEntity> SagaStates => Set<SagaStateEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -56,6 +58,16 @@ public class TransponderDbContext : DbContext
             entity.Property(message => message.Body).IsRequired();
             entity.Property(message => message.Headers);
             entity.HasIndex(message => new { message.ScheduledTime, message.DispatchedTime });
+        });
+
+        modelBuilder.Entity<SagaStateEntity>(entity =>
+        {
+            entity.ToTable(_storageOptions.SagaStatesTableName, schema);
+            entity.HasKey(state => new { state.CorrelationId, state.StateType });
+            entity.Property(state => state.CorrelationId).ValueGeneratedNever();
+            entity.Property(state => state.StateType).HasMaxLength(500).IsRequired();
+            entity.Property(state => state.StateData).IsRequired();
+            entity.HasIndex(state => state.ConversationId);
         });
     }
 }

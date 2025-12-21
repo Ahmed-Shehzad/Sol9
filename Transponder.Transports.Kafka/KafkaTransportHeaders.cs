@@ -1,4 +1,5 @@
 using System.Text;
+using System.Linq;
 using Confluent.Kafka;
 using Transponder.Transports.Abstractions;
 
@@ -28,6 +29,16 @@ internal static class KafkaTransportHeaders
         if (!string.IsNullOrWhiteSpace(message.MessageType))
         {
             headers.Add("MessageType", Encoding.UTF8.GetBytes(message.MessageType));
+        }
+
+        if (message.CorrelationId.HasValue && !headers.Any(h => h.Key.Equals("CorrelationId", StringComparison.OrdinalIgnoreCase)))
+        {
+            headers.Add("CorrelationId", Encoding.UTF8.GetBytes(message.CorrelationId.Value.ToString("D")));
+        }
+
+        if (message.ConversationId.HasValue && !headers.Any(h => h.Key.Equals("ConversationId", StringComparison.OrdinalIgnoreCase)))
+        {
+            headers.Add("ConversationId", Encoding.UTF8.GetBytes(message.ConversationId.Value.ToString("D")));
         }
 
         return headers;

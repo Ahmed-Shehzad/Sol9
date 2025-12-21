@@ -1,0 +1,41 @@
+using System.Collections.Concurrent;
+using Transponder.Persistence.Abstractions;
+
+namespace Transponder.Persistence;
+
+/// <summary>
+/// In-memory saga repository for development and testing.
+/// </summary>
+public sealed class InMemorySagaRepository<TState> : ISagaRepository<TState>
+    where TState : class, ISagaState
+{
+    private readonly ConcurrentDictionary<Guid, TState> _states = new();
+
+    /// <inheritdoc />
+    public Task<TState?> GetAsync(Guid correlationId, CancellationToken cancellationToken = default)
+    {
+        _states.TryGetValue(correlationId, out var state);
+        return Task.FromResult(state);
+    }
+
+    /// <inheritdoc />
+    public Task SaveAsync(TState state, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+
+        if (state.CorrelationId == Guid.Empty)
+        {
+            throw new ArgumentException("CorrelationId must be provided.", nameof(state));
+        }
+
+        _states[state.CorrelationId] = state;
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public Task DeleteAsync(Guid correlationId, CancellationToken cancellationToken = default)
+    {
+        _states.TryRemove(correlationId, out _);
+        return Task.CompletedTask;
+    }
+}

@@ -12,9 +12,10 @@ public sealed class SqlServerStorageOptions : EntityFrameworkStorageOptions, ISq
         string outboxTableName = "OutboxMessages",
         string inboxTableName = "InboxStates",
         string scheduledMessagesTableName = "ScheduledMessages",
+        string sagaStatesTableName = "SagaStates",
         bool useSnapshotIsolation = true,
         string? outboxLockHint = null)
-        : base(schema, outboxTableName, inboxTableName, scheduledMessagesTableName)
+        : base(schema, outboxTableName, inboxTableName, scheduledMessagesTableName, sagaStatesTableName)
     {
         UseSnapshotIsolation = useSnapshotIsolation;
         OutboxLockHint = outboxLockHint;

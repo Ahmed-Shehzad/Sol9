@@ -12,6 +12,7 @@ public sealed class TransponderBus : IBusControl
     private readonly IReadOnlyCollection<ITransportHost> _hosts;
     private readonly IMessageSerializer _serializer;
     private readonly IMessageScheduler _scheduler;
+    private readonly IReadOnlyCollection<IReceiveEndpoint> _receiveEndpoints;
     private readonly Func<Type, Uri?>? _requestAddressResolver;
     private readonly TimeSpan _defaultRequestTimeout;
 
@@ -22,7 +23,8 @@ public sealed class TransponderBus : IBusControl
         IMessageSerializer serializer,
         Func<Type, Uri?>? requestAddressResolver = null,
         TimeSpan? defaultRequestTimeout = null,
-        Func<TransponderBus, IMessageScheduler>? schedulerFactory = null)
+        Func<TransponderBus, IMessageScheduler>? schedulerFactory = null,
+        IEnumerable<IReceiveEndpoint>? receiveEndpoints = null)
     {
         Address = address ?? throw new ArgumentNullException(nameof(address));
         _hostProvider = hostProvider ?? throw new ArgumentNullException(nameof(hostProvider));
@@ -31,6 +33,7 @@ public sealed class TransponderBus : IBusControl
         _requestAddressResolver = requestAddressResolver;
         _defaultRequestTimeout = defaultRequestTimeout ?? TimeSpan.FromSeconds(30);
         _scheduler = (schedulerFactory ?? (bus => new InMemoryMessageScheduler(bus)))(this);
+        _receiveEndpoints = receiveEndpoints?.ToArray() ?? Array.Empty<IReceiveEndpoint>();
     }
 
     /// <inheritdoc />
@@ -43,11 +46,21 @@ public sealed class TransponderBus : IBusControl
         {
             await host.StartAsync(cancellationToken).ConfigureAwait(false);
         }
+
+        foreach (var endpoint in _receiveEndpoints)
+        {
+            await endpoint.StartAsync(cancellationToken).ConfigureAwait(false);
+        }
     }
 
     /// <inheritdoc />
     public async Task StopAsync(CancellationToken cancellationToken = default)
     {
+        foreach (var endpoint in _receiveEndpoints)
+        {
+            await endpoint.StopAsync(cancellationToken).ConfigureAwait(false);
+        }
+
         foreach (var host in _hosts)
         {
             await host.StopAsync(cancellationToken).ConfigureAwait(false);
@@ -132,6 +145,11 @@ public sealed class TransponderBus : IBusControl
         }
 
         await DisposeHostsAsync().ConfigureAwait(false);
+
+        foreach (var endpoint in _receiveEndpoints)
+        {
+            await endpoint.DisposeAsync().ConfigureAwait(false);
+        }
     }
 
     internal async Task DisposeHostsAsync()
@@ -168,8 +186,17 @@ public sealed class TransponderBus : IBusControl
         await transport.SendAsync(transportMessage, cancellationToken).ConfigureAwait(false);
     }
 
+    internal Task PublishInternalAsync<TMessage>(
+        TMessage message,
+        IReadOnlyDictionary<string, object?>? headers,
+        CancellationToken cancellationToken)
+        where TMessage : class, IMessage
+        => PublishInternalAsync(message, null, null, headers, cancellationToken);
+
     internal async Task PublishInternalAsync<TMessage>(
         TMessage message,
+        Guid? correlationId,
+        Guid? conversationId,
         IReadOnlyDictionary<string, object?>? headers,
         CancellationToken cancellationToken)
         where TMessage : class, IMessage
@@ -179,7 +206,12 @@ public sealed class TransponderBus : IBusControl
         var host = _hostProvider.GetHost(Address);
         var transport = await host.GetPublishTransportAsync(message.GetType(), cancellationToken)
             .ConfigureAwait(false);
-        var transportMessage = TransportMessageFactory.Create(message, _serializer, headers: headers);
+        var transportMessage = TransportMessageFactory.Create(
+            message,
+            _serializer,
+            correlationId: correlationId,
+            conversationId: conversationId,
+            headers: headers);
 
         await transport.PublishAsync(transportMessage, cancellationToken).ConfigureAwait(false);
     }

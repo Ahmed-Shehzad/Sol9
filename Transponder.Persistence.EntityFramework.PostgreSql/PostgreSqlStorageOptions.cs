@@ -12,9 +12,10 @@ public sealed class PostgreSqlStorageOptions : EntityFrameworkStorageOptions, IP
         string outboxTableName = "OutboxMessages",
         string inboxTableName = "InboxStates",
         string scheduledMessagesTableName = "ScheduledMessages",
+        string sagaStatesTableName = "SagaStates",
         bool useAdvisoryLocks = true,
         bool useSkipLocked = true)
-        : base(schema, outboxTableName, inboxTableName, scheduledMessagesTableName)
+        : base(schema, outboxTableName, inboxTableName, scheduledMessagesTableName, sagaStatesTableName)
     {
         UseAdvisoryLocks = useAdvisoryLocks;
         UseSkipLocked = useSkipLocked;

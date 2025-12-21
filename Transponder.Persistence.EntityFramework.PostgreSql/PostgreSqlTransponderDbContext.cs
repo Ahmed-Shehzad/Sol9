@@ -33,5 +33,11 @@ public sealed class PostgreSqlTransponderDbContext : TransponderDbContext
             entity.Property(message => message.Headers).HasColumnType("jsonb");
             entity.Property(message => message.MessageType).HasColumnType("text");
         });
+
+        modelBuilder.Entity<SagaStateEntity>(entity =>
+        {
+            entity.Property(state => state.StateType).HasColumnType("text");
+            entity.Property(state => state.StateData).HasColumnType("jsonb");
+        });
     }
 }

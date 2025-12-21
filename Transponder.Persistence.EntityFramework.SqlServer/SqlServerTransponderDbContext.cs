@@ -33,5 +33,11 @@ public sealed class SqlServerTransponderDbContext : TransponderDbContext
             entity.Property(message => message.Headers).HasColumnType("nvarchar(max)");
             entity.Property(message => message.MessageType).HasColumnType("nvarchar(500)");
         });
+
+        modelBuilder.Entity<SagaStateEntity>(entity =>
+        {
+            entity.Property(state => state.StateType).HasColumnType("nvarchar(500)");
+            entity.Property(state => state.StateData).HasColumnType("nvarchar(max)");
+        });
     }
 }

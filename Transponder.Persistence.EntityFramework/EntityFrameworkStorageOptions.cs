@@ -11,7 +11,8 @@ public class EntityFrameworkStorageOptions : IEntityFrameworkStorageOptions
         string? schema = null,
         string outboxTableName = "OutboxMessages",
         string inboxTableName = "InboxStates",
-        string scheduledMessagesTableName = "ScheduledMessages")
+        string scheduledMessagesTableName = "ScheduledMessages",
+        string sagaStatesTableName = "SagaStates")
     {
         if (string.IsNullOrWhiteSpace(outboxTableName))
         {
@@ -30,10 +31,16 @@ public class EntityFrameworkStorageOptions : IEntityFrameworkStorageOptions
                 nameof(scheduledMessagesTableName));
         }
 
+        if (string.IsNullOrWhiteSpace(sagaStatesTableName))
+        {
+            throw new ArgumentException("Saga states table name must be provided.", nameof(sagaStatesTableName));
+        }
+
         Schema = string.IsNullOrWhiteSpace(schema) ? null : schema;
         OutboxTableName = outboxTableName;
         InboxTableName = inboxTableName;
         ScheduledMessagesTableName = scheduledMessagesTableName;
+        SagaStatesTableName = sagaStatesTableName;
     }
 
     /// <inheritdoc />
@@ -47,4 +54,7 @@ public class EntityFrameworkStorageOptions : IEntityFrameworkStorageOptions
 
     /// <inheritdoc />
     public string ScheduledMessagesTableName { get; }
+
+    /// <inheritdoc />
+    public string SagaStatesTableName { get; }
 }

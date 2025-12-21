@@ -78,14 +78,22 @@ internal sealed class AzureServiceBusReceiveEndpoint : IReceiveEndpoint
             headers[header.Key] = header.Value;
         }
 
+        var messageType = headers.TryGetValue("MessageType", out var mt) ? mt as string : null;
+        headers.Remove("MessageType");
+        var conversationId = headers.TryGetValue("ConversationId", out var conv)
+            && Guid.TryParse(conv?.ToString(), out var parsedConversationId)
+            ? parsedConversationId
+            : (Guid?)null;
+        headers.Remove("ConversationId");
+
         var transportMessage = new TransportMessage(
             message.Body.ToMemory(),
             message.ContentType,
             headers,
             Guid.TryParse(message.MessageId, out var messageId) ? messageId : null,
             Guid.TryParse(message.CorrelationId, out var correlationId) ? correlationId : null,
-            null,
-            null,
+            conversationId,
+            messageType,
             null);
 
         var context = new AzureServiceBusReceiveContext(

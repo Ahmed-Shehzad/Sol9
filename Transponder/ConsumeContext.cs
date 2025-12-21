@@ -55,12 +55,12 @@ public sealed class ConsumeContext<TMessage> : IConsumeContext<TMessage>
 
     public Task PublishAsync<TMessageOut>(TMessageOut message, CancellationToken cancellationToken = default)
         where TMessageOut : class, IMessage
-        => _bus.PublishInternalAsync(message, null, cancellationToken);
+        => _bus.PublishInternalAsync(message, CorrelationId, ConversationId, null, cancellationToken);
 
     public Task<ISendEndpoint> GetSendEndpointAsync(Uri address, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(address);
-        ISendEndpoint endpoint = new TransponderSendEndpoint(_bus, address);
+        ISendEndpoint endpoint = new ConsumeSendEndpoint(_bus, address, CorrelationId, ConversationId);
         return Task.FromResult(endpoint);
     }
 

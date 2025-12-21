@@ -52,7 +52,8 @@ public static class Extensions
                 sp.GetRequiredService<IMessageSerializer>(),
                 resolver,
                 options.DefaultRequestTimeout,
-                bus => schedulerFactory(sp, bus));
+                bus => schedulerFactory(sp, bus),
+                sp.GetServices<IReceiveEndpoint>());
         });
 
         services.AddSingleton<IBus>(sp => sp.GetRequiredService<TransponderBus>());

@@ -98,14 +98,24 @@ internal sealed class KafkaReceiveEndpoint : IReceiveEndpoint
                 headers.Remove("ContentType");
                 var messageType = headers.TryGetValue("MessageType", out var mt) ? mt as string : null;
                 headers.Remove("MessageType");
+                var correlationId = headers.TryGetValue("CorrelationId", out var corr)
+                    && Guid.TryParse(corr?.ToString(), out var parsedCorrelationId)
+                    ? parsedCorrelationId
+                    : (Guid?)null;
+                headers.Remove("CorrelationId");
+                var conversationId = headers.TryGetValue("ConversationId", out var conv)
+                    && Guid.TryParse(conv?.ToString(), out var parsedConversationId)
+                    ? parsedConversationId
+                    : (Guid?)null;
+                headers.Remove("ConversationId");
 
                 var transportMessage = new TransportMessage(
                     result.Message.Value ?? [],
                     contentType,
                     headers,
                     Guid.TryParse(result.Message.Key, out var messageId) ? messageId : null,
-                    null,
-                    null,
+                    correlationId,
+                    conversationId,
                     messageType,
                     null);
 

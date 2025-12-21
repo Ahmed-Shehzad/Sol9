@@ -29,6 +29,16 @@ internal static class RabbitMqTransportHeaders
             headers["MessageType"] = Encoding.UTF8.GetBytes(message.MessageType);
         }
 
+        if (message.CorrelationId.HasValue && !headers.ContainsKey("CorrelationId"))
+        {
+            headers["CorrelationId"] = Encoding.UTF8.GetBytes(message.CorrelationId.Value.ToString("D"));
+        }
+
+        if (message.ConversationId.HasValue && !headers.ContainsKey("ConversationId"))
+        {
+            headers["ConversationId"] = Encoding.UTF8.GetBytes(message.ConversationId.Value.ToString("D"));
+        }
+
         return headers;
     }
 

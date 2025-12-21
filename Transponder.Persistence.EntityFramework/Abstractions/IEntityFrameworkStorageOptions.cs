@@ -24,4 +24,9 @@ public interface IEntityFrameworkStorageOptions
     /// Gets the scheduled messages table name.
     /// </summary>
     string ScheduledMessagesTableName { get; }
+
+    /// <summary>
+    /// Gets the saga states table name.
+    /// </summary>
+    string SagaStatesTableName { get; }
 }

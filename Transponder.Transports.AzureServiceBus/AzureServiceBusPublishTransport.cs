@@ -29,6 +29,16 @@ internal sealed class AzureServiceBusPublishTransport : IPublishTransport
             CorrelationId = message.CorrelationId?.ToString()
         };
 
+        if (!string.IsNullOrWhiteSpace(message.MessageType))
+        {
+            serviceBusMessage.ApplicationProperties["MessageType"] = message.MessageType;
+        }
+
+        if (message.ConversationId.HasValue)
+        {
+            serviceBusMessage.ApplicationProperties["ConversationId"] = message.ConversationId.Value.ToString("D");
+        }
+
         foreach (var header in message.Headers)
         {
             if (header.Value is null)
