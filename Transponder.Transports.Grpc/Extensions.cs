@@ -1,3 +1,6 @@
+using Microsoft.Extensions.DependencyInjection;
+using Transponder.Transports;
+using Transponder.Transports.Abstractions;
 using Transponder.Transports.Grpc.Abstractions;
 
 namespace Transponder.Transports.Grpc;
@@ -72,5 +75,75 @@ public static class Extensions
             (_, settings) => new GrpcTransportHost(settings));
 
         return builder;
+    }
+
+    public static IServiceCollection UseGrpc(
+        this IServiceCollection services,
+        Func<IServiceProvider, IGrpcHostSettings> settingsFactory)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(settingsFactory);
+
+        return AddTransportRegistration(services, builder => builder.AddGrpcTransport(settingsFactory));
+    }
+
+    public static IServiceCollection UseGrpc(
+        this IServiceCollection services,
+        IGrpcHostSettings settings)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(settings);
+
+        return services.UseGrpc(_ => settings);
+    }
+
+    public static IServiceCollection UseGrpc(
+        this IServiceCollection services,
+        Uri localAddress,
+        IEnumerable<Uri>? remoteAddresses = null)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(localAddress);
+
+        return AddTransportRegistration(services, builder =>
+        {
+            builder.AddTransportFactory<GrpcTransportFactory>();
+            builder.AddTransportHost<IGrpcHostSettings, GrpcTransportHost>(
+                _ => new GrpcHostSettings(
+                    localAddress,
+                    useTls: string.Equals(localAddress.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)),
+                (_, settings) => new GrpcTransportHost(settings));
+
+            if (remoteAddresses is null) return;
+
+            foreach (Uri remoteAddress in remoteAddresses)
+            {
+                if (remoteAddress == localAddress) continue;
+
+                builder.AddTransportHost<IGrpcHostSettings, GrpcTransportHost>(
+                    _ => new GrpcHostSettings(
+                        remoteAddress,
+                        useTls: string.Equals(remoteAddress.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)),
+                    (_, settings) => new GrpcTransportHost(settings));
+            }
+        });
+    }
+
+    private static IServiceCollection AddTransportRegistration(
+        IServiceCollection services,
+        Action<TransponderTransportBuilder> configure)
+    {
+        bool hasProvider = services.Any(service => service.ServiceType == typeof(ITransportHostProvider));
+        bool hasRegistry = services.Any(service => service.ServiceType == typeof(ITransportRegistry));
+
+        if (hasProvider && hasRegistry)
+        {
+            var builder = new TransponderTransportBuilder(services);
+            configure(builder);
+            return services;
+        }
+
+        services.AddTransponderTransports(configure);
+        return services;
     }
 }

@@ -1,3 +1,6 @@
+using Microsoft.Extensions.DependencyInjection;
+using Transponder.Transports;
+using Transponder.Transports.Abstractions;
 using Transponder.Transports.AzureServiceBus.Abstractions;
 
 namespace Transponder.Transports.AzureServiceBus;
@@ -45,5 +48,43 @@ public static class Extensions
             (_, settings) => new AzureServiceBusTransportHost(settings));
 
         return builder;
+    }
+
+    public static IServiceCollection UseAzureServiceBus(
+        this IServiceCollection services,
+        Func<IServiceProvider, IAzureServiceBusHostSettings> settingsFactory)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(settingsFactory);
+
+        return AddTransportRegistration(services, builder => builder.AddAzureServiceBusTransport(settingsFactory));
+    }
+
+    public static IServiceCollection UseAzureServiceBus(
+        this IServiceCollection services,
+        IAzureServiceBusHostSettings settings)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(settings);
+
+        return services.UseAzureServiceBus(_ => settings);
+    }
+
+    private static IServiceCollection AddTransportRegistration(
+        IServiceCollection services,
+        Action<TransponderTransportBuilder> configure)
+    {
+        bool hasProvider = services.Any(service => service.ServiceType == typeof(ITransportHostProvider));
+        bool hasRegistry = services.Any(service => service.ServiceType == typeof(ITransportRegistry));
+
+        if (hasProvider && hasRegistry)
+        {
+            var builder = new TransponderTransportBuilder(services);
+            configure(builder);
+            return services;
+        }
+
+        services.AddTransponderTransports(configure);
+        return services;
     }
 }

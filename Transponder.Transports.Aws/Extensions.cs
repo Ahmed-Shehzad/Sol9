@@ -1,3 +1,6 @@
+using Microsoft.Extensions.DependencyInjection;
+using Transponder.Transports;
+using Transponder.Transports.Abstractions;
 using Transponder.Transports.Aws.Abstractions;
 
 namespace Transponder.Transports.Aws;
@@ -45,5 +48,43 @@ public static class Extensions
             (_, settings) => new AwsTransportHost(settings));
 
         return builder;
+    }
+
+    public static IServiceCollection UseAws(
+        this IServiceCollection services,
+        Func<IServiceProvider, IAwsTransportHostSettings> settingsFactory)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(settingsFactory);
+
+        return AddTransportRegistration(services, builder => builder.AddAwsTransport(settingsFactory));
+    }
+
+    public static IServiceCollection UseAws(
+        this IServiceCollection services,
+        IAwsTransportHostSettings settings)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(settings);
+
+        return services.UseAws(_ => settings);
+    }
+
+    private static IServiceCollection AddTransportRegistration(
+        IServiceCollection services,
+        Action<TransponderTransportBuilder> configure)
+    {
+        bool hasProvider = services.Any(service => service.ServiceType == typeof(ITransportHostProvider));
+        bool hasRegistry = services.Any(service => service.ServiceType == typeof(ITransportRegistry));
+
+        if (hasProvider && hasRegistry)
+        {
+            var builder = new TransponderTransportBuilder(services);
+            configure(builder);
+            return services;
+        }
+
+        services.AddTransponderTransports(configure);
+        return services;
     }
 }

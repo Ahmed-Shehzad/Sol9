@@ -14,6 +14,10 @@
         <ProjectReference Include="..\Transponder\Transponder.csproj" />
         <ProjectReference Include="..\Transponder.Samples\Transponder.Samples.csproj" />
         <ProjectReference Include="..\Transponder.Transports.Grpc\Transponder.Transports.Grpc.csproj" />
+        <ProjectReference Include="..\Transponder.Contracts\Transponder.Contracts.csproj" />
+        <ProjectReference Include="..\WebApplication2.Application\WebApplication2.Application.csproj" />
+        <ProjectReference Include="..\WebApplication2.Domain\WebApplication2.Domain.csproj" />
+        <ProjectReference Include="..\WebApplication2.Infrastructure\WebApplication2.Infrastructure.csproj" />
     </ItemGroup>
 
 </Project>

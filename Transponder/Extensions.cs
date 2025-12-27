@@ -37,6 +37,12 @@ public static class Extensions
 
         services.TryAddSingleton<IMessageSerializer, JsonMessageSerializer>();
 
+        if (options.OutboxOptions is not null)
+        {
+            services.AddSingleton(options.OutboxOptions);
+            services.AddSingleton<OutboxDispatcher>();
+        }
+
         services.AddSingleton(sp =>
         {
             Func<Type, Uri?> resolver = options.RequestAddressResolver
@@ -56,7 +62,9 @@ public static class Extensions
                 resolver,
                 options.DefaultRequestTimeout,
                 bus => schedulerFactory(sp, bus),
-                sp.GetServices<IReceiveEndpoint>());
+                sp.GetServices<IReceiveEndpoint>(),
+                sp.GetService<OutboxDispatcher>(),
+                sp.GetServices<ITransponderMessageScopeProvider>());
         });
 
         services.AddSingleton<IBus>(sp => sp.GetRequiredService<TransponderBus>());
@@ -84,6 +92,18 @@ public static class Extensions
             sp.GetRequiredService<IMessageSerializer>(),
             schedulerOptions);
 
+        return options;
+    }
+
+    public static TransponderBusOptions UseOutbox(
+        this TransponderBusOptions options,
+        Action<OutboxDispatchOptions>? configure = null)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        var outboxOptions = new OutboxDispatchOptions();
+        configure?.Invoke(outboxOptions);
+        options.OutboxOptions = outboxOptions;
         return options;
     }
 }

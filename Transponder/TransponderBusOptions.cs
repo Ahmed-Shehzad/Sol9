@@ -25,4 +25,22 @@ public sealed class TransponderBusOptions
     public Func<Type, string>? RequestPathFormatter { get; set; }
 
     public Func<IServiceProvider, TransponderBus, IMessageScheduler>? SchedulerFactory { get; set; }
+
+    public OutboxDispatchOptions? OutboxOptions { get; internal set; }
+
+    public TransponderBusOptions UseSagaOrchestration(Action<SagaRegistrationBuilder> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+
+        TransportBuilder.UseSagaOrchestration(configure);
+        return this;
+    }
+
+    public TransponderBusOptions UseSagaChoreography(Action<SagaRegistrationBuilder> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+
+        TransportBuilder.UseSagaChoreography(configure);
+        return this;
+    }
 }

@@ -1,18 +1,42 @@
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using Transponder;
+using Transponder.Persistence;
+using Transponder.Persistence.EntityFramework.PostgreSql;
+using Transponder.Persistence.EntityFramework.PostgreSql.Abstractions;
+using Transponder.Persistence.EntityFramework.SqlServer;
+using Transponder.Persistence.EntityFramework.SqlServer.Abstractions;
 using Transponder.Samples;
 using Transponder.Transports.Grpc;
 
 using WebApplication1;
+using WebApplication1.Application;
+using WebApplication1.Infrastructure;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+const string openApiDocumentName = "v1";
+builder.Services.AddOpenApi(openApiDocumentName);
+builder.Services.TryAddSingleton<Microsoft.AspNetCore.OpenApi.IOpenApiDocumentProvider>(sp =>
+{
+    Type? providerType = Type.GetType(
+        "Microsoft.AspNetCore.OpenApi.OpenApiDocumentService, Microsoft.AspNetCore.OpenApi");
+    if (providerType is null)
+        throw new InvalidOperationException("OpenApiDocumentService type not found.");
+
+    return (Microsoft.AspNetCore.OpenApi.IOpenApiDocumentProvider)ActivatorUtilities.CreateInstance(
+        sp,
+        providerType,
+        openApiDocumentName);
+});
 builder.Services.AddGrpc();
+
+AddTransponderPersistence(builder.Services, builder.Configuration);
 
 TransponderSettings transponderSettings = builder.Services.AddTransponderSettings(builder.Configuration);
 Uri localBaseAddress = transponderSettings.ResolveLocalBaseAddress("https://localhost:7154");
@@ -29,20 +53,26 @@ builder.WebHost.ConfigureKestrel(options =>
 
 IReadOnlyList<Uri> remoteAddresses = remoteResolution.Addresses;
 RemoteAddressStrategy remoteAddressStrategy = remoteResolution.Strategy;
+Uri integrationEventAddress = ResolveIntegrationEventAddress(remoteAddresses);
 
-builder.Services.AddTransponder(localAddress, options =>
-{
-    options.RequestAddressResolver = TransponderRequestAddressResolver.Create(remoteAddresses, remoteAddressStrategy);
-    options.TransportBuilder.UseGrpc(localAddress, remoteAddresses);
-
-    Uri pingRequestAddress = TransponderRequestAddressResolver.Create(localAddress)(typeof(PingRequest))
-        ?? throw new InvalidOperationException("Ping request address could not be resolved.");
-
-    options.TransportBuilder.UseSagaOrchestration(sagas =>
+builder.Services
+    .AddWebApplication1Application()
+    .AddWebApplication1Infrastructure(options => options.DestinationAddress = integrationEventAddress)
+    .AddTransponder(localAddress, options =>
     {
-        sagas.AddSaga<PingSaga, PingState>(cfg => cfg.StartWith<PingRequest>(pingRequestAddress));
-    });
-});
+        options.RequestAddressResolver = TransponderRequestAddressResolver.Create(remoteAddresses, remoteAddressStrategy);
+
+        Uri pingRequestAddress = TransponderRequestAddressResolver.Create(localAddress)(typeof(PingRequest))
+            ?? throw new InvalidOperationException("Ping request address could not be resolved.");
+
+        options.UseSagaOrchestration(sagas =>
+        {
+            sagas.AddSaga<PingSaga, PingState>(cfg => cfg.StartWith<PingRequest>(pingRequestAddress));
+        });
+        options.UsePersistedMessageScheduler();
+        options.UseOutbox();
+    })
+    .UseGrpc(localAddress, remoteAddresses);
 
 builder.Services.AddHostedService<TransponderHostedService>();
 
@@ -60,6 +90,48 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+static void AddTransponderPersistence(IServiceCollection services, IConfiguration configuration)
+{
+    ArgumentNullException.ThrowIfNull(services);
+    ArgumentNullException.ThrowIfNull(configuration);
+
+    string? postgresConnection = configuration.GetConnectionString("TransponderPostgres");
+    if (!string.IsNullOrWhiteSpace(postgresConnection))
+    {
+        services.AddDbContextFactory<PostgreSqlTransponderDbContext>(options =>
+            options.UseNpgsql(postgresConnection));
+        services.AddSingleton<IPostgreSqlStorageOptions>(new PostgreSqlStorageOptions());
+        services.AddTransponderPostgreSqlPersistence();
+        return;
+    }
+
+    string? sqlConnection = configuration.GetConnectionString("TransponderSqlServer");
+    if (!string.IsNullOrWhiteSpace(sqlConnection))
+    {
+        services.AddDbContextFactory<SqlServerTransponderDbContext>(options =>
+            options.UseSqlServer(sqlConnection));
+        services.AddSingleton<ISqlServerStorageOptions>(new SqlServerStorageOptions());
+        services.AddTransponderSqlServerPersistence();
+        return;
+    }
+
+    services.AddTransponderInMemoryPersistence();
+}
+
+static Uri ResolveIntegrationEventAddress(IReadOnlyList<Uri> remoteAddresses)
+{
+    if (remoteAddresses.Count == 0)
+        throw new InvalidOperationException("Remote address is required for integration events.");
+
+    Uri remote = remoteAddresses[0];
+    var builder = new UriBuilder(remote)
+    {
+        Path = $"{remote.AbsolutePath.TrimEnd('/')}/events/orders"
+    };
+
+    return builder.Uri;
+}
 
 static void ConfigureGrpcEndpoints(KestrelServerOptions options, Uri httpAddress, Uri grpcAddress)
 {

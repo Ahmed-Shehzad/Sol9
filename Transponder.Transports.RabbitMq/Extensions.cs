@@ -1,3 +1,6 @@
+using Microsoft.Extensions.DependencyInjection;
+using Transponder.Transports;
+using Transponder.Transports.Abstractions;
 using Transponder.Transports.RabbitMq.Abstractions;
 
 namespace Transponder.Transports.RabbitMq;
@@ -45,5 +48,43 @@ public static class Extensions
             (_, settings) => new RabbitMqTransportHost(settings));
 
         return builder;
+    }
+
+    public static IServiceCollection UseRabbitMq(
+        this IServiceCollection services,
+        Func<IServiceProvider, IRabbitMqHostSettings> settingsFactory)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(settingsFactory);
+
+        return AddTransportRegistration(services, builder => builder.AddRabbitMqTransport(settingsFactory));
+    }
+
+    public static IServiceCollection UseRabbitMq(
+        this IServiceCollection services,
+        IRabbitMqHostSettings settings)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(settings);
+
+        return services.UseRabbitMq(_ => settings);
+    }
+
+    private static IServiceCollection AddTransportRegistration(
+        IServiceCollection services,
+        Action<TransponderTransportBuilder> configure)
+    {
+        bool hasProvider = services.Any(service => service.ServiceType == typeof(ITransportHostProvider));
+        bool hasRegistry = services.Any(service => service.ServiceType == typeof(ITransportRegistry));
+
+        if (hasProvider && hasRegistry)
+        {
+            var builder = new TransponderTransportBuilder(services);
+            configure(builder);
+            return services;
+        }
+
+        services.AddTransponderTransports(configure);
+        return services;
     }
 }

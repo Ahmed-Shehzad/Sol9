@@ -1,3 +1,6 @@
+using Microsoft.Extensions.DependencyInjection;
+using Transponder.Transports;
+using Transponder.Transports.Abstractions;
 using Transponder.Transports.Kafka.Abstractions;
 
 namespace Transponder.Transports.Kafka;
@@ -45,5 +48,43 @@ public static class Extensions
             (_, settings) => new KafkaTransportHost(settings));
 
         return builder;
+    }
+
+    public static IServiceCollection UseKafka(
+        this IServiceCollection services,
+        Func<IServiceProvider, IKafkaHostSettings> settingsFactory)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(settingsFactory);
+
+        return AddTransportRegistration(services, builder => builder.AddKafkaTransport(settingsFactory));
+    }
+
+    public static IServiceCollection UseKafka(
+        this IServiceCollection services,
+        IKafkaHostSettings settings)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(settings);
+
+        return services.UseKafka(_ => settings);
+    }
+
+    private static IServiceCollection AddTransportRegistration(
+        IServiceCollection services,
+        Action<TransponderTransportBuilder> configure)
+    {
+        bool hasProvider = services.Any(service => service.ServiceType == typeof(ITransportHostProvider));
+        bool hasRegistry = services.Any(service => service.ServiceType == typeof(ITransportRegistry));
+
+        if (hasProvider && hasRegistry)
+        {
+            var builder = new TransponderTransportBuilder(services);
+            configure(builder);
+            return services;
+        }
+
+        services.AddTransponderTransports(configure);
+        return services;
     }
 }

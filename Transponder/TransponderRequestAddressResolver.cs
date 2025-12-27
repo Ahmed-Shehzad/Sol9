@@ -11,8 +11,7 @@ public static class TransponderRequestAddressResolver
 
     public sealed class RemoteAddressSelectionOptions
     {
-        internal RemoteAddressStrategy Strategy { get; private set; } =
-            RemoteAddressStrategy.PerDestinationHost;
+        internal RemoteAddressStrategy Strategy { get; private set; } = RemoteAddressStrategy.PerDestinationHost;
 
         public void UsePerDestinationHost()
             => Strategy = RemoteAddressStrategy.PerDestinationHost;

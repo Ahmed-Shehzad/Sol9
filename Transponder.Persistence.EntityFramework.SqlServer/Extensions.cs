@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Transponder.Persistence.Abstractions;
 using Transponder.Persistence.EntityFramework.Abstractions;
+using Transponder.Persistence.EntityFramework;
 
 namespace Transponder.Persistence.EntityFramework.SqlServer;
 
@@ -18,6 +19,8 @@ public static class Extensions
             EntityFrameworkDbContextFactory<SqlServerTransponderDbContext>>();
         services.TryAddSingleton<IScheduledMessageStore,
             EntityFrameworkScheduledMessageStore<SqlServerTransponderDbContext>>();
+        services.TryAddSingleton<IStorageSessionFactory,
+            EntityFrameworkStorageSessionFactory<SqlServerTransponderDbContext>>();
 
         return services;
     }

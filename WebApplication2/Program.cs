@@ -1,17 +1,35 @@
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using Transponder;
 using Transponder.Samples;
 using Transponder.Transports.Grpc;
 
 using WebApplication2;
+using WebApplication2.Application;
+using Transponder.Contracts.Orders;
+using WebApplication2.Application.Orders;
+using WebApplication2.Infrastructure;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+const string openApiDocumentName = "v1";
+builder.Services.AddOpenApi(openApiDocumentName);
+builder.Services.TryAddSingleton<Microsoft.AspNetCore.OpenApi.IOpenApiDocumentProvider>(sp =>
+{
+    Type? providerType = Type.GetType(
+        "Microsoft.AspNetCore.OpenApi.OpenApiDocumentService, Microsoft.AspNetCore.OpenApi");
+    if (providerType is null)
+        throw new InvalidOperationException("OpenApiDocumentService type not found.");
+
+    return (Microsoft.AspNetCore.OpenApi.IOpenApiDocumentProvider)ActivatorUtilities.CreateInstance(
+        sp,
+        providerType,
+        openApiDocumentName);
+});
 builder.Services.AddGrpc();
 
 TransponderSettings transponderSettings = builder.Services.AddTransponderSettings(builder.Configuration);
@@ -28,20 +46,28 @@ builder.WebHost.ConfigureKestrel(options =>
     defaultRemoteAddress: "https://localhost:7154");
 
 IReadOnlyList<Uri> remoteAddresses = remoteResolution.Addresses;
+Uri integrationEventAddress = ResolveIntegrationEventAddress(localAddress);
 
-builder.Services.AddTransponder(localAddress, options =>
-{
-    options.RequestAddressResolver = TransponderRequestAddressResolver.Create(remoteAddresses, remoteResolution.Strategy);
-    options.TransportBuilder.UseGrpc(localAddress, remoteAddresses);
-
-    Uri pingRequestAddress = TransponderRequestAddressResolver.Create(localAddress)(typeof(PingRequest))
-        ?? throw new InvalidOperationException("Ping request address could not be resolved.");
-
-    options.TransportBuilder.UseSagaOrchestration(sagas =>
+builder.Services
+    .AddWebApplication2Application()
+    .AddWebApplication2Infrastructure()
+    .AddTransponder(localAddress, options =>
     {
-        sagas.AddSaga<PingSaga, PingState>(cfg => cfg.StartWith<PingRequest>(pingRequestAddress));
-    });
-});
+        options.RequestAddressResolver = TransponderRequestAddressResolver.Create(remoteAddresses, remoteResolution.Strategy);
+
+        Uri pingRequestAddress = TransponderRequestAddressResolver.Create(localAddress)(typeof(PingRequest))
+            ?? throw new InvalidOperationException("Ping request address could not be resolved.");
+
+        options.UseSagaOrchestration(sagas =>
+        {
+            sagas.AddSaga<PingSaga, PingState>(cfg => cfg.StartWith<PingRequest>(pingRequestAddress));
+            sagas.AddSaga<OrderIntegrationSaga, OrderIntegrationSagaState>(
+                cfg => cfg.StartWith<OrderCreatedIntegrationEvent>(integrationEventAddress));
+            sagas.AddSaga<OrderFollowUpSaga, OrderFollowUpSagaState>(
+                cfg => cfg.StartWith<OrderFollowUpScheduledIntegrationEvent>(integrationEventAddress));
+        });
+    })
+    .UseGrpc(localAddress, remoteAddresses);
 
 builder.Services.AddHostedService<TransponderHostedService>();
 
@@ -59,6 +85,16 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+static Uri ResolveIntegrationEventAddress(Uri localAddress)
+{
+    var builder = new UriBuilder(localAddress)
+    {
+        Path = $"{localAddress.AbsolutePath.TrimEnd('/')}/events/orders"
+    };
+
+    return builder.Uri;
+}
 
 static void ConfigureGrpcEndpoints(KestrelServerOptions options, Uri httpAddress, Uri grpcAddress)
 {

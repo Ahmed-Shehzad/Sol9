@@ -94,6 +94,12 @@ internal sealed class SagaReceiveEndpointHandler
             cancellationToken,
             bus);
 
+        TransponderMessageContext messageContext = TransponderMessageContextFactory.FromTransportMessage(
+            transportMessage,
+            sourceAddress,
+            destinationAddress);
+        using IDisposable? scope = bus.BeginConsumeScope(messageContext);
+
         Guid? correlationId = consumeContext.CorrelationId ?? consumeContext.ConversationId;
         if (!correlationId.HasValue) return;
 

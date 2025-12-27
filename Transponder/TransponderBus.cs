@@ -1,4 +1,5 @@
 using Transponder.Abstractions;
+using Transponder.Persistence;
 using Transponder.Transports;
 using Transponder.Transports.Abstractions;
 
@@ -16,6 +17,8 @@ public sealed class TransponderBus : IBusControl
     private readonly IReadOnlyCollection<IReceiveEndpoint> _receiveEndpoints;
     private readonly Func<Type, Uri?>? _requestAddressResolver;
     private readonly TimeSpan _defaultRequestTimeout;
+    private readonly OutboxDispatcher? _outboxDispatcher;
+    private readonly IReadOnlyList<ITransponderMessageScopeProvider> _scopeProviders;
 
     public TransponderBus(
         Uri address,
@@ -25,7 +28,9 @@ public sealed class TransponderBus : IBusControl
         Func<Type, Uri?>? requestAddressResolver = null,
         TimeSpan? defaultRequestTimeout = null,
         Func<TransponderBus, IMessageScheduler>? schedulerFactory = null,
-        IEnumerable<IReceiveEndpoint>? receiveEndpoints = null)
+        IEnumerable<IReceiveEndpoint>? receiveEndpoints = null,
+        OutboxDispatcher? outboxDispatcher = null,
+        IEnumerable<ITransponderMessageScopeProvider>? messageScopeProviders = null)
     {
         Address = address ?? throw new ArgumentNullException(nameof(address));
         _hostProvider = hostProvider ?? throw new ArgumentNullException(nameof(hostProvider));
@@ -34,7 +39,9 @@ public sealed class TransponderBus : IBusControl
         _requestAddressResolver = requestAddressResolver;
         _defaultRequestTimeout = defaultRequestTimeout ?? TimeSpan.FromSeconds(30);
         _scheduler = (schedulerFactory ?? (bus => new InMemoryMessageScheduler(bus)))(this);
-        _receiveEndpoints = receiveEndpoints?.ToArray() ?? Array.Empty<IReceiveEndpoint>();
+        _receiveEndpoints = receiveEndpoints?.ToArray() ?? [];
+        _outboxDispatcher = outboxDispatcher;
+        _scopeProviders = messageScopeProviders?.ToArray() ?? [];
     }
 
     /// <inheritdoc />
@@ -46,11 +53,17 @@ public sealed class TransponderBus : IBusControl
         foreach (ITransportHost host in _hosts) await host.StartAsync(cancellationToken).ConfigureAwait(false);
 
         foreach (IReceiveEndpoint endpoint in _receiveEndpoints) await endpoint.StartAsync(cancellationToken).ConfigureAwait(false);
+
+        if (_outboxDispatcher is not null)
+            await _outboxDispatcher.StartAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
     public async Task StopAsync(CancellationToken cancellationToken = default)
     {
+        if (_outboxDispatcher is not null)
+            await _outboxDispatcher.StopAsync(cancellationToken).ConfigureAwait(false);
+
         foreach (IReceiveEndpoint endpoint in _receiveEndpoints) await endpoint.StopAsync(cancellationToken).ConfigureAwait(false);
 
         foreach (ITransportHost host in _hosts) await host.StopAsync(cancellationToken).ConfigureAwait(false);
@@ -133,6 +146,8 @@ public sealed class TransponderBus : IBusControl
         await DisposeHostsAsync().ConfigureAwait(false);
 
         foreach (IReceiveEndpoint endpoint in _receiveEndpoints) await endpoint.DisposeAsync().ConfigureAwait(false);
+
+        if (_outboxDispatcher is not null) await _outboxDispatcher.DisposeAsync().ConfigureAwait(false);
     }
 
     internal async Task DisposeHostsAsync()
@@ -153,6 +168,28 @@ public sealed class TransponderBus : IBusControl
         ArgumentNullException.ThrowIfNull(address);
         ArgumentNullException.ThrowIfNull(message);
 
+        if (!correlationId.HasValue && message is ICorrelatedMessage correlatedMessage)
+            correlationId = correlatedMessage.CorrelationId;
+
+        if (_outboxDispatcher is not null)
+        {
+            OutboxMessage outboxMessage = OutboxMessageFactory.Create(
+                message,
+                _serializer,
+                messageId,
+                correlationId,
+                conversationId,
+                Address,
+                address,
+                headers);
+
+            TransponderMessageContext context = TransponderMessageContextFactory.FromOutboxMessage(outboxMessage);
+            using IDisposable? scope = BeginSendScope(context);
+
+            await _outboxDispatcher.EnqueueAsync(outboxMessage, cancellationToken).ConfigureAwait(false);
+            return;
+        }
+
         ITransportHost host = _hostProvider.GetHost(address);
         ISendTransport transport = await host.GetSendTransportAsync(address, cancellationToken).ConfigureAwait(false);
         TransportMessage transportMessage = TransportMessageFactory.Create(
@@ -162,6 +199,12 @@ public sealed class TransponderBus : IBusControl
             correlationId,
             conversationId,
             headers);
+
+        TransponderMessageContext messageContext = TransponderMessageContextFactory.FromTransportMessage(
+            transportMessage,
+            Address,
+            address);
+        using IDisposable? sendScope = BeginSendScope(messageContext);
 
         await transport.SendAsync(transportMessage, cancellationToken).ConfigureAwait(false);
     }
@@ -177,7 +220,19 @@ public sealed class TransponderBus : IBusControl
 
         ITransportHost host = _hostProvider.GetHost(address);
         ISendTransport transport = await host.GetSendTransportAsync(address, cancellationToken).ConfigureAwait(false);
-        TransportMessage transportMessage = TransportMessageFactory.Create(message, _serializer, headers: headers);
+        Guid? correlationId = message is ICorrelatedMessage correlatedMessage ? correlatedMessage.CorrelationId : null;
+        TransportMessage transportMessage = TransportMessageFactory.Create(
+            message,
+            _serializer,
+            correlationId: correlationId,
+            headers: headers);
+
+        TransponderMessageContext messageContext = TransponderMessageContextFactory.FromTransportMessage(
+            transportMessage,
+            Address,
+            address);
+        using IDisposable? scope = BeginSendScope(messageContext);
+
         await transport.SendAsync(transportMessage, cancellationToken).ConfigureAwait(false);
     }
 
@@ -198,6 +253,28 @@ public sealed class TransponderBus : IBusControl
     {
         ArgumentNullException.ThrowIfNull(message);
 
+        if (!correlationId.HasValue && message is ICorrelatedMessage correlatedMessage)
+            correlationId = correlatedMessage.CorrelationId;
+
+        if (_outboxDispatcher is not null)
+        {
+            OutboxMessage outboxMessage = OutboxMessageFactory.Create(
+                message,
+                _serializer,
+                messageId: null,
+                correlationId,
+                conversationId,
+                Address,
+                destinationAddress: null,
+                headers);
+
+            TransponderMessageContext context = TransponderMessageContextFactory.FromOutboxMessage(outboxMessage);
+            using IDisposable? scope = BeginPublishScope(context);
+
+            await _outboxDispatcher.EnqueueAsync(outboxMessage, cancellationToken).ConfigureAwait(false);
+            return;
+        }
+
         ITransportHost host = _hostProvider.GetHost(Address);
         IPublishTransport transport = await host.GetPublishTransportAsync(message.GetType(), cancellationToken)
             .ConfigureAwait(false);
@@ -207,6 +284,12 @@ public sealed class TransponderBus : IBusControl
             correlationId: correlationId,
             conversationId: conversationId,
             headers: headers);
+
+        TransponderMessageContext messageContext = TransponderMessageContextFactory.FromTransportMessage(
+            transportMessage,
+            Address,
+            destinationAddress: null);
+        using IDisposable? publishScope = BeginPublishScope(messageContext);
 
         await transport.PublishAsync(transportMessage, cancellationToken).ConfigureAwait(false);
     }
@@ -230,7 +313,19 @@ public sealed class TransponderBus : IBusControl
     {
         Type messageType = message.GetType();
         IPublishTransport transport = await host.GetPublishTransportAsync(messageType, cancellationToken).ConfigureAwait(false);
-        TransportMessage transportMessage = TransportMessageFactory.Create(message, _serializer, headers: headers);
+        Guid? correlationId = message is ICorrelatedMessage correlatedMessage ? correlatedMessage.CorrelationId : null;
+        TransportMessage transportMessage = TransportMessageFactory.Create(
+            message,
+            _serializer,
+            correlationId: correlationId,
+            headers: headers);
+
+        TransponderMessageContext messageContext = TransponderMessageContextFactory.FromTransportMessage(
+            transportMessage,
+            Address,
+            destinationAddress: null);
+        using IDisposable? scope = BeginPublishScope(messageContext);
+
         await transport.PublishAsync(transportMessage, cancellationToken).ConfigureAwait(false);
     }
 
@@ -241,4 +336,13 @@ public sealed class TransponderBus : IBusControl
         builder.Path = $"{basePath}/responses/{Guid.NewGuid():N}";
         return builder.Uri;
     }
+
+    internal IDisposable? BeginConsumeScope(TransponderMessageContext context)
+        => TransponderMessageScopeFactory.BeginConsume(_scopeProviders, context);
+
+    private IDisposable? BeginSendScope(TransponderMessageContext context)
+        => TransponderMessageScopeFactory.BeginSend(_scopeProviders, context);
+
+    private IDisposable? BeginPublishScope(TransponderMessageContext context)
+        => TransponderMessageScopeFactory.BeginPublish(_scopeProviders, context);
 }

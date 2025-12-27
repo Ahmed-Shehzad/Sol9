@@ -61,7 +61,7 @@ public sealed class TransponderSettings
         if (string.IsNullOrWhiteSpace(defaultLocalAddress))
             throw new ArgumentException("Default local address is required.", nameof(defaultLocalAddress));
 
-        Uri defaultLocalUri = new Uri(defaultLocalAddress);
+        var defaultLocalUri = new Uri(defaultLocalAddress);
         (string? scheme, int? port) = GetSchemeAndPort(defaultLocalUri);
 
         if (!string.IsNullOrWhiteSpace(LocalServiceName) && scheme is not null && port.HasValue)

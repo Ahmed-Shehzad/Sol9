@@ -6,3 +6,14 @@ namespace Transponder.Abstractions;
 public interface IMessage
 {
 }
+
+/// <summary>
+/// Provides a correlation identifier for messages.
+/// </summary>
+public interface ICorrelatedMessage : IMessage
+{
+    /// <summary>
+    /// Gets the correlation identifier used to relate messages.
+    /// </summary>
+    Guid CorrelationId { get; }
+}

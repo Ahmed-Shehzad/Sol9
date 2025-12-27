@@ -1,6 +1,12 @@
 <Solution>
   <Folder Name="/Clients/">
+    <Project Path="WebApplication1.Domain/WebApplication1.Domain.csproj" />
+    <Project Path="WebApplication1.Application/WebApplication1.Application.csproj" />
+    <Project Path="WebApplication1.Infrastructure/WebApplication1.Infrastructure.csproj" />
     <Project Path="WebApplication1/WebApplication1.csproj" />
+    <Project Path="WebApplication2.Domain/WebApplication2.Domain.csproj" />
+    <Project Path="WebApplication2.Application/WebApplication2.Application.csproj" />
+    <Project Path="WebApplication2.Infrastructure/WebApplication2.Infrastructure.csproj" />
     <Project Path="WebApplication2/WebApplication2.csproj" />
   </Folder>
   <Folder Name="/Intercessor/">
@@ -8,9 +14,13 @@
   </Folder>
   <Folder Name="/Solution Items/" />
   <Folder Name="/Transponder/">
+    <Project Path="Transponder.Contracts/Transponder.Contracts.csproj" />
+    <Project Path="Transponder.Persistence.Redis/Transponder.Persistence.Redis.csproj" />
+    <Project Path="Transponder.OpenTelemetry/Transponder.OpenTelemetry.csproj" />
     <Project Path="Transponder.Persistence.EntityFramework.SqlServer\Transponder.Persistence.EntityFramework.SqlServer.csproj" />
     <Project Path="Transponder.Persistence.EntityFramework\Transponder.Persistence.EntityFramework.csproj" />
     <Project Path="Transponder.Persistence\Transponder.Persistence.csproj" />
+    <Project Path="Transponder.Serilog/Transponder.Serilog.csproj" />
     <Project Path="Transponder.Samples/Transponder.Samples.csproj" />
     <Project Path="Transponder.Transports.Aws\Transponder.Transports.Aws.csproj" />
     <Project Path="Transponder.Transports.AzureServiceBus\Transponder.Transports.AzureServiceBus.csproj" />

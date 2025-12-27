@@ -107,6 +107,12 @@ internal sealed class RequestClient<TRequest> : IRequestClient<TRequest>
     {
         ITransportMessage message = context.Message;
 
+        TransponderMessageContext messageContext = TransponderMessageContextFactory.FromTransportMessage(
+            message,
+            context.SourceAddress,
+            context.DestinationAddress);
+        using IDisposable? scope = _bus.BeginConsumeScope(messageContext);
+
         if (!TryGetRequestId(message, out Guid requestId) || !_pendingRequests.TryGetValue(requestId, out PendingRequest? pending))
             return Task.CompletedTask;
 
