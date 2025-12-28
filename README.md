@@ -90,4 +90,4 @@ dotnet test Sol9.slnx
 - `docker-compose.yml`, `global.json`, `Directory.Build.props`
 
 ## License
-TODO: Add a LICENSE file to clarify usage and distribution terms.
+MIT License. See `LICENSE`.
