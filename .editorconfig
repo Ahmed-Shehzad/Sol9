@@ -98,16 +98,53 @@ dotnet_code_quality_unused_parameters = non_public
 dotnet_diagnostic.IDE0011.severity = error
 dotnet_diagnostic.IDE0055.severity = error
 
+########################################
+# SonarAnalyzer / SonarLint (Sonar rules are S####)
+# Add/remove rules to match your SonarQube Quality Profile.
+########################################
+
+# TODO tags should not be left in code
+dotnet_diagnostic.S1135.severity = warning
+
+# Commented-out code should be removed
+dotnet_diagnostic.S125.severity = suggestion
+
+# Methods should not have too many parameters
+dotnet_diagnostic.S107.severity = warning
+
+# Unused private members should be removed (often noisy; keep as suggestion)
+dotnet_diagnostic.S1144.severity = suggestion
+
+# Example: to disable a specific Sonar rule
+# dotnet_diagnostic.S####.severity = none
+
 # Naming rules for async methods.
 dotnet_naming_rule.async_methods_should_be_suffixed_with_async.severity = error
 dotnet_naming_rule.async_methods_should_be_suffixed_with_async.symbols = async_methods
 dotnet_naming_rule.async_methods_should_be_suffixed_with_async.style = async_suffix
 
+# Define the naming style
+dotnet_naming_style.async_suffix.required_suffix = Async
+dotnet_naming_style.async_suffix.capitalization = pascal_case
+
+# Apply it to methods
+dotnet_naming_rule.async_methods_should_end_in_async.symbols = async_methods
+dotnet_naming_rule.async_methods_should_end_in_async.style = async_suffix
+dotnet_naming_rule.async_methods_should_end_in_async.severity = warning
+
 dotnet_naming_symbols.async_methods.applicable_kinds = method
-dotnet_naming_symbols.async_methods.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
 dotnet_naming_symbols.async_methods.required_modifiers = async
 
-dotnet_naming_style.async_suffix.required_suffix = Async
+dotnet_naming_symbols.async_methods.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
+
+
+########################################
+# Optional: loosen Sonar a bit in tests
+########################################
+[**/*Tests*/**/*.cs]
+dotnet_diagnostic.S1135.severity = suggestion
+dotnet_diagnostic.S125.severity = none
+dotnet_diagnostic.S1144.severity = none
 
 [*.md]
 # Allow trailing whitespace in Markdown for hard line breaks.
