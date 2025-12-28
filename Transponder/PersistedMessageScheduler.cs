@@ -195,7 +195,7 @@ public sealed class PersistedMessageScheduler : IMessageScheduler, IAsyncDisposa
             Uri? destinationAddress = null;
             if (message.Headers.TryGetValue(TransponderMessageHeaders.DestinationAddress, out object? destinationValue))
             {
-                if (!TryParseDestinationAddress(destinationValue, out Uri parsed)) continue;
+                if (!TryParseDestinationAddress(destinationValue, out Uri? parsed)) continue;
 
                 destinationAddress = parsed;
             }
@@ -229,7 +229,7 @@ public sealed class PersistedMessageScheduler : IMessageScheduler, IAsyncDisposa
         return Type.GetType(messageType, throwOnError: false);
     }
 
-    private static bool TryParseDestinationAddress(object? value, out Uri destinationAddress)
+    private static bool TryParseDestinationAddress(object? value, out Uri? destinationAddress)
     {
         destinationAddress = null!;
 
@@ -238,14 +238,12 @@ public sealed class PersistedMessageScheduler : IMessageScheduler, IAsyncDisposa
             null => null,
             Uri uri => uri.ToString(),
             string text => text,
-            JsonElement element when element.ValueKind == JsonValueKind.String => element.GetString(),
+            JsonElement { ValueKind: JsonValueKind.String } element => element.GetString(),
             JsonElement => null,
             _ => value.ToString()
         };
 
-        if (string.IsNullOrWhiteSpace(address)) return false;
-
-        return Uri.TryCreate(address, UriKind.RelativeOrAbsolute, out destinationAddress);
+        return !string.IsNullOrWhiteSpace(address) && Uri.TryCreate(address, UriKind.RelativeOrAbsolute, out destinationAddress);
     }
 
     private static IReadOnlyDictionary<string, object?> RemoveDestinationHeader(
