@@ -127,6 +127,7 @@ public sealed class OutboxDispatcher : IAsyncDisposable
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
+            // Expected when cancellation is requested
         }
     }
 
@@ -143,6 +144,7 @@ public sealed class OutboxDispatcher : IAsyncDisposable
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
+            // Expected when cancellation is requested
         }
     }
 

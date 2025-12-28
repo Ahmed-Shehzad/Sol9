@@ -99,6 +99,7 @@ public sealed class PersistedMessageScheduler : IMessageScheduler, IAsyncDisposa
         }
         catch (OperationCanceledException)
         {
+            // Expected when cancellation is requested
         }
 
         _cts.Dispose();

@@ -5,9 +5,9 @@ namespace Transponder.Persistence.EntityFramework.Tests;
 public sealed class EntityFrameworkInboxStoreTests
 {
     [Fact]
-    public async Task TryAddAsync_Returns_False_For_Duplicate_State()
+    public async Task TryAddAsync_Returns_False_For_Duplicate_StateAsync()
     {
-        await using EntityFrameworkTestDbContext context = CreateContext(nameof(TryAddAsync_Returns_False_For_Duplicate_State));
+        await using EntityFrameworkTestDbContext context = CreateContext(nameof(TryAddAsync_Returns_False_For_Duplicate_StateAsync));
         var store = new EntityFrameworkInboxStore(context);
         var state = new InboxState(Guid.NewGuid(), "consumer-A");
 

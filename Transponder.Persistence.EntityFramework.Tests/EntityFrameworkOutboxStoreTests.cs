@@ -7,9 +7,9 @@ namespace Transponder.Persistence.EntityFramework.Tests;
 public sealed class EntityFrameworkOutboxStoreTests
 {
     [Fact]
-    public async Task GetPendingAsync_Returns_Unsent_Messages()
+    public async Task GetPendingAsync_Returns_Unsent_MessagesAsync()
     {
-        await using EntityFrameworkTestDbContext context = CreateContext(nameof(GetPendingAsync_Returns_Unsent_Messages));
+        await using EntityFrameworkTestDbContext context = CreateContext(nameof(GetPendingAsync_Returns_Unsent_MessagesAsync));
         var store = new EntityFrameworkOutboxStore(context);
 
         var pending = new OutboxMessage(Guid.NewGuid(), new byte[] { 1 });
