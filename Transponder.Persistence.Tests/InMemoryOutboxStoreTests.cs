@@ -10,9 +10,19 @@ public sealed class InMemoryOutboxStoreTests
         var store = new InMemoryOutboxStore();
         DateTimeOffset now = DateTimeOffset.UtcNow;
 
-        var first = new OutboxMessage(Guid.NewGuid(), new byte[] { 1 }, enqueuedTime: now.AddMinutes(-2));
-        var second = new OutboxMessage(Guid.NewGuid(), new byte[] { 2 }, enqueuedTime: now.AddMinutes(-1));
-        var sent = new OutboxMessage(Guid.NewGuid(), new byte[] { 3 }, enqueuedTime: now.AddMinutes(-3), sentTime: now.AddMinutes(-1));
+        var first = new OutboxMessage(Guid.NewGuid(), new byte[] { 1 }, new OutboxMessageOptions
+        {
+            EnqueuedTime = now.AddMinutes(-2)
+        });
+        var second = new OutboxMessage(Guid.NewGuid(), new byte[] { 2 }, new OutboxMessageOptions
+        {
+            EnqueuedTime = now.AddMinutes(-1)
+        });
+        var sent = new OutboxMessage(Guid.NewGuid(), new byte[] { 3 }, new OutboxMessageOptions
+        {
+            EnqueuedTime = now.AddMinutes(-3),
+            SentTime = now.AddMinutes(-1)
+        });
 
         await store.AddAsync(first);
         await store.AddAsync(second);

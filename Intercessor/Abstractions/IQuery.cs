@@ -4,7 +4,7 @@ namespace Intercessor.Abstractions;
 /// Marker interface to represent a query that produces a response when handled.
 /// </summary>
 public interface IQuery : IRequest;
-    
+
 /// <summary>
 /// Represents a query that produces a response when handled by <see cref="IRequestHandler{TRequest, TResponse}"/>.
 /// </summary>

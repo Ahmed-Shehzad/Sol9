@@ -26,7 +26,7 @@ internal class Publisher : IPublisher
             .Cast<dynamic>()
             .ToList();
 
-        List<Task> tasks = handlers.Select(async handler =>
+        var tasks = handlers.Select(async handler =>
         {
             try
             {
@@ -34,9 +34,12 @@ internal class Publisher : IPublisher
             }
             catch (Exception ex)
             {
-                // Optionally log error somewhere
-                _logger.LogError(ex, "Error handling notification {NotificationType}", notificationType.FullName);
-                throw;
+                string handlerName = handler.GetType().FullName ?? handler.GetType().Name;
+                string notificationName = notificationType.FullName ?? notificationType.Name;
+                _logger.LogError(ex, "Error handling notification {NotificationType} with handler {HandlerType}", notificationName, handlerName);
+                throw new InvalidOperationException(
+                    $"Error handling notification {notificationName} with handler {handlerName}.",
+                    ex);
             }
         }).ToList();
 

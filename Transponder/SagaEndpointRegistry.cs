@@ -10,23 +10,23 @@ internal sealed class SagaEndpointRegistry
             StringComparer.OrdinalIgnoreCase);
 
         foreach (SagaRegistration registration in registrations)
-        foreach (SagaMessageRegistration message in registration.Registrations)
-        {
-            string addressKey = message.InputAddress.ToString();
-            if (!_registrations.TryGetValue(addressKey, out Dictionary<string, List<SagaMessageRegistration>>? byMessageType))
+            foreach (SagaMessageRegistration message in registration.Registrations)
             {
-                byMessageType = new Dictionary<string, List<SagaMessageRegistration>>(StringComparer.OrdinalIgnoreCase);
-                _registrations[addressKey] = byMessageType;
-            }
+                string addressKey = message.InputAddress.ToString();
+                if (!_registrations.TryGetValue(addressKey, out Dictionary<string, List<SagaMessageRegistration>>? byMessageType))
+                {
+                    byMessageType = new Dictionary<string, List<SagaMessageRegistration>>(StringComparer.OrdinalIgnoreCase);
+                    _registrations[addressKey] = byMessageType;
+                }
 
-            if (!byMessageType.TryGetValue(message.MessageTypeName, out List<SagaMessageRegistration>? list))
-            {
-                list = [];
-                byMessageType[message.MessageTypeName] = list;
-            }
+                if (!byMessageType.TryGetValue(message.MessageTypeName, out List<SagaMessageRegistration>? list))
+                {
+                    list = [];
+                    byMessageType[message.MessageTypeName] = list;
+                }
 
-            list.Add(message);
-        }
+                list.Add(message);
+            }
     }
 
     public IReadOnlyCollection<Uri> GetInputAddresses()

@@ -8,8 +8,9 @@ public sealed class TransponderRequestAddressResolverTests
 
     private sealed class Outer
     {
-        public sealed class Inner
+        public interface Inner
         {
+            string Marker { get; }
         }
     }
 
@@ -30,11 +31,11 @@ public sealed class TransponderRequestAddressResolverTests
     [Fact]
     public void Create_With_Address_List_Defaults_To_First_Address()
     {
-        var addresses = new[]
-        {
+        Uri[] addresses =
+        [
             new Uri("https://host-a/api"),
             new Uri("https://host-b/api")
-        };
+        ];
 
         Func<Type, Uri?> resolver = TransponderRequestAddressResolver.Create(addresses);
 
@@ -46,11 +47,11 @@ public sealed class TransponderRequestAddressResolverTests
     [Fact]
     public void Create_With_Address_List_RoundRobins()
     {
-        var addresses = new[]
-        {
+        Uri[] addresses =
+        [
             new Uri("https://host-a/api"),
             new Uri("https://host-b/api")
-        };
+        ];
 
         Func<Type, Uri?> resolver = TransponderRequestAddressResolver.Create(
             addresses,

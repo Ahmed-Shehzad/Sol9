@@ -4,6 +4,7 @@ using Intercessor.Abstractions;
 using Intercessor.Behaviours;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using Verifier;
 using Verifier.Abstractions;
@@ -19,6 +20,7 @@ public class IntercessorBuilder
 {
     private readonly IServiceCollection _services;
     private readonly List<Assembly> _assemblies;
+    private readonly List<Type> _pipelineBehaviors;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="IntercessorBuilder"/> class,
@@ -34,6 +36,7 @@ public class IntercessorBuilder
     {
         _services = services;
         _assemblies = [];
+        _pipelineBehaviors = [];
     }
 
     /// <summary>
@@ -44,6 +47,33 @@ public class IntercessorBuilder
     {
         ArgumentNullException.ThrowIfNull(assembly);
         _assemblies.Add(assembly);
+    }
+
+    /// <summary>
+    /// Registers a pipeline behavior type to be added explicitly to the container.
+    /// Supports open generic behaviors such as <c>LoggingBehavior&lt;,&gt;</c>.
+    /// </summary>
+    /// <param name="behaviorType">The pipeline behavior type.</param>
+    public void AddBehavior(Type behaviorType)
+    {
+        ArgumentNullException.ThrowIfNull(behaviorType);
+
+        if (!behaviorType.IsClass || behaviorType.IsAbstract)
+            throw new ArgumentException("Pipeline behavior must be a non-abstract class.", nameof(behaviorType));
+
+        if (!ImplementsPipelineBehavior(behaviorType))
+            throw new ArgumentException("Type must implement IPipelineBehavior<> or IPipelineBehavior<,>.", nameof(behaviorType));
+
+        _pipelineBehaviors.Add(behaviorType);
+    }
+
+    /// <summary>
+    /// Registers a pipeline behavior type to be added explicitly to the container.
+    /// </summary>
+    /// <typeparam name="TBehavior">The pipeline behavior type.</typeparam>
+    public void AddBehavior<TBehavior>() where TBehavior : class
+    {
+        AddBehavior(typeof(TBehavior));
     }
 
     /// <summary>
@@ -109,10 +139,48 @@ public class IntercessorBuilder
             foreach (Assembly assembly in distinctAssemblies) x.RegisterFromAssembly(assembly);
         });
 
+        RegisterPipelineBehaviors(_pipelineBehaviors);
+
         // Register Validation Pipeline Behavior
         _ = _services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
         // Register Validation Pipeline Behavior
         _ = _services.AddTransient(typeof(IPipelineBehavior<>), typeof(ValidationBehavior<>));
+    }
+
+    private void RegisterPipelineBehaviors(IEnumerable<Type> behaviorTypes)
+    {
+        foreach (Type behaviorType in behaviorTypes)
+        {
+            RegisterPipelineBehavior(behaviorType);
+        }
+    }
+
+    private void RegisterPipelineBehavior(Type behaviorType)
+    {
+        bool isOpenGeneric = behaviorType.ContainsGenericParameters;
+
+        foreach (Type interfaceType in behaviorType.GetInterfaces())
+        {
+            if (!IsPipelineBehaviorInterface(interfaceType)) continue;
+
+            Type serviceType = isOpenGeneric
+                ? interfaceType.GetGenericTypeDefinition()
+                : interfaceType;
+
+            _services.TryAddEnumerable(ServiceDescriptor.Transient(serviceType, behaviorType));
+        }
+    }
+
+    private static bool ImplementsPipelineBehavior(Type behaviorType) =>
+        behaviorType.GetInterfaces().Any(IsPipelineBehaviorInterface);
+
+    private static bool IsPipelineBehaviorInterface(Type interfaceType)
+    {
+        if (!interfaceType.IsGenericType) return false;
+
+        Type genericType = interfaceType.GetGenericTypeDefinition();
+        return genericType == typeof(IPipelineBehavior<>)
+               || genericType == typeof(IPipelineBehavior<,>);
     }
 }

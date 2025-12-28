@@ -16,7 +16,7 @@ public interface ISender
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation.</param>
     /// <returns>A task representing the asynchronous operation, with the <typeparamref name="TResponse"/> result.</returns>
     Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Sends a request (Command) to the appropriate handler asynchronously.
     /// </summary>

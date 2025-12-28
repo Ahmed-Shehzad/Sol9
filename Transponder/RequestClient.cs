@@ -124,7 +124,12 @@ internal sealed class RequestClient<TRequest> : IRequestClient<TRequest>
         }
         catch (Exception ex)
         {
-            pending.TrySetException(ex);
+            string responseTypeName = pending.ResponseType.FullName ?? pending.ResponseType.Name;
+            string messageTypeName = message.MessageType ?? "unknown";
+            var wrapped = new InvalidOperationException(
+                $"Failed to deserialize response for request {requestId} (message type: {messageTypeName}, response type: {responseTypeName}).",
+                ex);
+            pending.TrySetException(wrapped);
         }
 
         return Task.CompletedTask;

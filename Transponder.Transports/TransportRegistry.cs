@@ -40,15 +40,10 @@ public sealed class TransportRegistry : ITransportRegistry
 
         string scheme = address.Scheme;
 
-        foreach (ITransportFactory candidate in _factories)
-        foreach (string supported in candidate.SupportedSchemes)
-            if (string.Equals(supported, scheme, StringComparison.OrdinalIgnoreCase))
-            {
-                factory = candidate;
-                return true;
-            }
+        factory = _factories.FirstOrDefault(candidate =>
+            candidate.SupportedSchemes.Any(supported =>
+                string.Equals(supported, scheme, StringComparison.OrdinalIgnoreCase)));
 
-        factory = null;
-        return false;
+        return factory != null;
     }
 }

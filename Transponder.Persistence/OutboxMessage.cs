@@ -13,31 +13,25 @@ public sealed class OutboxMessage : IOutboxMessage
     public OutboxMessage(
         Guid messageId,
         ReadOnlyMemory<byte> body,
-        IReadOnlyDictionary<string, object?>? headers = null,
-        DateTimeOffset? enqueuedTime = null,
-        Guid? correlationId = null,
-        Guid? conversationId = null,
-        Uri? sourceAddress = null,
-        Uri? destinationAddress = null,
-        string? messageType = null,
-        string? contentType = null,
-        DateTimeOffset? sentTime = null)
+        OutboxMessageOptions? options = null)
     {
         if (messageId == Guid.Empty) throw new ArgumentException("MessageId must be provided.", nameof(messageId));
 
+        options ??= new OutboxMessageOptions();
+
         MessageId = messageId;
-        CorrelationId = correlationId;
-        ConversationId = conversationId;
-        SourceAddress = sourceAddress;
-        DestinationAddress = destinationAddress;
-        MessageType = messageType;
-        ContentType = contentType;
+        CorrelationId = options.CorrelationId;
+        ConversationId = options.ConversationId;
+        SourceAddress = options.SourceAddress;
+        DestinationAddress = options.DestinationAddress;
+        MessageType = options.MessageType;
+        ContentType = options.ContentType;
         _body = body.ToArray();
-        _headers = headers != null
-            ? new Dictionary<string, object?>(headers, StringComparer.OrdinalIgnoreCase)
+        _headers = options.Headers != null
+            ? new Dictionary<string, object?>(options.Headers, StringComparer.OrdinalIgnoreCase)
             : new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
-        EnqueuedTime = enqueuedTime ?? DateTimeOffset.UtcNow;
-        SentTime = sentTime;
+        EnqueuedTime = options.EnqueuedTime ?? DateTimeOffset.UtcNow;
+        SentTime = options.SentTime;
     }
 
     /// <inheritdoc />
@@ -85,14 +79,38 @@ public sealed class OutboxMessage : IOutboxMessage
         return new OutboxMessage(
             message.MessageId,
             message.Body,
-            message.Headers,
-            message.EnqueuedTime,
-            message.CorrelationId,
-            message.ConversationId,
-            message.SourceAddress,
-            message.DestinationAddress,
-            message.MessageType,
-            message.ContentType,
-            message.SentTime);
+            new OutboxMessageOptions
+            {
+                Headers = message.Headers,
+                EnqueuedTime = message.EnqueuedTime,
+                CorrelationId = message.CorrelationId,
+                ConversationId = message.ConversationId,
+                SourceAddress = message.SourceAddress,
+                DestinationAddress = message.DestinationAddress,
+                MessageType = message.MessageType,
+                ContentType = message.ContentType,
+                SentTime = message.SentTime
+            });
     }
+}
+
+public sealed class OutboxMessageOptions
+{
+    public IReadOnlyDictionary<string, object?>? Headers { get; init; }
+
+    public DateTimeOffset? EnqueuedTime { get; init; }
+
+    public Guid? CorrelationId { get; init; }
+
+    public Guid? ConversationId { get; init; }
+
+    public Uri? SourceAddress { get; init; }
+
+    public Uri? DestinationAddress { get; init; }
+
+    public string? MessageType { get; init; }
+
+    public string? ContentType { get; init; }
+
+    public DateTimeOffset? SentTime { get; init; }
 }

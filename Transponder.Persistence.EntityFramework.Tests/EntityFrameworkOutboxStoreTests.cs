@@ -13,7 +13,10 @@ public sealed class EntityFrameworkOutboxStoreTests
         var store = new EntityFrameworkOutboxStore(context);
 
         var pending = new OutboxMessage(Guid.NewGuid(), new byte[] { 1 });
-        var sent = new OutboxMessage(Guid.NewGuid(), new byte[] { 2 }, sentTime: DateTimeOffset.UtcNow);
+        var sent = new OutboxMessage(Guid.NewGuid(), new byte[] { 2 }, new OutboxMessageOptions
+        {
+            SentTime = DateTimeOffset.UtcNow
+        });
 
         await store.AddAsync(pending);
         await store.AddAsync(sent);

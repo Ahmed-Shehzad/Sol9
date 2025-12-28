@@ -176,12 +176,15 @@ public sealed class TransponderBus : IBusControl
             OutboxMessage outboxMessage = OutboxMessageFactory.Create(
                 message,
                 _serializer,
-                messageId,
-                correlationId,
-                conversationId,
-                Address,
-                address,
-                headers);
+                new OutboxMessageFactoryOptions
+                {
+                    MessageId = messageId,
+                    CorrelationId = correlationId,
+                    ConversationId = conversationId,
+                    SourceAddress = Address,
+                    DestinationAddress = address,
+                    Headers = headers
+                });
 
             TransponderMessageContext context = TransponderMessageContextFactory.FromOutboxMessage(outboxMessage);
             using IDisposable? scope = BeginSendScope(context);
@@ -261,12 +264,13 @@ public sealed class TransponderBus : IBusControl
             OutboxMessage outboxMessage = OutboxMessageFactory.Create(
                 message,
                 _serializer,
-                messageId: null,
-                correlationId,
-                conversationId,
-                Address,
-                destinationAddress: null,
-                headers);
+                new OutboxMessageFactoryOptions
+                {
+                    CorrelationId = correlationId,
+                    ConversationId = conversationId,
+                    SourceAddress = Address,
+                    Headers = headers
+                });
 
             TransponderMessageContext context = TransponderMessageContextFactory.FromOutboxMessage(outboxMessage);
             using IDisposable? scope = BeginPublishScope(context);

@@ -18,3 +18,15 @@ services.AddIntercessor(builder =>
     builder.RegisterFromAssembly(typeof(SomeHandler).Assembly);
 });
 ```
+
+## Pipeline behaviors
+You can register custom pipeline behaviors explicitly from the builder.
+
+```csharp
+services.AddIntercessor(builder =>
+{
+    builder.RegisterFromAssembly(typeof(SomeHandler).Assembly);
+    builder.AddBehavior(typeof(LoggingBehavior<,>));
+    builder.AddBehavior(typeof(LoggingBehavior<>));
+});
+```
