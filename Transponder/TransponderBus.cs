@@ -25,23 +25,20 @@ public sealed class TransponderBus : IBusControl
         ITransportHostProvider hostProvider,
         IEnumerable<ITransportHost> hosts,
         IMessageSerializer serializer,
-        Func<Type, Uri?>? requestAddressResolver = null,
-        TimeSpan? defaultRequestTimeout = null,
-        Func<TransponderBus, IMessageScheduler>? schedulerFactory = null,
-        IEnumerable<IReceiveEndpoint>? receiveEndpoints = null,
-        OutboxDispatcher? outboxDispatcher = null,
-        IEnumerable<ITransponderMessageScopeProvider>? messageScopeProviders = null)
+        TransponderBusRuntimeOptions? options = null)
     {
+        options ??= new TransponderBusRuntimeOptions();
+
         Address = address ?? throw new ArgumentNullException(nameof(address));
         _hostProvider = hostProvider ?? throw new ArgumentNullException(nameof(hostProvider));
         _hosts = hosts?.ToArray() ?? throw new ArgumentNullException(nameof(hosts));
         _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
-        _requestAddressResolver = requestAddressResolver;
-        _defaultRequestTimeout = defaultRequestTimeout ?? TimeSpan.FromSeconds(30);
-        _scheduler = (schedulerFactory ?? (bus => new InMemoryMessageScheduler(bus)))(this);
-        _receiveEndpoints = receiveEndpoints?.ToArray() ?? [];
-        _outboxDispatcher = outboxDispatcher;
-        _scopeProviders = messageScopeProviders?.ToArray() ?? [];
+        _requestAddressResolver = options.RequestAddressResolver;
+        _defaultRequestTimeout = options.DefaultRequestTimeout ?? TimeSpan.FromSeconds(30);
+        _scheduler = (options.SchedulerFactory ?? (bus => new InMemoryMessageScheduler(bus)))(this);
+        _receiveEndpoints = options.ReceiveEndpoints?.ToArray() ?? [];
+        _outboxDispatcher = options.OutboxDispatcher;
+        _scopeProviders = options.MessageScopeProviders?.ToArray() ?? [];
     }
 
     /// <inheritdoc />
@@ -112,14 +109,6 @@ public sealed class TransponderBus : IBusControl
         => _scheduler.ScheduleSendAsync(destinationAddress, message, scheduledTime, cancellationToken);
 
     /// <inheritdoc />
-    public Task<IScheduledMessageHandle> SchedulePublishAsync<TMessage>(
-        TMessage message,
-        DateTimeOffset scheduledTime,
-        CancellationToken cancellationToken = default)
-        where TMessage : class, IMessage
-        => _scheduler.SchedulePublishAsync(message, scheduledTime, cancellationToken);
-
-    /// <inheritdoc />
     public Task<IScheduledMessageHandle> ScheduleSendAsync<TMessage>(
         Uri destinationAddress,
         TMessage message,
@@ -127,6 +116,14 @@ public sealed class TransponderBus : IBusControl
         CancellationToken cancellationToken = default)
         where TMessage : class, IMessage
         => _scheduler.ScheduleSendAsync(destinationAddress, message, delay, cancellationToken);
+
+    /// <inheritdoc />
+    public Task<IScheduledMessageHandle> SchedulePublishAsync<TMessage>(
+        TMessage message,
+        DateTimeOffset scheduledTime,
+        CancellationToken cancellationToken = default)
+        where TMessage : class, IMessage
+        => _scheduler.SchedulePublishAsync(message, scheduledTime, cancellationToken);
 
     /// <inheritdoc />
     public Task<IScheduledMessageHandle> SchedulePublishAsync<TMessage>(

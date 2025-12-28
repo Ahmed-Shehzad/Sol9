@@ -60,12 +60,15 @@ public static class Extensions
                 sp.GetRequiredService<ITransportHostProvider>(),
                 sp.GetServices<ITransportHost>(),
                 sp.GetRequiredService<IMessageSerializer>(),
-                resolver,
-                options.DefaultRequestTimeout,
-                bus => schedulerFactory(sp, bus),
-                sp.GetServices<IReceiveEndpoint>(),
-                sp.GetService<OutboxDispatcher>(),
-                sp.GetServices<ITransponderMessageScopeProvider>());
+                new TransponderBusRuntimeOptions
+                {
+                    RequestAddressResolver = resolver,
+                    DefaultRequestTimeout = options.DefaultRequestTimeout,
+                    SchedulerFactory = bus => schedulerFactory(sp, bus),
+                    ReceiveEndpoints = sp.GetServices<IReceiveEndpoint>(),
+                    OutboxDispatcher = sp.GetService<OutboxDispatcher>(),
+                    MessageScopeProviders = sp.GetServices<ITransponderMessageScopeProvider>()
+                });
         });
 
         _ = services.AddSingleton<IBus>(sp => sp.GetRequiredService<TransponderBus>());
