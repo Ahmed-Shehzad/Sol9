@@ -36,6 +36,9 @@ message SendRequest {
 message SendResponse {
 }
 
+// Represents a request to publish a message to all interested subscribers.
+// Unlike SendRequest, this does not target a specific destination and relies
+// on the underlying transport's publish/subscribe semantics.
 message PublishRequest {
   // The message to be published.
   GrpcTransportMessage message = 1;
