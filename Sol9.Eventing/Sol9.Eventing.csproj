@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Intercessor\Intercessor.csproj" />
+    <ProjectReference Include="..\Transponder\Transponder.csproj" />
   </ItemGroup>
 
 </Project>

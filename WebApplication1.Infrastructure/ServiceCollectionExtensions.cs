@@ -3,8 +3,9 @@ using Intercessor.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
+using Sol9.Eventing;
+
 using WebApplication1.Application.Orders;
-using WebApplication1.Infrastructure.Integration;
 using WebApplication1.Infrastructure.Orders;
 
 namespace WebApplication1.Infrastructure;

@@ -4,7 +4,7 @@ using Sol9.Eventing.Abstractions;
 
 using Transponder.Abstractions;
 
-namespace WebApplication1.Infrastructure.Integration;
+namespace Sol9.Eventing;
 
 public sealed class IntegrationEventPublisher<TNotification> : IIntegrationEventHandler<TNotification>
     where TNotification : IIntegrationEvent

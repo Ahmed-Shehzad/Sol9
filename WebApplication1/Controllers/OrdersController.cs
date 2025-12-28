@@ -3,11 +3,12 @@ using Intercessor.Abstractions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
+using Sol9.Eventing;
+
 using Transponder.Abstractions;
 using Transponder.Contracts.Orders;
 
 using WebApplication1.Application.Orders;
-using WebApplication1.Infrastructure.Integration;
 
 namespace WebApplication1.Controllers;
 

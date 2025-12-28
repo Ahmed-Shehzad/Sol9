@@ -1,4 +1,4 @@
-namespace WebApplication1.Infrastructure.Integration;
+namespace Sol9.Eventing;
 
 public sealed class IntegrationEventPublisherOptions
 {
