@@ -5,13 +5,15 @@ using Microsoft.Extensions.Options;
 
 using Transponder.Abstractions;
 using Transponder.Contracts.Orders;
-using Transponder.Persistence.Abstractions;
 
 using WebApplication1.Application.Orders;
 using WebApplication1.Infrastructure.Integration;
 
 namespace WebApplication1.Controllers;
 
+/// <summary>
+/// Provides endpoints for managing orders.
+/// </summary>
 [ApiController]
 [Route("orders")]
 public sealed class OrdersController : ControllerBase
@@ -20,6 +22,13 @@ public sealed class OrdersController : ControllerBase
     private readonly IBus _bus;
     private readonly IntegrationEventPublisherOptions _publisherOptions;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OrdersController"/> class.
+    /// </summary>
+    /// <param name="sender">The sender to use for sending commands.</param>
+    /// <param name="bus">The bus to use for scheduling messages.</param>
+    /// <param name="publisherOptions">The publisher options.</param>
+    /// <exception cref="ArgumentNullException">Thrown if any of the arguments are null.</exception>
     public OrdersController(
         ISender sender,
         IBus bus,
@@ -30,6 +39,14 @@ public sealed class OrdersController : ControllerBase
         _publisherOptions = publisherOptions?.Value ?? throw new ArgumentNullException(nameof(publisherOptions));
     }
 
+    /// <summary>
+    /// Creates a new order asynchronously.
+    /// </summary>
+    /// <param name="request">The create order request.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A <see cref="CreateOrderResult"/> containing the ID of the created order.</returns>
+    /// <response code="202">Returns the created order result.</response>
+    /// <response code="400">If the request is null.</response>
     [HttpPost]
     [ProducesResponseType(typeof(CreateOrderResult), StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -45,6 +62,15 @@ public sealed class OrdersController : ControllerBase
         return Accepted($"/orders/{result.OrderId}", result);
     }
 
+    /// <summary>
+    /// Schedules a follow-up for an order asynchronously.
+    /// </summary>
+    /// <param name="orderId">The order ID.</param>
+    /// <param name="request">The schedule follow-up request.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A <see cref="ScheduleOrderFollowUpResponse"/> containing the scheduled follow-up details.</returns>
+    /// <response code="202">Returns the scheduled follow-up response.</response>
+    /// <response code="400">If the request is null or delay is invalid.</response>
     [HttpPost("{orderId:guid}/followups/schedule")]
     [ProducesResponseType(typeof(ScheduleOrderFollowUpResponse), StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -71,24 +97,6 @@ public sealed class OrdersController : ControllerBase
         var response = new ScheduleOrderFollowUpResponse(handle.TokenId, scheduledFor, destination);
         return Accepted(response);
     }
-
-    /// <summary>
-    /// Schedules a follow-up for an order to be sent at a specified time in the future.
-    /// </summary>
-    /// <param name="orderId">The unique identifier of the order for which the follow-up is being scheduled.</param>
-    /// <param name="request">The request containing the delay in seconds before the follow-up should be sent.</param>
-    /// <param name="cancellationToken">A cancellation token to cancel the asynchronous operation.</param>
-    /// <returns>
-    /// A task that represents the asynchronous operation. The task result contains an <see cref="ActionResult{T}"/>
-    /// with a <see cref="ScheduleOrderFollowUpResponse"/> containing the scheduled message handle token ID,
-    /// scheduled time, and destination address.
-    /// </returns>
-    /// <remarks>
-    /// Returns HTTP 202 Accepted if the follow-up is successfully scheduled.
-    /// Returns HTTP 400 Bad Request if the request is null or the delay is less than or equal to zero.
-    /// Throws <see cref="InvalidOperationException"/> if the integration event destination address is not configured.
-    /// </remarks>
-}
 }
 
 public sealed record CreateOrderRequest(string CustomerName, decimal Total);
