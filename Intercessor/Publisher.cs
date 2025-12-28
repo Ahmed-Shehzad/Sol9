@@ -1,5 +1,6 @@
 
 using Intercessor.Abstractions;
+
 using Microsoft.Extensions.Logging;
 
 namespace Intercessor;

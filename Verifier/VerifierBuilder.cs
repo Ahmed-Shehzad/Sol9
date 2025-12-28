@@ -1,5 +1,7 @@
 using System.Reflection;
+
 using Microsoft.Extensions.DependencyInjection;
+
 using Verifier.Abstractions;
 
 namespace Verifier;
@@ -36,7 +38,7 @@ public sealed class VerifierBuilder
         if (_assemblies.Count == 0) return;
 
         var distinctAssemblies = _assemblies.Distinct().ToList();
-        
+
         _services.Scan(scan => scan
             .FromAssemblies(distinctAssemblies)
             .AddClasses(classes => classes.AssignableTo(typeof(IValidator<>)))

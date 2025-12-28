@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+
 using WebApplication2.Application.Orders;
 using WebApplication2.Domain.Orders;
 
@@ -17,7 +18,7 @@ public sealed class OrdersController : ControllerBase
 
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<OrderSummary>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IReadOnlyList<OrderSummary>>> GetAll(CancellationToken cancellationToken)
+    public async Task<ActionResult<IReadOnlyList<OrderSummary>>> GetAllAsync(CancellationToken cancellationToken)
     {
         IReadOnlyList<OrderSummary> orders = await _repository.GetAllAsync(cancellationToken).ConfigureAwait(false);
         return Ok(orders);

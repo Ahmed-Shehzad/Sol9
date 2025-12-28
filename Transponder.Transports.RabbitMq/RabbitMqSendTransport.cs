@@ -1,4 +1,5 @@
 using RabbitMQ.Client;
+
 using Transponder.Transports.Abstractions;
 
 namespace Transponder.Transports.RabbitMq;

@@ -1,5 +1,7 @@
 using Polly;
+
 using RabbitMQ.Client;
+
 using Transponder.Transports.Abstractions;
 using Transponder.Transports.RabbitMq.Abstractions;
 

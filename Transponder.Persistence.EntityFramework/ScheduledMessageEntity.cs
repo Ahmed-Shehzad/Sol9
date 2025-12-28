@@ -1,4 +1,5 @@
 using System.Text.Json;
+
 using Transponder.Persistence.Abstractions;
 
 namespace Transponder.Persistence.EntityFramework;

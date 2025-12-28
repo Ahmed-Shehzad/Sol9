@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+
 using Transponder.Abstractions;
 using Transponder.Samples;
 
@@ -18,7 +19,7 @@ public sealed class TransponderController : ControllerBase
     }
 
     [HttpGet("ping")]
-    public async Task<ActionResult<PingResponse>> Ping([FromQuery] string? message, CancellationToken cancellationToken)
+    public async Task<ActionResult<PingResponse>> PingAsync([FromQuery] string? message, CancellationToken cancellationToken)
     {
         var request = new PingRequest(
             message ?? $"Hello from {_environment.ApplicationName}",

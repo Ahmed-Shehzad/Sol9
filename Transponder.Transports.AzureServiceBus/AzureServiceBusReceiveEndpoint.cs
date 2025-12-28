@@ -1,5 +1,7 @@
 using Azure.Messaging.ServiceBus;
+
 using Polly;
+
 using Transponder.Transports.Abstractions;
 using Transponder.Transports.AzureServiceBus.Abstractions;
 

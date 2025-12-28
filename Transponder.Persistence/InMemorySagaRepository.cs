@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+
 using Transponder.Persistence.Abstractions;
 
 namespace Transponder.Persistence;

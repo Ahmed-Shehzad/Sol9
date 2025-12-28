@@ -1,5 +1,7 @@
 using Intercessor.Abstractions;
+
 using Microsoft.Extensions.Logging;
+
 using Polly;
 using Polly.Retry;
 
@@ -9,7 +11,7 @@ namespace Intercessor.Behaviours;
 public class RetryBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : IRequest<TResponse>
 {
     private const int MaxRetries = 5;
-    
+
     private readonly AsyncRetryPolicy<TResponse> _retryPolicy;
 
     /// <summary>

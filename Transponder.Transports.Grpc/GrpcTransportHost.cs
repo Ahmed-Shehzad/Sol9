@@ -1,7 +1,11 @@
 using System.Collections.Concurrent;
+
 using Grpc.Net.Client;
+
 using Microsoft.Extensions.Http.Resilience;
+
 using Polly;
+
 using Transponder.Transports.Abstractions;
 using Transponder.Transports.Grpc.Abstractions;
 

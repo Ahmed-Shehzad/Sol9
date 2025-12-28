@@ -1,7 +1,10 @@
 using System.Reflection;
+
 using Intercessor.Abstractions;
 using Intercessor.Behaviours;
+
 using Microsoft.Extensions.DependencyInjection;
+
 using Verifier;
 using Verifier.Abstractions;
 
@@ -9,7 +12,7 @@ namespace Intercessor;
 
 /// <summary>
 /// Provides a fluent builder for configuring and registering Intercessor-related services,
-/// such as request handlers, notification handlers, and pipeline behaviors, 
+/// such as request handlers, notification handlers, and pipeline behaviors,
 /// into the application's dependency injection container.
 /// </summary>
 public class IntercessorBuilder
@@ -19,7 +22,7 @@ public class IntercessorBuilder
 
     /// <summary>
     /// Initializes a new instance of the <see cref="IntercessorBuilder"/> class,
-    /// binding it to the provided dependency‑injection container.  
+    /// binding it to the provided dependency‑injection container.
     /// Use this builder to configure and register Intercessor handlers, behaviors,
     /// and related services before the container is built.
     /// </summary>
@@ -66,7 +69,7 @@ public class IntercessorBuilder
         _services.AddScoped<IPublisher, Publisher>();
 
         var distinctAssemblies = _assemblies.Distinct().ToList();
-        
+
         _services.Scan(scan => scan
             .FromAssemblies(distinctAssemblies)
 

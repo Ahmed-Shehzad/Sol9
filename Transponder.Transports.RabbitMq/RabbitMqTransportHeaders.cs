@@ -1,4 +1,5 @@
 using System.Text;
+
 using Transponder.Transports.Abstractions;
 
 namespace Transponder.Transports.RabbitMq;

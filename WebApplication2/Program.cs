@@ -2,12 +2,12 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using Transponder;
+using Transponder.Contracts.Orders;
 using Transponder.Samples;
 using Transponder.Transports.Grpc;
 
 using WebApplication2;
 using WebApplication2.Application;
-using Transponder.Contracts.Orders;
 using WebApplication2.Application.Orders;
 using WebApplication2.Infrastructure;
 

@@ -17,7 +17,7 @@ public sealed class OpenApiController : ControllerBase
 
     [HttpGet("v1.yaml")]
     [Produces("application/yaml")]
-    public async Task<IActionResult> GetYaml(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetYamlAsync(CancellationToken cancellationToken)
     {
         OpenApiDocument document = await _provider.GetOpenApiDocumentAsync(cancellationToken).ConfigureAwait(false);
         document.Servers = [new OpenApiServer { Url = $"{Request.Scheme}://{Request.Host}{Request.PathBase}" }];

@@ -1,6 +1,8 @@
 using Amazon.SQS.Model;
-using SnsMessageAttributeValue = Amazon.SimpleNotificationService.Model.MessageAttributeValue;
+
 using Transponder.Transports.Abstractions;
+
+using SnsMessageAttributeValue = Amazon.SimpleNotificationService.Model.MessageAttributeValue;
 
 namespace Transponder.Transports.Aws;
 

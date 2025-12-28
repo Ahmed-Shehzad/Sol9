@@ -1,6 +1,9 @@
 using System.Text.Json;
+
 using Intercessor.Abstractions;
+
 using Microsoft.Extensions.Logging;
+
 using StackExchange.Redis;
 
 namespace Intercessor.Behaviours;

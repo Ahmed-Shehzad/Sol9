@@ -1,6 +1,7 @@
 using System.Text;
 
 using Confluent.Kafka;
+
 using Transponder.Transports.Abstractions;
 
 namespace Transponder.Transports.Kafka;

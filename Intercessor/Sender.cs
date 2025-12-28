@@ -1,5 +1,6 @@
 using Intercessor.Abstractions;
 using Intercessor.Behaviours;
+
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Intercessor;
@@ -12,13 +13,13 @@ internal class Sender : ISender
     {
         _serviceProvider = serviceProvider;
     }
-    
+
     public async Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
     {
         Type requestType = request.GetType();
         Type responseType = typeof(TResponse);
         Type handlerType = typeof(IRequestHandler<,>).MakeGenericType(requestType, responseType);
-        
+
         dynamic? handler = _serviceProvider.GetService(handlerType);
         if (handler is null) throw new InvalidOperationException($"No handler registered for {requestType.Name}");
 
@@ -27,25 +28,25 @@ internal class Sender : ISender
             .Cast<dynamic>()
             .Reverse()
             .ToList();
-        
+
         Func<Task<TResponse>> handlerFunc = () => handler.HandleAsync((dynamic)request, cancellationToken);
-        
+
         foreach (dynamic? behavior in behaviors)
         {
             Func<Task<TResponse>> next = handlerFunc;
             handlerFunc = () => behavior.HandleAsync((dynamic)request, next, cancellationToken);
         }
-        
+
         TResponse response = await handlerFunc();
-            
+
         return response;
     }
-    
+
     public async Task SendAsync(IRequest request, CancellationToken cancellationToken = default)
     {
         Type requestType = request.GetType();
         Type handlerType = typeof(IRequestHandler<>).MakeGenericType(requestType);
-        
+
         dynamic? handler = _serviceProvider.GetService(handlerType);
         if (handler is null) throw new InvalidOperationException($"No handler registered for {requestType.Name}");
 
@@ -54,15 +55,15 @@ internal class Sender : ISender
             .Cast<dynamic>()
             .Reverse()
             .ToList();
-        
+
         Func<Task> handlerFunc = () => handler.HandleAsync((dynamic)request, cancellationToken);
-        
+
         foreach (dynamic? behavior in behaviors)
         {
             Func<Task> next = handlerFunc;
             handlerFunc = () => behavior.HandleAsync((dynamic)request, next, cancellationToken);
         }
-        
+
         await handlerFunc();
     }
 }

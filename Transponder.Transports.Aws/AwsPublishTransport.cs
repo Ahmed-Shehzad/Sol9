@@ -1,4 +1,5 @@
 using Amazon.SimpleNotificationService.Model;
+
 using Transponder.Transports.Abstractions;
 
 namespace Transponder.Transports.Aws;

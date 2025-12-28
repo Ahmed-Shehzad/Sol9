@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+
 using Transponder.Persistence.EntityFramework.SqlServer.Abstractions;
 
 namespace Transponder.Persistence.EntityFramework.SqlServer;

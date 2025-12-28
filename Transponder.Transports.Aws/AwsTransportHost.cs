@@ -1,12 +1,14 @@
 using System.Collections.Concurrent;
+
 using Amazon;
 using Amazon.Runtime;
-using Amazon.SQS;
 using Amazon.SimpleNotificationService;
 using Amazon.SimpleNotificationService.Model;
+using Amazon.SQS;
 using Amazon.SQS.Model;
 
 using Polly;
+
 using Transponder.Transports.Abstractions;
 using Transponder.Transports.Aws.Abstractions;
 

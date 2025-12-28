@@ -1,4 +1,5 @@
 using Intercessor.Abstractions;
+
 using Microsoft.Extensions.Logging;
 
 using Verifier;

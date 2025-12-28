@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.DependencyInjection;
+
 using StackExchange.Redis;
 
 namespace Transponder.Persistence.Redis;

@@ -1,5 +1,7 @@
 using Confluent.Kafka;
+
 using Polly;
+
 using Transponder.Transports.Abstractions;
 using Transponder.Transports.Kafka.Abstractions;
 

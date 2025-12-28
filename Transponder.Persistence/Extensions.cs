@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+
 using Transponder.Persistence.Abstractions;
 
 namespace Transponder.Persistence;

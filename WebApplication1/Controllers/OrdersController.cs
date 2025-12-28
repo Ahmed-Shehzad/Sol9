@@ -1,9 +1,12 @@
 using Intercessor.Abstractions;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+
 using Transponder.Abstractions;
 using Transponder.Contracts.Orders;
 using Transponder.Persistence.Abstractions;
+
 using WebApplication1.Application.Orders;
 using WebApplication1.Infrastructure.Integration;
 
@@ -33,7 +36,7 @@ public sealed class OrdersController : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(CreateOrderResult), StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<CreateOrderResult>> Create(
+    public async Task<ActionResult<CreateOrderResult>> CreateAsync(
         [FromBody] CreateOrderRequest? request,
         CancellationToken cancellationToken)
     {
@@ -48,7 +51,7 @@ public sealed class OrdersController : ControllerBase
     [HttpPost("{orderId:guid}/followups/schedule")]
     [ProducesResponseType(typeof(ScheduleOrderFollowUpResponse), StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ScheduleOrderFollowUpResponse>> ScheduleFollowUp(
+    public async Task<ActionResult<ScheduleOrderFollowUpResponse>> ScheduleFollowUpAsync(
         Guid orderId,
         [FromBody] ScheduleOrderFollowUpRequest? request,
         CancellationToken cancellationToken)
@@ -75,7 +78,7 @@ public sealed class OrdersController : ControllerBase
     [HttpDelete("followups/{tokenId:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> CancelScheduledFollowUp(Guid tokenId, CancellationToken cancellationToken)
+    public async Task<IActionResult> CancelScheduledFollowUpAsync(Guid tokenId, CancellationToken cancellationToken)
     {
         bool cancelled = await _scheduledMessageStore.CancelAsync(tokenId, cancellationToken).ConfigureAwait(false);
         return cancelled ? NoContent() : NotFound();

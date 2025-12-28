@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+
 using Verifier.Abstractions;
 
 namespace Verifier;
