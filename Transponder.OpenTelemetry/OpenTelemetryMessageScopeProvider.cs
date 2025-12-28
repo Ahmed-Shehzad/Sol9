@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 
-using Transponder;
 using Transponder.Abstractions;
 
 namespace Transponder.OpenTelemetry;
@@ -50,8 +49,8 @@ internal sealed class OpenTelemetryMessageScopeProvider : ITransponderMessageSco
         Activity? activity = _instrumentation.ActivitySource.StartActivity(name, kind);
         if (activity is null) return null;
 
-        activity.SetTag("messaging.system", MessagingSystem);
-        activity.SetTag("messaging.operation", operation);
+        _ = activity.SetTag("messaging.system", MessagingSystem);
+        _ = activity.SetTag("messaging.operation", operation);
         SetTags(activity, context);
 
         return activity;
@@ -74,22 +73,22 @@ internal sealed class OpenTelemetryMessageScopeProvider : ITransponderMessageSco
     private static void SetTags(Activity activity, TransponderMessageContext context)
     {
         if (context.MessageId.HasValue)
-            activity.SetTag("messaging.message_id", context.MessageId.Value.ToString("D"));
+            _ = activity.SetTag("messaging.message_id", context.MessageId.Value.ToString("D"));
 
         if (context.CorrelationId.HasValue)
-            activity.SetTag("messaging.correlation_id", context.CorrelationId.Value.ToString("D"));
+            _ = activity.SetTag("messaging.correlation_id", context.CorrelationId.Value.ToString("D"));
 
         if (context.ConversationId.HasValue)
-            activity.SetTag("messaging.conversation_id", context.ConversationId.Value.ToString("D"));
+            _ = activity.SetTag("messaging.conversation_id", context.ConversationId.Value.ToString("D"));
 
         if (!string.IsNullOrWhiteSpace(context.MessageType))
-            activity.SetTag("messaging.message_type", context.MessageType);
+            _ = activity.SetTag("messaging.message_type", context.MessageType);
 
         if (context.SourceAddress is not null)
-            activity.SetTag("messaging.source_address", context.SourceAddress.ToString());
+            _ = activity.SetTag("messaging.source_address", context.SourceAddress.ToString());
 
         if (context.DestinationAddress is not null)
-            activity.SetTag("messaging.destination_address", context.DestinationAddress.ToString());
+            _ = activity.SetTag("messaging.destination_address", context.DestinationAddress.ToString());
     }
 
     private static void AddTags(TagList tags, TransponderMessageContext context)

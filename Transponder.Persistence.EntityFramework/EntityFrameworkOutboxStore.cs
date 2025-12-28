@@ -22,7 +22,7 @@ public sealed class EntityFrameworkOutboxStore : IOutboxStore
         ArgumentNullException.ThrowIfNull(message);
 
         var entity = OutboxMessageEntity.FromMessage(message);
-        await _context.Set<OutboxMessageEntity>()
+        _ = await _context.Set<OutboxMessageEntity>()
             .AddAsync(entity, cancellationToken)
             .ConfigureAwait(false);
     }

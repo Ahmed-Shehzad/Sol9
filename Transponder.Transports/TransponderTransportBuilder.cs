@@ -21,9 +21,9 @@ public sealed class TransponderTransportBuilder
     /// </summary>
     internal void Build()
     {
-        _services.AddSingleton<ITransportRegistry>(sp =>
+        _ = _services.AddSingleton<ITransportRegistry>(sp =>
             new TransportRegistry(sp.GetServices<ITransportFactory>()));
-        _services.AddSingleton<ITransportHostProvider, TransportHostProvider>();
+        _ = _services.AddSingleton<ITransportHostProvider, TransportHostProvider>();
     }
 
     /// <summary>
@@ -32,7 +32,7 @@ public sealed class TransponderTransportBuilder
     public TransponderTransportBuilder AddTransportFactory<TFactory>()
         where TFactory : class, ITransportFactory
     {
-        _services.AddSingleton<ITransportFactory, TFactory>();
+        _ = _services.AddSingleton<ITransportFactory, TFactory>();
         return this;
     }
 
@@ -48,9 +48,9 @@ public sealed class TransponderTransportBuilder
         ArgumentNullException.ThrowIfNull(settingsFactory);
         ArgumentNullException.ThrowIfNull(hostFactory);
 
-        _services.AddSingleton(settingsFactory);
-        _services.AddSingleton(sp => hostFactory(sp, sp.GetRequiredService<TSettings>()));
-        _services.AddSingleton<ITransportHost>(sp => sp.GetRequiredService<THost>());
+        _ = _services.AddSingleton(settingsFactory);
+        _ = _services.AddSingleton(sp => hostFactory(sp, sp.GetRequiredService<TSettings>()));
+        _ = _services.AddSingleton<ITransportHost>(sp => sp.GetRequiredService<THost>());
         return this;
     }
 }

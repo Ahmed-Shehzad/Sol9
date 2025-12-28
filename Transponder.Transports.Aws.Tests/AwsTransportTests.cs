@@ -43,7 +43,7 @@ public sealed class AwsTransportTests
     [Fact]
     public void AwsTransportHostSettings_Requires_Region()
     {
-        Assert.Throws<ArgumentException>(() => new AwsTransportHostSettings(new Uri("aws://example"), " "));
+        _ = Assert.Throws<ArgumentException>(() => new AwsTransportHostSettings(new Uri("aws://example"), " "));
     }
 
     [Fact]
@@ -52,6 +52,6 @@ public sealed class AwsTransportTests
         var factory = new AwsTransportFactory();
         var settings = new StubTransportHostSettings(new Uri("aws://example"));
 
-        Assert.Throws<ArgumentException>(() => factory.CreateHost(settings));
+        _ = Assert.Throws<ArgumentException>(() => factory.CreateHost(settings));
     }
 }

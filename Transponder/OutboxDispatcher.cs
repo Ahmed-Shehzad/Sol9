@@ -60,7 +60,7 @@ public sealed class OutboxDispatcher : IAsyncDisposable
         if (_cts is null) return;
 
         await _cts.CancelAsync().ConfigureAwait(false);
-        _channel.Writer.TryComplete();
+        _ = _channel.Writer.TryComplete();
 
         Task? dispatchLoop = _dispatchLoop;
         Task? pollLoop = _pollLoop;
@@ -70,7 +70,7 @@ public sealed class OutboxDispatcher : IAsyncDisposable
         if (dispatchLoop is not null || pollLoop is not null)
         {
             var all = Task.WhenAll(dispatchLoop ?? Task.CompletedTask, pollLoop ?? Task.CompletedTask);
-            await Task.WhenAny(all, Task.Delay(Timeout.Infinite, cancellationToken)).ConfigureAwait(false);
+            _ = await Task.WhenAny(all, Task.Delay(Timeout.Infinite, cancellationToken)).ConfigureAwait(false);
         }
 
         _activeDestinations.Clear();
@@ -104,7 +104,7 @@ public sealed class OutboxDispatcher : IAsyncDisposable
 
         if (_channel.Writer.TryWrite(message)) return;
 
-        _inflight.TryRemove(message.MessageId, out _);
+        _ = _inflight.TryRemove(message.MessageId, out _);
     }
 
     private async Task DispatchLoopAsync(CancellationToken cancellationToken)
@@ -112,18 +112,18 @@ public sealed class OutboxDispatcher : IAsyncDisposable
         try
         {
             while (await _channel.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
-            while (_channel.Reader.TryRead(out OutboxMessage? message))
-            {
-                if (!TryGetDestinationKey(message, out string? destinationKey) || !_activeDestinations.TryAdd(destinationKey, 0))
+                while (_channel.Reader.TryRead(out OutboxMessage? message))
                 {
-                    _inflight.TryRemove(message.MessageId, out _);
-                    continue;
+                    if (!TryGetDestinationKey(message, out string? destinationKey) || !_activeDestinations.TryAdd(destinationKey, 0))
+                    {
+                        _ = _inflight.TryRemove(message.MessageId, out _);
+                        continue;
+                    }
+
+                    await _dispatchSlots.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+                    _ = Task.Run(() => ProcessMessageAsync(message, destinationKey, cancellationToken), cancellationToken);
                 }
-
-                await _dispatchSlots.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-                _ = Task.Run(() => ProcessMessageAsync(message, destinationKey, cancellationToken), cancellationToken);
-            }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -186,9 +186,9 @@ public sealed class OutboxDispatcher : IAsyncDisposable
         }
         finally
         {
-            _activeDestinations.TryRemove(destinationKey, out _);
-            _inflight.TryRemove(message.MessageId, out _);
-            _dispatchSlots.Release();
+            _ = _activeDestinations.TryRemove(destinationKey, out _);
+            _ = _inflight.TryRemove(message.MessageId, out _);
+            _ = _dispatchSlots.Release();
         }
     }
 

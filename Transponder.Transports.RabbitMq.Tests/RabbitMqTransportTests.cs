@@ -34,7 +34,7 @@ public sealed class RabbitMqTransportTests
     [Fact]
     public void RabbitMqHostSettings_Requires_Host()
     {
-        Assert.Throws<ArgumentException>(() => new RabbitMqHostSettings(new Uri("rabbitmq://broker"), " "));
+        _ = Assert.Throws<ArgumentException>(() => new RabbitMqHostSettings(new Uri("rabbitmq://broker"), " "));
     }
 
     [Fact]
@@ -43,6 +43,6 @@ public sealed class RabbitMqTransportTests
         var factory = new RabbitMqTransportFactory();
         var settings = new StubTransportHostSettings(new Uri("rabbitmq://broker"));
 
-        Assert.Throws<ArgumentException>(() => factory.CreateHost(settings));
+        _ = Assert.Throws<ArgumentException>(() => factory.CreateHost(settings));
     }
 }

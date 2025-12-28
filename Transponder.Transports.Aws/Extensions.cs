@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 
-using Transponder.Transports;
 using Transponder.Transports.Abstractions;
 using Transponder.Transports.Aws.Abstractions;
 
@@ -43,8 +42,8 @@ public static class Extensions
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(settingsFactory);
 
-        builder.AddTransportFactory<AwsTransportFactory>();
-        builder.AddTransportHost<IAwsTransportHostSettings, AwsTransportHost>(
+        _ = builder.AddTransportFactory<AwsTransportFactory>();
+        _ = builder.AddTransportHost<IAwsTransportHostSettings, AwsTransportHost>(
             settingsFactory,
             (_, settings) => new AwsTransportHost(settings));
 
@@ -85,7 +84,7 @@ public static class Extensions
             return services;
         }
 
-        services.AddTransponderTransports(configure);
+        _ = services.AddTransponderTransports(configure);
         return services;
     }
 }

@@ -79,7 +79,7 @@ internal sealed class RequestClient<TRequest> : IRequestClient<TRequest>
         }
         finally
         {
-            _pendingRequests.TryRemove(requestId, out _);
+            _ = _pendingRequests.TryRemove(requestId, out _);
         }
     }
 

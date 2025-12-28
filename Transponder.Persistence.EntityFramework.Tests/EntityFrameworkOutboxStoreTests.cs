@@ -17,11 +17,11 @@ public sealed class EntityFrameworkOutboxStoreTests
 
         await store.AddAsync(pending);
         await store.AddAsync(sent);
-        await context.SaveChangesAsync();
+        _ = await context.SaveChangesAsync();
 
         IReadOnlyList<IOutboxMessage> results = await store.GetPendingAsync(10);
 
-        Assert.Single(results);
+        _ = Assert.Single(results);
         Assert.Equal(pending.MessageId, results[0].MessageId);
     }
 

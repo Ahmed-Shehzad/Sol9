@@ -12,11 +12,11 @@ public static class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddIntercessor(builder =>
+        _ = services.AddIntercessor(builder =>
         {
             builder.RegisterFromAssembly(typeof(ApplyOrderCreatedCommandHandler).Assembly);
         });
-        services.AddScoped<OrderIntegrationSaga>();
+        _ = services.AddScoped<OrderIntegrationSaga>();
         return services;
     }
 }

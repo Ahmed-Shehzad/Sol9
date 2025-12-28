@@ -30,7 +30,7 @@ internal sealed class AwsSendTransport : ISendTransport
                 .ToDictionary(kvp => kvp.Key, kvp => ToSqsAttribute(kvp.Value))
         };
 
-        await _host.SqsClient.SendMessageAsync(request, cancellationToken).ConfigureAwait(false);
+        _ = await _host.SqsClient.SendMessageAsync(request, cancellationToken).ConfigureAwait(false);
     }
 
     private static MessageAttributeValue ToSqsAttribute(SnsMessageAttributeValue attribute)

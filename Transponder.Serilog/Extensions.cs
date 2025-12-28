@@ -19,7 +19,7 @@ public static class Extensions
         var options = new TransponderSerilogOptions();
         configure?.Invoke(options);
 
-        services.AddSingleton(options);
+        _ = services.AddSingleton(options);
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<ITransponderMessageScopeProvider, SerilogMessageScopeProvider>());
 

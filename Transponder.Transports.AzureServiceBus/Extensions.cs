@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 
-using Transponder.Transports;
 using Transponder.Transports.Abstractions;
 using Transponder.Transports.AzureServiceBus.Abstractions;
 
@@ -43,8 +42,8 @@ public static class Extensions
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(settingsFactory);
 
-        builder.AddTransportFactory<AzureServiceBusTransportFactory>();
-        builder.AddTransportHost<IAzureServiceBusHostSettings, AzureServiceBusTransportHost>(
+        _ = builder.AddTransportFactory<AzureServiceBusTransportFactory>();
+        _ = builder.AddTransportHost<IAzureServiceBusHostSettings, AzureServiceBusTransportHost>(
             settingsFactory,
             (_, settings) => new AzureServiceBusTransportHost(settings));
 
@@ -85,7 +84,7 @@ public static class Extensions
             return services;
         }
 
-        services.AddTransponderTransports(configure);
+        _ = services.AddTransponderTransports(configure);
         return services;
     }
 }

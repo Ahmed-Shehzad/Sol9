@@ -48,7 +48,7 @@ public sealed class EntityFrameworkInboxStore : IInboxStore
 
         var entity = InboxStateEntity.FromState(state);
 
-        await _context.Set<InboxStateEntity>()
+        _ = await _context.Set<InboxStateEntity>()
             .AddAsync(entity, cancellationToken)
             .ConfigureAwait(false);
 

@@ -2,8 +2,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-using Transponder;
-
 namespace Transponder.Samples;
 
 public static class TransponderConfigurationExtensions
@@ -18,9 +16,9 @@ public static class TransponderConfigurationExtensions
 
         IConfigurationSection section = configuration.GetSection(sectionName);
 
-        services.AddOptions<TransponderSettings>()
+        _ = services.AddOptions<TransponderSettings>()
             .Bind(section);
-        services.AddSingleton(sp => sp.GetRequiredService<IOptions<TransponderSettings>>().Value);
+        _ = services.AddSingleton(sp => sp.GetRequiredService<IOptions<TransponderSettings>>().Value);
 
         return section.Get<TransponderSettings>() ?? new TransponderSettings();
     }

@@ -71,7 +71,7 @@ public sealed class InMemoryScheduledMessageStore : IScheduledMessageStore
 
         lock (_sync)
         {
-            _messages.TryGetValue(tokenId, out ScheduledMessage? message);
+            _ = _messages.TryGetValue(tokenId, out ScheduledMessage? message);
             return Task.FromResult<IScheduledMessage?>(message);
         }
     }

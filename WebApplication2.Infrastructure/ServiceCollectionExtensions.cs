@@ -11,7 +11,7 @@ public static class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddSingleton<IOrderReadRepository, InMemoryOrderReadRepository>();
+        _ = services.AddSingleton<IOrderReadRepository, InMemoryOrderReadRepository>();
 
         return services;
     }

@@ -40,6 +40,6 @@ public sealed class AzureServiceBusTransportTests
         var factory = new AzureServiceBusTransportFactory();
         var settings = new StubTransportHostSettings(new Uri("sb://namespace"));
 
-        Assert.Throws<ArgumentException>(() => factory.CreateHost(settings));
+        _ = Assert.Throws<ArgumentException>(() => factory.CreateHost(settings));
     }
 }

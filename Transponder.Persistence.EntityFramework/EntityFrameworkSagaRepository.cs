@@ -48,7 +48,7 @@ public sealed class EntityFrameworkSagaRepository<TState> : ISagaRepository<TSta
         if (existing is null)
         {
             var entity = SagaStateEntity.FromState(state);
-            await _context.Set<SagaStateEntity>()
+            _ = await _context.Set<SagaStateEntity>()
                 .AddAsync(entity, cancellationToken)
                 .ConfigureAwait(false);
             return;
@@ -71,6 +71,6 @@ public sealed class EntityFrameworkSagaRepository<TState> : ISagaRepository<TSta
 
         if (entity is null) return;
 
-        _context.Set<SagaStateEntity>().Remove(entity);
+        _ = _context.Set<SagaStateEntity>().Remove(entity);
     }
 }

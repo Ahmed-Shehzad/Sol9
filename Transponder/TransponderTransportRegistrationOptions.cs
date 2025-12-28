@@ -27,8 +27,8 @@ public sealed class TransponderTransportRegistrationOptions
         where TTransportHost : class, ITransportHost
         => _serviceActions.Add(services =>
         {
-            services.AddSingleton(hostFactory);
-            services.AddSingleton<ITransportHost>(sp => sp.GetRequiredService<TTransportHost>());
+            _ = services.AddSingleton(hostFactory);
+            _ = services.AddSingleton<ITransportHost>(sp => sp.GetRequiredService<TTransportHost>());
         });
 
     public void AddTransportHost(Func<IServiceProvider, ITransportHost> hostFactory)
@@ -55,7 +55,7 @@ public sealed class TransponderTransportRegistrationOptions
             return;
         }
 
-        services.AddTransponderTransports(builder =>
+        _ = services.AddTransponderTransports(builder =>
         {
             foreach (Action<TransponderTransportBuilder> action in _builderActions) action(builder);
             foreach (Action<IServiceCollection> action in _serviceActions) action(services);

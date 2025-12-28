@@ -33,7 +33,7 @@ public sealed class SagaRegistrationBuilder
     {
         ArgumentNullException.ThrowIfNull(configure);
 
-        _services.AddScoped<TSaga>();
+        _ = _services.AddScoped<TSaga>();
         _services.TryAddSingleton<ISagaRepository<TState>, InMemorySagaRepository<TState>>();
 
         var endpointBuilder = new SagaEndpointBuilder<TSaga, TState>(_style);

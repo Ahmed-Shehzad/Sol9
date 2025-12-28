@@ -94,7 +94,7 @@ internal sealed class AwsReceiveEndpoint : IReceiveEndpoint
                             async ct => await _handler(context).ConfigureAwait(false),
                             cancellationToken)
                         .ConfigureAwait(false);
-                    await _host.SqsClient.DeleteMessageAsync(queueUrl, message.ReceiptHandle, cancellationToken)
+                    _ = await _host.SqsClient.DeleteMessageAsync(queueUrl, message.ReceiptHandle, cancellationToken)
                         .ConfigureAwait(false);
                 }
                 catch
@@ -105,7 +105,7 @@ internal sealed class AwsReceiveEndpoint : IReceiveEndpoint
                     {
                         await _deadLetterTransport.SendAsync(transportMessage, cancellationToken)
                             .ConfigureAwait(false);
-                        await _host.SqsClient.DeleteMessageAsync(queueUrl, message.ReceiptHandle, cancellationToken)
+                        _ = await _host.SqsClient.DeleteMessageAsync(queueUrl, message.ReceiptHandle, cancellationToken)
                             .ConfigureAwait(false);
                     }
                     catch
@@ -124,22 +124,22 @@ internal sealed class AwsReceiveEndpoint : IReceiveEndpoint
         foreach (KeyValuePair<string, MessageAttributeValue> attribute in message.MessageAttributes) headers[attribute.Key] = attribute.Value.StringValue;
 
         string? contentType = headers.TryGetValue("ContentType", out object? ct) ? ct as string : null;
-        headers.Remove("ContentType");
+        _ = headers.Remove("ContentType");
 
         string? messageType = headers.TryGetValue("MessageType", out object? mt) ? mt as string : null;
-        headers.Remove("MessageType");
+        _ = headers.Remove("MessageType");
 
         Guid? correlationId = null;
         if (headers.TryGetValue("CorrelationId", out object? corr) &&
             Guid.TryParse(corr as string, out Guid corrId)) correlationId = corrId;
 
-        headers.Remove("CorrelationId");
+        _ = headers.Remove("CorrelationId");
 
         Guid? conversationId = null;
         if (headers.TryGetValue("ConversationId", out object? conv) &&
             Guid.TryParse(conv as string, out Guid convId)) conversationId = convId;
 
-        headers.Remove("ConversationId");
+        _ = headers.Remove("ConversationId");
 
         ReadOnlyMemory<byte> bodyBytes = DecodeBody(message.Body);
 

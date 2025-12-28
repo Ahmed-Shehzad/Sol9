@@ -5,10 +5,10 @@ public sealed class EntityFrameworkStorageOptionsTests
     [Fact]
     public void Constructor_Validates_Table_Names()
     {
-        Assert.Throws<ArgumentException>(() => new EntityFrameworkStorageOptions(outboxTableName: " "));
-        Assert.Throws<ArgumentException>(() => new EntityFrameworkStorageOptions(inboxTableName: " "));
-        Assert.Throws<ArgumentException>(() => new EntityFrameworkStorageOptions(scheduledMessagesTableName: " "));
-        Assert.Throws<ArgumentException>(() => new EntityFrameworkStorageOptions(sagaStatesTableName: " "));
+        _ = Assert.Throws<ArgumentException>(() => new EntityFrameworkStorageOptions(outboxTableName: " "));
+        _ = Assert.Throws<ArgumentException>(() => new EntityFrameworkStorageOptions(inboxTableName: " "));
+        _ = Assert.Throws<ArgumentException>(() => new EntityFrameworkStorageOptions(scheduledMessagesTableName: " "));
+        _ = Assert.Throws<ArgumentException>(() => new EntityFrameworkStorageOptions(sagaStatesTableName: " "));
     }
 
     [Fact]

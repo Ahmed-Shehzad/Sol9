@@ -37,7 +37,7 @@ public class RedisCachingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequ
     {
         string key = request.CacheKey;
 
-        if (string.IsNullOrWhiteSpace(key)) await next();
+        if (string.IsNullOrWhiteSpace(key)) _ = await next();
 
         RedisValue cachedData = await _redisDb.StringGetAsync(key);
         if (cachedData.HasValue)
@@ -49,7 +49,7 @@ public class RedisCachingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequ
         _logger.LogTrace("[Redis] Cache miss for {Name}", typeof(TRequest).Name);
         TResponse response = await next();
 
-        await _redisDb.StringSetAsync(key, JsonSerializer.Serialize(response), _cacheDuration);
+        _ = await _redisDb.StringSetAsync(key, JsonSerializer.Serialize(response), _cacheDuration);
         return response;
     }
 }

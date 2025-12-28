@@ -24,11 +24,11 @@ public sealed class EntityFrameworkScheduledMessageStore<TContext> : IScheduledM
 
         await using TContext context = _contextFactory.CreateDbContext();
         var entity = ScheduledMessageEntity.FromMessage(message);
-        await context.Set<ScheduledMessageEntity>()
+        _ = await context.Set<ScheduledMessageEntity>()
             .AddAsync(entity, cancellationToken)
             .ConfigureAwait(false);
 
-        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        _ = await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<IReadOnlyList<IScheduledMessage>> GetDueAsync(
@@ -63,7 +63,7 @@ public sealed class EntityFrameworkScheduledMessageStore<TContext> : IScheduledM
         if (message == null) return;
 
         message.DispatchedTime = dispatchedTime;
-        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        _ = await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<bool> CancelAsync(Guid tokenId, CancellationToken cancellationToken = default)
@@ -75,8 +75,8 @@ public sealed class EntityFrameworkScheduledMessageStore<TContext> : IScheduledM
 
         if (message == null) return false;
 
-        context.Set<ScheduledMessageEntity>().Remove(message);
-        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        _ = context.Set<ScheduledMessageEntity>().Remove(message);
+        _ = await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return true;
     }
 

@@ -37,7 +37,7 @@ public sealed class KafkaTransportTests
     [Fact]
     public void KafkaHostSettings_Requires_Bootstrap_Servers()
     {
-        Assert.Throws<ArgumentException>(() => new KafkaHostSettings(new Uri("kafka://broker"), new List<string>()));
+        _ = Assert.Throws<ArgumentException>(() => new KafkaHostSettings(new Uri("kafka://broker"), new List<string>()));
     }
 
     [Fact]
@@ -46,6 +46,6 @@ public sealed class KafkaTransportTests
         var factory = new KafkaTransportFactory();
         var settings = new StubTransportHostSettings(new Uri("kafka://broker"));
 
-        Assert.Throws<ArgumentException>(() => factory.CreateHost(settings));
+        _ = Assert.Throws<ArgumentException>(() => factory.CreateHost(settings));
     }
 }

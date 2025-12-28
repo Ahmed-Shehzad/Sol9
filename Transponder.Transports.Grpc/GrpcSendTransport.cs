@@ -26,6 +26,6 @@ internal sealed class GrpcSendTransport : ISendTransport
             Message = GrpcTransportMessageMapper.ToProto(message)
         };
 
-        await _client.SendAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
+        _ = await _client.SendAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 }

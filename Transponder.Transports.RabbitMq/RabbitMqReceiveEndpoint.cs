@@ -55,7 +55,7 @@ internal sealed class RabbitMqReceiveEndpoint : IReceiveEndpoint
 
         if (!string.IsNullOrWhiteSpace(_deadLetterQueueName))
         {
-            _channel.QueueDeclare(_deadLetterQueueName, durable: true, exclusive: false, autoDelete: false);
+            _ = _channel.QueueDeclare(_deadLetterQueueName, durable: true, exclusive: false, autoDelete: false);
             arguments = new Dictionary<string, object>
             {
                 ["x-dead-letter-exchange"] = string.Empty,
@@ -63,7 +63,7 @@ internal sealed class RabbitMqReceiveEndpoint : IReceiveEndpoint
             };
         }
 
-        _channel.QueueDeclare(_queueName, durable: true, exclusive: false, autoDelete: false, arguments: arguments);
+        _ = _channel.QueueDeclare(_queueName, durable: true, exclusive: false, autoDelete: false, arguments: arguments);
         _channel.BasicQos(0, 1, false);
 
         var consumer = new AsyncEventingBasicConsumer(_channel);
@@ -99,12 +99,12 @@ internal sealed class RabbitMqReceiveEndpoint : IReceiveEndpoint
         Dictionary<string, object?> headers = RabbitMqTransportHeaders.ReadHeaders(args.BasicProperties.Headers);
         string? contentType = args.BasicProperties.ContentType;
         string? messageType = headers.TryGetValue("MessageType", out object? typeValue) ? typeValue as string : null;
-        headers.Remove("MessageType");
+        _ = headers.Remove("MessageType");
         Guid? conversationId = headers.TryGetValue("ConversationId", out object? conv)
                                && Guid.TryParse(conv?.ToString(), out Guid parsedConversationId)
             ? parsedConversationId
             : (Guid?)null;
-        headers.Remove("ConversationId");
+        _ = headers.Remove("ConversationId");
 
         var transportMessage = new TransportMessage(
             args.Body.ToArray(),

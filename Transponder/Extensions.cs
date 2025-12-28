@@ -40,11 +40,11 @@ public static class Extensions
 
         if (options.OutboxOptions is not null)
         {
-            services.AddSingleton(options.OutboxOptions);
-            services.AddSingleton<OutboxDispatcher>();
+            _ = services.AddSingleton(options.OutboxOptions);
+            _ = services.AddSingleton<OutboxDispatcher>();
         }
 
-        services.AddSingleton(sp =>
+        _ = services.AddSingleton(sp =>
         {
             Func<Type, Uri?> resolver = options.RequestAddressResolver
                                         ?? TransponderRequestAddressResolver.Create(
@@ -68,12 +68,12 @@ public static class Extensions
                 sp.GetServices<ITransponderMessageScopeProvider>());
         });
 
-        services.AddSingleton<IBus>(sp => sp.GetRequiredService<TransponderBus>());
-        services.AddSingleton<IBusControl>(sp => sp.GetRequiredService<TransponderBus>());
-        services.AddSingleton<IClientFactory>(sp => sp.GetRequiredService<TransponderBus>());
-        services.AddSingleton<IPublishEndpoint>(sp => sp.GetRequiredService<TransponderBus>());
-        services.AddSingleton<ISendEndpointProvider>(sp => sp.GetRequiredService<TransponderBus>());
-        services.AddSingleton<IMessageScheduler>(sp => sp.GetRequiredService<TransponderBus>());
+        _ = services.AddSingleton<IBus>(sp => sp.GetRequiredService<TransponderBus>());
+        _ = services.AddSingleton<IBusControl>(sp => sp.GetRequiredService<TransponderBus>());
+        _ = services.AddSingleton<IClientFactory>(sp => sp.GetRequiredService<TransponderBus>());
+        _ = services.AddSingleton<IPublishEndpoint>(sp => sp.GetRequiredService<TransponderBus>());
+        _ = services.AddSingleton<ISendEndpointProvider>(sp => sp.GetRequiredService<TransponderBus>());
+        _ = services.AddSingleton<IMessageScheduler>(sp => sp.GetRequiredService<TransponderBus>());
 
         return services;
     }

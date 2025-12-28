@@ -101,6 +101,8 @@ public sealed class AwsTransportHost : TransportHostBase
         await base.StopAsync(cancellationToken).ConfigureAwait(false);
     }
 
+    private const string StringMessageAttributeDataType = "String";
+
     internal AmazonSQSClient SqsClient => _sqsClient;
 
     internal AmazonSimpleNotificationServiceClient SnsClient => _snsClient;
@@ -138,35 +140,35 @@ public sealed class AwsTransportHost : TransportHostBase
         if (!string.IsNullOrWhiteSpace(message.ContentType))
             attributes["ContentType"] = new Amazon.SimpleNotificationService.Model.MessageAttributeValue
             {
-                DataType = "String",
+                DataType = StringMessageAttributeDataType,
                 StringValue = message.ContentType
             };
 
         if (!string.IsNullOrWhiteSpace(message.MessageType))
             attributes["MessageType"] = new Amazon.SimpleNotificationService.Model.MessageAttributeValue
             {
-                DataType = "String",
+                DataType = StringMessageAttributeDataType,
                 StringValue = message.MessageType
             };
 
         if (message.MessageId.HasValue)
             attributes["MessageId"] = new Amazon.SimpleNotificationService.Model.MessageAttributeValue
             {
-                DataType = "String",
+                DataType = StringMessageAttributeDataType,
                 StringValue = message.MessageId.Value.ToString("D")
             };
 
         if (message.CorrelationId.HasValue)
             attributes["CorrelationId"] = new Amazon.SimpleNotificationService.Model.MessageAttributeValue
             {
-                DataType = "String",
+                DataType = StringMessageAttributeDataType,
                 StringValue = message.CorrelationId.Value.ToString("D")
             };
 
         if (message.ConversationId.HasValue)
             attributes["ConversationId"] = new Amazon.SimpleNotificationService.Model.MessageAttributeValue
             {
-                DataType = "String",
+                DataType = StringMessageAttributeDataType,
                 StringValue = message.ConversationId.Value.ToString("D")
             };
 
@@ -176,7 +178,7 @@ public sealed class AwsTransportHost : TransportHostBase
 
             attributes[header.Key] = new Amazon.SimpleNotificationService.Model.MessageAttributeValue
             {
-                DataType = "String",
+                DataType = StringMessageAttributeDataType,
                 StringValue = header.Value.ToString()
             };
         }

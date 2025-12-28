@@ -40,6 +40,6 @@ public sealed class GrpcTransportTests
         var factory = new GrpcTransportFactory();
         var settings = new StubTransportHostSettings(new Uri("grpc://localhost"));
 
-        Assert.Throws<ArgumentException>(() => factory.CreateHost(settings));
+        _ = Assert.Throws<ArgumentException>(() => factory.CreateHost(settings));
     }
 }

@@ -20,7 +20,7 @@ internal sealed class RabbitMqSendTransport : ISendTransport
         ArgumentNullException.ThrowIfNull(message);
 
         using IModel? channel = _connection.CreateModel();
-        channel.QueueDeclare(_queueName, durable: true, exclusive: false, autoDelete: false);
+        _ = channel.QueueDeclare(_queueName, durable: true, exclusive: false, autoDelete: false);
 
         IBasicProperties? properties = channel.CreateBasicProperties();
         properties.ContentType = message.ContentType;

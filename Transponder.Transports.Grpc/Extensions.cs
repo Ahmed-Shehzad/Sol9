@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 
-using Transponder.Transports;
 using Transponder.Transports.Abstractions;
 using Transponder.Transports.Grpc.Abstractions;
 
@@ -70,8 +69,8 @@ public static class Extensions
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(settingsFactory);
 
-        builder.AddTransportFactory<GrpcTransportFactory>();
-        builder.AddTransportHost<IGrpcHostSettings, GrpcTransportHost>(
+        _ = builder.AddTransportFactory<GrpcTransportFactory>();
+        _ = builder.AddTransportHost<IGrpcHostSettings, GrpcTransportHost>(
             settingsFactory,
             (_, settings) => new GrpcTransportHost(settings));
 
@@ -108,8 +107,8 @@ public static class Extensions
 
         return AddTransportRegistration(services, builder =>
         {
-            builder.AddTransportFactory<GrpcTransportFactory>();
-            builder.AddTransportHost<IGrpcHostSettings, GrpcTransportHost>(
+            _ = builder.AddTransportFactory<GrpcTransportFactory>();
+            _ = builder.AddTransportHost<IGrpcHostSettings, GrpcTransportHost>(
                 _ => new GrpcHostSettings(
                     localAddress,
                     useTls: string.Equals(localAddress.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)),
@@ -121,7 +120,7 @@ public static class Extensions
             {
                 if (remoteAddress == localAddress) continue;
 
-                builder.AddTransportHost<IGrpcHostSettings, GrpcTransportHost>(
+                _ = builder.AddTransportHost<IGrpcHostSettings, GrpcTransportHost>(
                     _ => new GrpcHostSettings(
                         remoteAddress,
                         useTls: string.Equals(remoteAddress.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)),
@@ -144,7 +143,7 @@ public static class Extensions
             return services;
         }
 
-        services.AddTransponderTransports(configure);
+        _ = services.AddTransponderTransports(configure);
         return services;
     }
 }

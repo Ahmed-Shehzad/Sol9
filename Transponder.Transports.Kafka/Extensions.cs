@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 
-using Transponder.Transports;
 using Transponder.Transports.Abstractions;
 using Transponder.Transports.Kafka.Abstractions;
 
@@ -43,8 +42,8 @@ public static class Extensions
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(settingsFactory);
 
-        builder.AddTransportFactory<KafkaTransportFactory>();
-        builder.AddTransportHost<IKafkaHostSettings, KafkaTransportHost>(
+        _ = builder.AddTransportFactory<KafkaTransportFactory>();
+        _ = builder.AddTransportHost<IKafkaHostSettings, KafkaTransportHost>(
             settingsFactory,
             (_, settings) => new KafkaTransportHost(settings));
 
@@ -85,7 +84,7 @@ public static class Extensions
             return services;
         }
 
-        services.AddTransponderTransports(configure);
+        _ = services.AddTransponderTransports(configure);
         return services;
     }
 }

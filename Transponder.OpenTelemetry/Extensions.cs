@@ -19,7 +19,7 @@ public static class Extensions
         var options = new TransponderOpenTelemetryOptions();
         configure?.Invoke(options);
 
-        services.AddSingleton(options);
+        _ = services.AddSingleton(options);
         services.TryAddSingleton<TransponderOpenTelemetryInstrumentation>();
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<ITransponderMessageScopeProvider, OpenTelemetryMessageScopeProvider>());

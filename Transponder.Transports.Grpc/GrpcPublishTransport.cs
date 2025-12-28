@@ -23,6 +23,6 @@ internal sealed class GrpcPublishTransport : IPublishTransport
             Message = GrpcTransportMessageMapper.ToProto(message)
         };
 
-        await _client.PublishAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
+        _ = await _client.PublishAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 }

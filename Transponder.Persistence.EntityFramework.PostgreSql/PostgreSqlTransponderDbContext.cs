@@ -20,25 +20,25 @@ public sealed class PostgreSqlTransponderDbContext : TransponderDbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<OutboxMessageEntity>(entity =>
+        _ = modelBuilder.Entity<OutboxMessageEntity>(entity =>
         {
-            entity.Property(message => message.Body).HasColumnType("bytea");
-            entity.Property(message => message.Headers).HasColumnType("jsonb");
-            entity.Property(message => message.SourceAddress).HasColumnType("text");
-            entity.Property(message => message.DestinationAddress).HasColumnType("text");
+            _ = entity.Property(message => message.Body).HasColumnType("bytea");
+            _ = entity.Property(message => message.Headers).HasColumnType("jsonb");
+            _ = entity.Property(message => message.SourceAddress).HasColumnType("text");
+            _ = entity.Property(message => message.DestinationAddress).HasColumnType("text");
         });
 
-        modelBuilder.Entity<ScheduledMessageEntity>(entity =>
+        _ = modelBuilder.Entity<ScheduledMessageEntity>(entity =>
         {
-            entity.Property(message => message.Body).HasColumnType("bytea");
-            entity.Property(message => message.Headers).HasColumnType("jsonb");
-            entity.Property(message => message.MessageType).HasColumnType("text");
+            _ = entity.Property(message => message.Body).HasColumnType("bytea");
+            _ = entity.Property(message => message.Headers).HasColumnType("jsonb");
+            _ = entity.Property(message => message.MessageType).HasColumnType("text");
         });
 
-        modelBuilder.Entity<SagaStateEntity>(entity =>
+        _ = modelBuilder.Entity<SagaStateEntity>(entity =>
         {
-            entity.Property(state => state.StateType).HasColumnType("text");
-            entity.Property(state => state.StateData).HasColumnType("jsonb");
+            _ = entity.Property(state => state.StateType).HasColumnType("text");
+            _ = entity.Property(state => state.StateData).HasColumnType("jsonb");
         });
     }
 }

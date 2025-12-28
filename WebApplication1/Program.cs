@@ -65,12 +65,12 @@ builder.Services
         Uri pingRequestAddress = TransponderRequestAddressResolver.Create(localAddress)(typeof(PingRequest))
             ?? throw new InvalidOperationException("Ping request address could not be resolved.");
 
-        options.UseSagaOrchestration(sagas =>
+        _ = options.UseSagaOrchestration(sagas =>
         {
-            sagas.AddSaga<PingSaga, PingState>(cfg => cfg.StartWith<PingRequest>(pingRequestAddress));
+            _ = sagas.AddSaga<PingSaga, PingState>(cfg => cfg.StartWith<PingRequest>(pingRequestAddress));
         });
-        options.UsePersistedMessageScheduler();
-        options.UseOutbox();
+        _ = options.UsePersistedMessageScheduler();
+        _ = options.UseOutbox();
     })
     .UseGrpc(localAddress, remoteAddresses);
 
@@ -79,7 +79,7 @@ builder.Services.AddHostedService<TransponderHostedService>();
 WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment()) app.MapOpenApi();
+if (app.Environment.IsDevelopment()) _ = app.MapOpenApi();
 
 app.MapGrpcService<GrpcTransportService>();
 
@@ -99,24 +99,24 @@ static void AddTransponderPersistence(IServiceCollection services, IConfiguratio
     string? postgresConnection = configuration.GetConnectionString("TransponderPostgres");
     if (!string.IsNullOrWhiteSpace(postgresConnection))
     {
-        services.AddDbContextFactory<PostgreSqlTransponderDbContext>(options =>
+        _ = services.AddDbContextFactory<PostgreSqlTransponderDbContext>(options =>
             options.UseNpgsql(postgresConnection));
-        services.AddSingleton<IPostgreSqlStorageOptions>(new PostgreSqlStorageOptions());
-        services.AddTransponderPostgreSqlPersistence();
+        _ = services.AddSingleton<IPostgreSqlStorageOptions>(new PostgreSqlStorageOptions());
+        _ = services.AddTransponderPostgreSqlPersistence();
         return;
     }
 
     string? sqlConnection = configuration.GetConnectionString("TransponderSqlServer");
     if (!string.IsNullOrWhiteSpace(sqlConnection))
     {
-        services.AddDbContextFactory<SqlServerTransponderDbContext>(options =>
+        _ = services.AddDbContextFactory<SqlServerTransponderDbContext>(options =>
             options.UseSqlServer(sqlConnection));
-        services.AddSingleton<ISqlServerStorageOptions>(new SqlServerStorageOptions());
-        services.AddTransponderSqlServerPersistence();
+        _ = services.AddSingleton<ISqlServerStorageOptions>(new SqlServerStorageOptions());
+        _ = services.AddTransponderSqlServerPersistence();
         return;
     }
 
-    services.AddTransponderInMemoryPersistence();
+    _ = services.AddTransponderInMemoryPersistence();
 }
 
 static Uri ResolveIntegrationEventAddress(IReadOnlyList<Uri> remoteAddresses)

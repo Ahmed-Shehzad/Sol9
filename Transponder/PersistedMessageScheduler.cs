@@ -251,7 +251,7 @@ public sealed class PersistedMessageScheduler : IMessageScheduler, IAsyncDisposa
         IReadOnlyDictionary<string, object?> headers)
     {
         var filtered = new Dictionary<string, object?>(headers, StringComparer.OrdinalIgnoreCase);
-        filtered.Remove(TransponderMessageHeaders.DestinationAddress);
+        _ = filtered.Remove(TransponderMessageHeaders.DestinationAddress);
         return filtered;
     }
 

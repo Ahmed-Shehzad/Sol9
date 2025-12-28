@@ -16,9 +16,9 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configurePublisher);
 
-        services.AddSingleton<IOrderRepository, InMemoryOrderRepository>();
-        services.AddSingleton<IIntegrationEventPublisher, IntegrationEventPublisher>();
-        services.Configure(configurePublisher);
+        _ = services.AddSingleton<IOrderRepository, InMemoryOrderRepository>();
+        _ = services.AddSingleton<IIntegrationEventPublisher, IntegrationEventPublisher>();
+        _ = services.Configure(configurePublisher);
 
         return services;
     }

@@ -20,7 +20,7 @@ public sealed class TransportRegistryTests
         registry.Register(factory);
         registry.Register(factory);
 
-        Assert.Single(registry.Factories);
+        _ = Assert.Single(registry.Factories);
     }
 
     [Fact]

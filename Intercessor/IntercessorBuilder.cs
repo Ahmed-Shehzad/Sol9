@@ -65,12 +65,12 @@ public class IntercessorBuilder
     /// </summary>
     internal void Build()
     {
-        _services.AddScoped<ISender, Sender>();
-        _services.AddScoped<IPublisher, Publisher>();
+        _ = _services.AddScoped<ISender, Sender>();
+        _ = _services.AddScoped<IPublisher, Publisher>();
 
         var distinctAssemblies = _assemblies.Distinct().ToList();
 
-        _services.Scan(scan => scan
+        _ = _services.Scan(scan => scan
             .FromAssemblies(distinctAssemblies)
 
             // Register IQueryHandler<,>
@@ -104,15 +104,15 @@ public class IntercessorBuilder
             .WithTransientLifetime()
         );
 
-        _services.AddVerifier(x =>
+        _ = _services.AddVerifier(x =>
         {
             foreach (Assembly assembly in distinctAssemblies) x.RegisterFromAssembly(assembly);
         });
 
         // Register Validation Pipeline Behavior
-        _services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        _ = _services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
         // Register Validation Pipeline Behavior
-        _services.AddTransient(typeof(IPipelineBehavior<>), typeof(ValidationBehavior<>));
+        _ = _services.AddTransient(typeof(IPipelineBehavior<>), typeof(ValidationBehavior<>));
     }
 }

@@ -39,7 +39,7 @@ public sealed class VerifierBuilder
 
         var distinctAssemblies = _assemblies.Distinct().ToList();
 
-        _services.Scan(scan => scan
+        _ = _services.Scan(scan => scan
             .FromAssemblies(distinctAssemblies)
             .AddClasses(classes => classes.AssignableTo(typeof(IValidator<>)))
             .AsImplementedInterfaces()

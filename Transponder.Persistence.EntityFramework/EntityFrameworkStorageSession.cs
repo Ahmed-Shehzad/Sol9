@@ -33,7 +33,7 @@ public sealed class EntityFrameworkStorageSession : IStorageSession
     {
         ThrowIfDisposed();
 
-        await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        _ = await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         if (_transaction != null) await _transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
     }

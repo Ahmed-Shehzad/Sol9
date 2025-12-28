@@ -76,7 +76,7 @@ public sealed class KafkaTransportHost : TransportHostBase
     public async override ValueTask DisposeAsync()
     {
         await StopAsync().ConfigureAwait(false);
-        _producer.Flush(TimeSpan.FromSeconds(5));
+        _ = _producer.Flush(TimeSpan.FromSeconds(5));
         _producer.Dispose();
     }
 

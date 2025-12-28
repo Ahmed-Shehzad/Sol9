@@ -27,6 +27,6 @@ internal sealed class AwsPublishTransport : IPublishTransport
             MessageAttributes = AwsTransportHost.BuildAttributes(message)
         };
 
-        await _host.SnsClient.PublishAsync(request, cancellationToken).ConfigureAwait(false);
+        _ = await _host.SnsClient.PublishAsync(request, cancellationToken).ConfigureAwait(false);
     }
 }

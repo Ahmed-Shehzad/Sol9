@@ -12,7 +12,7 @@ public sealed class EntityFrameworkInboxStoreTests
         var state = new InboxState(Guid.NewGuid(), "consumer-A");
 
         bool firstAdd = await store.TryAddAsync(state);
-        await context.SaveChangesAsync();
+        _ = await context.SaveChangesAsync();
         bool secondAdd = await store.TryAddAsync(state);
 
         Assert.True(firstAdd);

@@ -105,17 +105,17 @@ public static class TransponderRequestAddressResolver
         {
             if (char.IsLetterOrDigit(ch) || ch == '-' || ch == '_')
             {
-                builder.Append(ch);
+                _ = builder.Append(ch);
                 continue;
             }
 
             if (ch is '.' or '+' or '/')
             {
-                builder.Append('-');
+                _ = builder.Append('-');
                 continue;
             }
 
-            builder.Append('-');
+            _ = builder.Append('-');
         }
 
         string normalized = builder.ToString().Trim('-');

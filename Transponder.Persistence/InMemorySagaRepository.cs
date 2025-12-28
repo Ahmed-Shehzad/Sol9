@@ -15,7 +15,7 @@ public sealed class InMemorySagaRepository<TState> : ISagaRepository<TState>
     /// <inheritdoc />
     public Task<TState?> GetAsync(Guid correlationId, CancellationToken cancellationToken = default)
     {
-        _states.TryGetValue(correlationId, out TState? state);
+        _ = _states.TryGetValue(correlationId, out TState? state);
         return Task.FromResult(state);
     }
 
@@ -33,7 +33,7 @@ public sealed class InMemorySagaRepository<TState> : ISagaRepository<TState>
     /// <inheritdoc />
     public Task DeleteAsync(Guid correlationId, CancellationToken cancellationToken = default)
     {
-        _states.TryRemove(correlationId, out _);
+        _ = _states.TryRemove(correlationId, out _);
         return Task.CompletedTask;
     }
 }

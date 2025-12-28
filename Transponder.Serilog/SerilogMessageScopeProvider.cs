@@ -1,6 +1,5 @@
 using Serilog.Context;
 
-using Transponder;
 using Transponder.Abstractions;
 
 namespace Transponder.Serilog;

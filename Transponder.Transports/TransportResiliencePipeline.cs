@@ -17,9 +17,9 @@ public static class TransportResiliencePipeline
 
         var builder = new ResiliencePipelineBuilder();
 
-        if (options.EnableCircuitBreaker) builder.AddCircuitBreaker(CreateCircuitBreakerOptions(options.CircuitBreaker));
+        if (options.EnableCircuitBreaker) _ = builder.AddCircuitBreaker(CreateCircuitBreakerOptions(options.CircuitBreaker));
 
-        if (options.EnableRetry) builder.AddRetry(CreateRetryOptions(options.Retry));
+        if (options.EnableRetry) _ = builder.AddRetry(CreateRetryOptions(options.Retry));
 
         return builder.Build();
     }
@@ -30,9 +30,9 @@ public static class TransportResiliencePipeline
 
         var builder = new ResiliencePipelineBuilder<HttpResponseMessage>();
 
-        if (options.EnableCircuitBreaker) builder.AddCircuitBreaker(CreateCircuitBreakerOptions<HttpResponseMessage>(options.CircuitBreaker));
+        if (options.EnableCircuitBreaker) _ = builder.AddCircuitBreaker(CreateCircuitBreakerOptions<HttpResponseMessage>(options.CircuitBreaker));
 
-        if (options.EnableRetry) builder.AddRetry(CreateRetryOptions<HttpResponseMessage>(options.Retry));
+        if (options.EnableRetry) _ = builder.AddRetry(CreateRetryOptions<HttpResponseMessage>(options.Retry));
 
         return builder.Build();
     }

@@ -26,6 +26,6 @@ internal sealed class KafkaSendTransport : ISendTransport
             Headers = KafkaTransportHeaders.BuildHeaders(message)
         };
 
-        await _producer.ProduceAsync(_topicName, kafkaMessage, cancellationToken).ConfigureAwait(false);
+        _ = await _producer.ProduceAsync(_topicName, kafkaMessage, cancellationToken).ConfigureAwait(false);
     }
 }

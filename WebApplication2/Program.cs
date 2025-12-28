@@ -58,12 +58,12 @@ builder.Services
         Uri pingRequestAddress = TransponderRequestAddressResolver.Create(localAddress)(typeof(PingRequest))
             ?? throw new InvalidOperationException("Ping request address could not be resolved.");
 
-        options.UseSagaOrchestration(sagas =>
+        _ = options.UseSagaOrchestration(sagas =>
         {
-            sagas.AddSaga<PingSaga, PingState>(cfg => cfg.StartWith<PingRequest>(pingRequestAddress));
-            sagas.AddSaga<OrderIntegrationSaga, OrderIntegrationSagaState>(
+            _ = sagas.AddSaga<PingSaga, PingState>(cfg => cfg.StartWith<PingRequest>(pingRequestAddress));
+            _ = sagas.AddSaga<OrderIntegrationSaga, OrderIntegrationSagaState>(
                 cfg => cfg.StartWith<OrderCreatedIntegrationEvent>(integrationEventAddress));
-            sagas.AddSaga<OrderFollowUpSaga, OrderFollowUpSagaState>(
+            _ = sagas.AddSaga<OrderFollowUpSaga, OrderFollowUpSagaState>(
                 cfg => cfg.StartWith<OrderFollowUpScheduledIntegrationEvent>(integrationEventAddress));
         });
     })
@@ -74,7 +74,7 @@ builder.Services.AddHostedService<TransponderHostedService>();
 WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment()) app.MapOpenApi();
+if (app.Environment.IsDevelopment()) _ = app.MapOpenApi();
 
 app.MapGrpcService<GrpcTransportService>();
 

@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 
-using Transponder.Transports;
 using Transponder.Transports.Abstractions;
 using Transponder.Transports.RabbitMq.Abstractions;
 
@@ -43,8 +42,8 @@ public static class Extensions
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(settingsFactory);
 
-        builder.AddTransportFactory<RabbitMqTransportFactory>();
-        builder.AddTransportHost<IRabbitMqHostSettings, RabbitMqTransportHost>(
+        _ = builder.AddTransportFactory<RabbitMqTransportFactory>();
+        _ = builder.AddTransportHost<IRabbitMqHostSettings, RabbitMqTransportHost>(
             settingsFactory,
             (_, settings) => new RabbitMqTransportHost(settings));
 
@@ -85,7 +84,7 @@ public static class Extensions
             return services;
         }
 
-        services.AddTransponderTransports(configure);
+        _ = services.AddTransponderTransports(configure);
         return services;
     }
 }

@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.DependencyInjection;
 
 using StackExchange.Redis;
@@ -32,7 +31,7 @@ public static class Extensions
         if (options.SyncTimeout.HasValue)
             configurationOptions.SyncTimeout = (int)options.SyncTimeout.Value.TotalMilliseconds;
 
-        services.AddStackExchangeRedisCache(cacheOptions =>
+        _ = services.AddStackExchangeRedisCache(cacheOptions =>
         {
             cacheOptions.ConfigurationOptions = configurationOptions;
 

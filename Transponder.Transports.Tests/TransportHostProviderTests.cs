@@ -69,6 +69,6 @@ public sealed class TransportHostProviderTests
     {
         var provider = new TransportHostProvider([]);
 
-        Assert.Throws<InvalidOperationException>(() => provider.GetHost(new Uri("missing://host")));
+        _ = Assert.Throws<InvalidOperationException>(() => provider.GetHost(new Uri("missing://host")));
     }
 }

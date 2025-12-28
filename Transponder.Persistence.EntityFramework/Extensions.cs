@@ -13,7 +13,7 @@ public static class Extensions
         where TState : class, ISagaState
     {
         ArgumentNullException.ThrowIfNull(services);
-        services.AddScoped<ISagaRepository<TState>, EntityFrameworkSagaRepository<TState>>();
+        _ = services.AddScoped<ISagaRepository<TState>, EntityFrameworkSagaRepository<TState>>();
         return services;
     }
 }

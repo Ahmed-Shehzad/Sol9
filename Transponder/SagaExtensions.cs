@@ -29,7 +29,7 @@ public static class SagaExtensions
 
         var builder = new SagaRegistrationBuilder(services, style);
         configure(builder);
-        services.AddSingleton(builder.Build());
+        _ = services.AddSingleton(builder.Build());
         return services;
     }
 }

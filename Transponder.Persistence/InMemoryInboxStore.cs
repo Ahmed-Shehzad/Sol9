@@ -22,7 +22,7 @@ public sealed class InMemoryInboxStore : IInboxStore
 
         lock (_sync)
         {
-            _states.TryGetValue((messageId, consumerId), out InboxState? state);
+            _ = _states.TryGetValue((messageId, consumerId), out InboxState? state);
             return Task.FromResult<IInboxState?>(state);
         }
     }

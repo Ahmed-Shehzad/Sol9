@@ -31,44 +31,44 @@ public class TransponderDbContext : DbContext
 
         string? schema = _storageOptions.Schema;
 
-        modelBuilder.Entity<OutboxMessageEntity>(entity =>
+        _ = modelBuilder.Entity<OutboxMessageEntity>(entity =>
         {
-            entity.ToTable(_storageOptions.OutboxTableName, schema);
-            entity.HasKey(message => message.MessageId);
-            entity.Property(message => message.MessageId).ValueGeneratedNever();
-            entity.Property(message => message.Body).IsRequired();
-            entity.Property(message => message.Headers);
-            entity.Property(message => message.SourceAddress).HasMaxLength(2048);
-            entity.Property(message => message.DestinationAddress).HasMaxLength(2048);
+            _ = entity.ToTable(_storageOptions.OutboxTableName, schema);
+            _ = entity.HasKey(message => message.MessageId);
+            _ = entity.Property(message => message.MessageId).ValueGeneratedNever();
+            _ = entity.Property(message => message.Body).IsRequired();
+            _ = entity.Property(message => message.Headers);
+            _ = entity.Property(message => message.SourceAddress).HasMaxLength(2048);
+            _ = entity.Property(message => message.DestinationAddress).HasMaxLength(2048);
         });
 
-        modelBuilder.Entity<InboxStateEntity>(entity =>
+        _ = modelBuilder.Entity<InboxStateEntity>(entity =>
         {
-            entity.ToTable(_storageOptions.InboxTableName, schema);
-            entity.HasKey(state => new { state.MessageId, state.ConsumerId });
-            entity.Property(state => state.MessageId).ValueGeneratedNever();
-            entity.Property(state => state.ConsumerId).HasMaxLength(200);
+            _ = entity.ToTable(_storageOptions.InboxTableName, schema);
+            _ = entity.HasKey(state => new { state.MessageId, state.ConsumerId });
+            _ = entity.Property(state => state.MessageId).ValueGeneratedNever();
+            _ = entity.Property(state => state.ConsumerId).HasMaxLength(200);
         });
 
-        modelBuilder.Entity<ScheduledMessageEntity>(entity =>
+        _ = modelBuilder.Entity<ScheduledMessageEntity>(entity =>
         {
-            entity.ToTable(_storageOptions.ScheduledMessagesTableName, schema);
-            entity.HasKey(message => message.TokenId);
-            entity.Property(message => message.TokenId).ValueGeneratedNever();
-            entity.Property(message => message.MessageType).HasMaxLength(500).IsRequired();
-            entity.Property(message => message.Body).IsRequired();
-            entity.Property(message => message.Headers);
-            entity.HasIndex(message => new { message.ScheduledTime, message.DispatchedTime });
+            _ = entity.ToTable(_storageOptions.ScheduledMessagesTableName, schema);
+            _ = entity.HasKey(message => message.TokenId);
+            _ = entity.Property(message => message.TokenId).ValueGeneratedNever();
+            _ = entity.Property(message => message.MessageType).HasMaxLength(500).IsRequired();
+            _ = entity.Property(message => message.Body).IsRequired();
+            _ = entity.Property(message => message.Headers);
+            _ = entity.HasIndex(message => new { message.ScheduledTime, message.DispatchedTime });
         });
 
-        modelBuilder.Entity<SagaStateEntity>(entity =>
+        _ = modelBuilder.Entity<SagaStateEntity>(entity =>
         {
-            entity.ToTable(_storageOptions.SagaStatesTableName, schema);
-            entity.HasKey(state => new { state.CorrelationId, state.StateType });
-            entity.Property(state => state.CorrelationId).ValueGeneratedNever();
-            entity.Property(state => state.StateType).HasMaxLength(500).IsRequired();
-            entity.Property(state => state.StateData).IsRequired();
-            entity.HasIndex(state => state.ConversationId);
+            _ = entity.ToTable(_storageOptions.SagaStatesTableName, schema);
+            _ = entity.HasKey(state => new { state.CorrelationId, state.StateType });
+            _ = entity.Property(state => state.CorrelationId).ValueGeneratedNever();
+            _ = entity.Property(state => state.StateType).HasMaxLength(500).IsRequired();
+            _ = entity.Property(state => state.StateData).IsRequired();
+            _ = entity.HasIndex(state => state.ConversationId);
         });
     }
 }
