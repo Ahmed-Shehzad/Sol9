@@ -18,7 +18,7 @@ public static class Extensions
         ArgumentNullException.ThrowIfNull(settingsFactory);
 
         options.AddTransportFactory<AzureServiceBusTransportFactory>();
-        options.AddTransportHost<IAzureServiceBusHostSettings, AzureServiceBusTransportHost>(
+        options.AddTransportHost(
             settingsFactory,
             (_, settings) => new AzureServiceBusTransportHost(settings));
 
@@ -43,7 +43,7 @@ public static class Extensions
         ArgumentNullException.ThrowIfNull(settingsFactory);
 
         _ = builder.AddTransportFactory<AzureServiceBusTransportFactory>();
-        _ = builder.AddTransportHost<IAzureServiceBusHostSettings, AzureServiceBusTransportHost>(
+        _ = builder.AddTransportHost(
             settingsFactory,
             (_, settings) => new AzureServiceBusTransportHost(settings));
 

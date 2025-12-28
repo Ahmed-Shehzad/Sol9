@@ -8,6 +8,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Intercessor\Intercessor.csproj" />
+        <ProjectReference Include="..\Sol9.Eventing\Sol9.Eventing.csproj" />
         <ProjectReference Include="..\WebApplication1.Domain\WebApplication1.Domain.csproj" />
         <ProjectReference Include="..\Transponder.Contracts\Transponder.Contracts.csproj" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.1" />

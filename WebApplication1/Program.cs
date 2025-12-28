@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.OpenApi;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -22,14 +23,11 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 const string openApiDocumentName = "v1";
 builder.Services.AddOpenApi(openApiDocumentName);
-builder.Services.TryAddSingleton<Microsoft.AspNetCore.OpenApi.IOpenApiDocumentProvider>(sp =>
+builder.Services.TryAddSingleton(sp =>
 {
     Type? providerType = Type.GetType(
-        "Microsoft.AspNetCore.OpenApi.OpenApiDocumentService, Microsoft.AspNetCore.OpenApi");
-    if (providerType is null)
-        throw new InvalidOperationException("OpenApiDocumentService type not found.");
-
-    return (Microsoft.AspNetCore.OpenApi.IOpenApiDocumentProvider)ActivatorUtilities.CreateInstance(
+        "Microsoft.AspNetCore.OpenApi.OpenApiDocumentService, Microsoft.AspNetCore.OpenApi") ?? throw new InvalidOperationException("OpenApiDocumentService type not found.");
+    return (IOpenApiDocumentProvider)ActivatorUtilities.CreateInstance(
         sp,
         providerType,
         openApiDocumentName);

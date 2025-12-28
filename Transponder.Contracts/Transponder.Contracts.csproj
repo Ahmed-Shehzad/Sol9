@@ -7,6 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Sol9.Eventing\Sol9.Eventing.csproj" />
         <ProjectReference Include="..\Transponder\Transponder.csproj" />
     </ItemGroup>
 

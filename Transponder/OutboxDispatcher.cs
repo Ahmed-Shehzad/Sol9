@@ -226,9 +226,7 @@ public sealed class OutboxDispatcher : IAsyncDisposable
             return;
         }
 
-        Type? messageType = OutboxMessageTypeResolver.Resolve(message.MessageType);
-        if (messageType is null) throw new InvalidOperationException("Outbox message type could not be resolved.");
-
+        Type? messageType = OutboxMessageTypeResolver.Resolve(message.MessageType) ?? throw new InvalidOperationException("Outbox message type could not be resolved.");
         if (message.SourceAddress is null) throw new InvalidOperationException("Outbox publish requires a source address.");
 
         ITransportHost publishHost = _hostProvider.GetHost(message.SourceAddress);

@@ -7,6 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Intercessor\Intercessor.csproj" />
+        <ProjectReference Include="..\Sol9.Eventing\Sol9.Eventing.csproj" />
         <ProjectReference Include="..\WebApplication1.Application\WebApplication1.Application.csproj" />
         <ProjectReference Include="..\WebApplication1.Domain\WebApplication1.Domain.csproj" />
         <ProjectReference Include="..\Transponder\Transponder.csproj" />

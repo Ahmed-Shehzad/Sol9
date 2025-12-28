@@ -1,6 +1,8 @@
-using Microsoft.Extensions.DependencyInjection;
+using Intercessor.Abstractions;
 
-using WebApplication1.Application.Integration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+
 using WebApplication1.Application.Orders;
 using WebApplication1.Infrastructure.Integration;
 using WebApplication1.Infrastructure.Orders;
@@ -17,7 +19,9 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(configurePublisher);
 
         _ = services.AddSingleton<IOrderRepository, InMemoryOrderRepository>();
-        _ = services.AddSingleton<IIntegrationEventPublisher, IntegrationEventPublisher>();
+        services.TryAddEnumerable(ServiceDescriptor.Transient(
+            typeof(INotificationHandler<>),
+            typeof(IntegrationEventPublisher<>)));
         _ = services.Configure(configurePublisher);
 
         return services;

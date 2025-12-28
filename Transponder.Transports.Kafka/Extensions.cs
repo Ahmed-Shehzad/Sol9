@@ -18,7 +18,7 @@ public static class Extensions
         ArgumentNullException.ThrowIfNull(settingsFactory);
 
         options.AddTransportFactory<KafkaTransportFactory>();
-        options.AddTransportHost<IKafkaHostSettings, KafkaTransportHost>(
+        options.AddTransportHost(
             settingsFactory,
             (_, settings) => new KafkaTransportHost(settings));
 
@@ -43,7 +43,7 @@ public static class Extensions
         ArgumentNullException.ThrowIfNull(settingsFactory);
 
         _ = builder.AddTransportFactory<KafkaTransportFactory>();
-        _ = builder.AddTransportHost<IKafkaHostSettings, KafkaTransportHost>(
+        _ = builder.AddTransportHost(
             settingsFactory,
             (_, settings) => new KafkaTransportHost(settings));
 

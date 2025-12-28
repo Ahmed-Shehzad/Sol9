@@ -12,6 +12,9 @@
   <Folder Name="/Intercessor/">
     <Project Path="Intercessor/Intercessor.csproj" />
   </Folder>
+  <Folder Name="/Eventing/">
+    <Project Path="Sol9.Eventing/Sol9.Eventing.csproj" />
+  </Folder>
   <Folder Name="/Solution Items/" />
   <Folder Name="/Transponder/">
     <Project Path="Transponder.Contracts/Transponder.Contracts.csproj" />

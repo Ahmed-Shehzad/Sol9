@@ -2,7 +2,6 @@ using Intercessor.Abstractions;
 
 using Transponder.Contracts.Orders;
 
-using WebApplication1.Application.Integration;
 using WebApplication1.Domain.Orders;
 
 namespace WebApplication1.Application.Orders;
@@ -10,9 +9,9 @@ namespace WebApplication1.Application.Orders;
 public sealed class CreateOrderHandler : ICommandHandler<CreateOrderCommand, CreateOrderResult>
 {
     private readonly IOrderRepository _repository;
-    private readonly IIntegrationEventPublisher _publisher;
+    private readonly IPublisher _publisher;
 
-    public CreateOrderHandler(IOrderRepository repository, IIntegrationEventPublisher publisher)
+    public CreateOrderHandler(IOrderRepository repository, IPublisher publisher)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));

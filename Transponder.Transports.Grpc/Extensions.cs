@@ -18,7 +18,7 @@ public static class Extensions
         ArgumentNullException.ThrowIfNull(settingsFactory);
 
         options.AddTransportFactory<GrpcTransportFactory>();
-        options.AddTransportHost<IGrpcHostSettings, GrpcTransportHost>(
+        options.AddTransportHost(
             settingsFactory,
             (_, settings) => new GrpcTransportHost(settings));
 
@@ -44,7 +44,7 @@ public static class Extensions
         ArgumentNullException.ThrowIfNull(localAddress);
 
         options.AddTransportFactory<GrpcTransportFactory>();
-        options.AddTransportHost<GrpcTransportHost>(_ => new GrpcTransportHost(new GrpcHostSettings(
+        options.AddTransportHost(_ => new GrpcTransportHost(new GrpcHostSettings(
             localAddress,
             useTls: string.Equals(localAddress.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))));
 
@@ -70,7 +70,7 @@ public static class Extensions
         ArgumentNullException.ThrowIfNull(settingsFactory);
 
         _ = builder.AddTransportFactory<GrpcTransportFactory>();
-        _ = builder.AddTransportHost<IGrpcHostSettings, GrpcTransportHost>(
+        _ = builder.AddTransportHost(
             settingsFactory,
             (_, settings) => new GrpcTransportHost(settings));
 

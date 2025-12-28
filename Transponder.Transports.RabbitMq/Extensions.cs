@@ -18,7 +18,7 @@ public static class Extensions
         ArgumentNullException.ThrowIfNull(settingsFactory);
 
         options.AddTransportFactory<RabbitMqTransportFactory>();
-        options.AddTransportHost<IRabbitMqHostSettings, RabbitMqTransportHost>(
+        options.AddTransportHost(
             settingsFactory,
             (_, settings) => new RabbitMqTransportHost(settings));
 
@@ -43,7 +43,7 @@ public static class Extensions
         ArgumentNullException.ThrowIfNull(settingsFactory);
 
         _ = builder.AddTransportFactory<RabbitMqTransportFactory>();
-        _ = builder.AddTransportHost<IRabbitMqHostSettings, RabbitMqTransportHost>(
+        _ = builder.AddTransportHost(
             settingsFactory,
             (_, settings) => new RabbitMqTransportHost(settings));
 

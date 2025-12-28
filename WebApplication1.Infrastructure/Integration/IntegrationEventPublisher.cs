@@ -1,13 +1,13 @@
 using Microsoft.Extensions.Options;
 
-using Transponder.Abstractions;
-using Transponder.Contracts.Orders;
+using Sol9.Eventing.Abstractions;
 
-using WebApplication1.Application.Integration;
+using Transponder.Abstractions;
 
 namespace WebApplication1.Infrastructure.Integration;
 
-internal sealed class IntegrationEventPublisher : IIntegrationEventPublisher
+public sealed class IntegrationEventPublisher<TNotification> : IIntegrationEventHandler<TNotification>
+    where TNotification : IIntegrationEvent
 {
     private readonly IBus _bus;
     private readonly IntegrationEventPublisherOptions _options;
@@ -18,15 +18,18 @@ internal sealed class IntegrationEventPublisher : IIntegrationEventPublisher
         _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
     }
 
-    public async Task PublishAsync(OrderCreatedIntegrationEvent integrationEvent, CancellationToken cancellationToken)
+    public async Task HandleAsync(TNotification notification, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(integrationEvent);
+        ArgumentNullException.ThrowIfNull(notification);
+
+        if (notification is not IMessage)
+            throw new InvalidOperationException("Integration event must implement IMessage to be dispatched via Transponder.");
 
         if (_options.DestinationAddress is null)
             throw new InvalidOperationException("Integration event destination address is not configured.");
 
         ISendEndpoint endpoint = await _bus.GetSendEndpointAsync(_options.DestinationAddress, cancellationToken)
             .ConfigureAwait(false);
-        await endpoint.SendAsync(integrationEvent, cancellationToken).ConfigureAwait(false);
+        await endpoint.SendAsync((dynamic)notification, cancellationToken).ConfigureAwait(false);
     }
 }

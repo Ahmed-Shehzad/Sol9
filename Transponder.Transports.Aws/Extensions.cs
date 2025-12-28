@@ -18,7 +18,7 @@ public static class Extensions
         ArgumentNullException.ThrowIfNull(settingsFactory);
 
         options.AddTransportFactory<AwsTransportFactory>();
-        options.AddTransportHost<IAwsTransportHostSettings, AwsTransportHost>(
+        options.AddTransportHost(
             settingsFactory,
             (_, settings) => new AwsTransportHost(settings));
 
@@ -43,7 +43,7 @@ public static class Extensions
         ArgumentNullException.ThrowIfNull(settingsFactory);
 
         _ = builder.AddTransportFactory<AwsTransportFactory>();
-        _ = builder.AddTransportHost<IAwsTransportHostSettings, AwsTransportHost>(
+        _ = builder.AddTransportHost(
             settingsFactory,
             (_, settings) => new AwsTransportHost(settings));
 

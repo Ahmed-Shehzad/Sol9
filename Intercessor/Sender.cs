@@ -20,9 +20,7 @@ internal class Sender : ISender
         Type responseType = typeof(TResponse);
         Type handlerType = typeof(IRequestHandler<,>).MakeGenericType(requestType, responseType);
 
-        dynamic? handler = _serviceProvider.GetService(handlerType);
-        if (handler is null) throw new InvalidOperationException($"No handler registered for {requestType.Name}");
-
+        dynamic? handler = _serviceProvider.GetService(handlerType) ?? throw new InvalidOperationException($"No handler registered for {requestType.Name}");
         var behaviors = _serviceProvider
             .GetServices(typeof(IPipelineBehavior<,>).MakeGenericType(requestType, responseType))
             .Cast<dynamic>()
@@ -47,9 +45,7 @@ internal class Sender : ISender
         Type requestType = request.GetType();
         Type handlerType = typeof(IRequestHandler<>).MakeGenericType(requestType);
 
-        dynamic? handler = _serviceProvider.GetService(handlerType);
-        if (handler is null) throw new InvalidOperationException($"No handler registered for {requestType.Name}");
-
+        dynamic? handler = _serviceProvider.GetService(handlerType) ?? throw new InvalidOperationException($"No handler registered for {requestType.Name}");
         var behaviors = _serviceProvider
             .GetServices(typeof(IPipelineBehavior<>).MakeGenericType(requestType))
             .Cast<dynamic>()

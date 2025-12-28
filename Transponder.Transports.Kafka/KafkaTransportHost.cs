@@ -112,10 +112,10 @@ public sealed class KafkaTransportHost : TransportHostBase
     private static void ApplySecuritySettings(ClientConfig config, IKafkaHostSettings settings)
     {
         if (!string.IsNullOrWhiteSpace(settings.SecurityProtocol) &&
-            Enum.TryParse<SecurityProtocol>(settings.SecurityProtocol, true, out SecurityProtocol securityProtocol)) config.SecurityProtocol = securityProtocol;
+            Enum.TryParse(settings.SecurityProtocol, true, out SecurityProtocol securityProtocol)) config.SecurityProtocol = securityProtocol;
 
         if (!string.IsNullOrWhiteSpace(settings.SaslMechanism) &&
-            Enum.TryParse<SaslMechanism>(settings.SaslMechanism, true, out SaslMechanism saslMechanism)) config.SaslMechanism = saslMechanism;
+            Enum.TryParse(settings.SaslMechanism, true, out SaslMechanism saslMechanism)) config.SaslMechanism = saslMechanism;
 
         if (!string.IsNullOrWhiteSpace(settings.SaslUsername)) config.SaslUsername = settings.SaslUsername;
 
