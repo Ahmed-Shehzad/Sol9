@@ -30,9 +30,9 @@ public sealed class OutboxDispatcher : IAsyncDisposable
         _hostProvider = hostProvider ?? throw new ArgumentNullException(nameof(hostProvider));
         _options = options ?? throw new ArgumentNullException(nameof(options));
 
-        if (_options.ChannelCapacity <= 0) throw new ArgumentOutOfRangeException(nameof(options.ChannelCapacity));
-        if (_options.BatchSize <= 0) throw new ArgumentOutOfRangeException(nameof(options.BatchSize));
-        if (_options.MaxConcurrentDestinations <= 0) throw new ArgumentOutOfRangeException(nameof(options.MaxConcurrentDestinations));
+        if (_options.ChannelCapacity <= 0) throw new ArgumentOutOfRangeException(nameof(options));
+        if (_options.BatchSize <= 0) throw new ArgumentOutOfRangeException(nameof(options));
+        if (_options.MaxConcurrentDestinations <= 0) throw new ArgumentOutOfRangeException(nameof(options));
 
         var channelOptions = new BoundedChannelOptions(_options.ChannelCapacity)
         {

@@ -19,18 +19,15 @@ public sealed class OrdersController : ControllerBase
     private readonly ISender _sender;
     private readonly IBus _bus;
     private readonly IntegrationEventPublisherOptions _publisherOptions;
-    private readonly IScheduledMessageStore _scheduledMessageStore;
 
     public OrdersController(
         ISender sender,
         IBus bus,
-        IOptions<IntegrationEventPublisherOptions> publisherOptions,
-        IScheduledMessageStore scheduledMessageStore)
+        IOptions<IntegrationEventPublisherOptions> publisherOptions)
     {
         _sender = sender ?? throw new ArgumentNullException(nameof(sender));
         _bus = bus ?? throw new ArgumentNullException(nameof(bus));
         _publisherOptions = publisherOptions?.Value ?? throw new ArgumentNullException(nameof(publisherOptions));
-        _scheduledMessageStore = scheduledMessageStore ?? throw new ArgumentNullException(nameof(scheduledMessageStore));
     }
 
     [HttpPost]
