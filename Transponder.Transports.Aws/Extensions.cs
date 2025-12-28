@@ -35,21 +35,6 @@ public static class Extensions
         return options.UseAws(_ => settings);
     }
 
-    public static TransponderTransportBuilder AddAwsTransport(
-        this TransponderTransportBuilder builder,
-        Func<IServiceProvider, IAwsTransportHostSettings> settingsFactory)
-    {
-        ArgumentNullException.ThrowIfNull(builder);
-        ArgumentNullException.ThrowIfNull(settingsFactory);
-
-        _ = builder.AddTransportFactory<AwsTransportFactory>();
-        _ = builder.AddTransportHost(
-            settingsFactory,
-            (_, settings) => new AwsTransportHost(settings));
-
-        return builder;
-    }
-
     public static IServiceCollection UseAws(
         this IServiceCollection services,
         Func<IServiceProvider, IAwsTransportHostSettings> settingsFactory)
@@ -68,6 +53,21 @@ public static class Extensions
         ArgumentNullException.ThrowIfNull(settings);
 
         return services.UseAws(_ => settings);
+    }
+
+    public static TransponderTransportBuilder AddAwsTransport(
+        this TransponderTransportBuilder builder,
+        Func<IServiceProvider, IAwsTransportHostSettings> settingsFactory)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(settingsFactory);
+
+        _ = builder.AddTransportFactory<AwsTransportFactory>();
+        _ = builder.AddTransportHost(
+            settingsFactory,
+            (_, settings) => new AwsTransportHost(settings));
+
+        return builder;
     }
 
     private static IServiceCollection AddTransportRegistration(

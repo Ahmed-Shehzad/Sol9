@@ -35,21 +35,6 @@ public static class Extensions
         return options.UseKafka(_ => settings);
     }
 
-    public static TransponderTransportBuilder AddKafkaTransport(
-        this TransponderTransportBuilder builder,
-        Func<IServiceProvider, IKafkaHostSettings> settingsFactory)
-    {
-        ArgumentNullException.ThrowIfNull(builder);
-        ArgumentNullException.ThrowIfNull(settingsFactory);
-
-        _ = builder.AddTransportFactory<KafkaTransportFactory>();
-        _ = builder.AddTransportHost(
-            settingsFactory,
-            (_, settings) => new KafkaTransportHost(settings));
-
-        return builder;
-    }
-
     public static IServiceCollection UseKafka(
         this IServiceCollection services,
         Func<IServiceProvider, IKafkaHostSettings> settingsFactory)
@@ -68,6 +53,21 @@ public static class Extensions
         ArgumentNullException.ThrowIfNull(settings);
 
         return services.UseKafka(_ => settings);
+    }
+
+    public static TransponderTransportBuilder AddKafkaTransport(
+        this TransponderTransportBuilder builder,
+        Func<IServiceProvider, IKafkaHostSettings> settingsFactory)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(settingsFactory);
+
+        _ = builder.AddTransportFactory<KafkaTransportFactory>();
+        _ = builder.AddTransportHost(
+            settingsFactory,
+            (_, settings) => new KafkaTransportHost(settings));
+
+        return builder;
     }
 
     private static IServiceCollection AddTransportRegistration(

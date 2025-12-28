@@ -62,21 +62,6 @@ public static class Extensions
         return options;
     }
 
-    public static TransponderTransportBuilder AddGrpcTransport(
-        this TransponderTransportBuilder builder,
-        Func<IServiceProvider, IGrpcHostSettings> settingsFactory)
-    {
-        ArgumentNullException.ThrowIfNull(builder);
-        ArgumentNullException.ThrowIfNull(settingsFactory);
-
-        _ = builder.AddTransportFactory<GrpcTransportFactory>();
-        _ = builder.AddTransportHost(
-            settingsFactory,
-            (_, settings) => new GrpcTransportHost(settings));
-
-        return builder;
-    }
-
     public static IServiceCollection UseGrpc(
         this IServiceCollection services,
         Func<IServiceProvider, IGrpcHostSettings> settingsFactory)
@@ -127,6 +112,21 @@ public static class Extensions
                     (_, settings) => new GrpcTransportHost(settings));
             }
         });
+    }
+
+    public static TransponderTransportBuilder AddGrpcTransport(
+        this TransponderTransportBuilder builder,
+        Func<IServiceProvider, IGrpcHostSettings> settingsFactory)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(settingsFactory);
+
+        _ = builder.AddTransportFactory<GrpcTransportFactory>();
+        _ = builder.AddTransportHost(
+            settingsFactory,
+            (_, settings) => new GrpcTransportHost(settings));
+
+        return builder;
     }
 
     private static IServiceCollection AddTransportRegistration(

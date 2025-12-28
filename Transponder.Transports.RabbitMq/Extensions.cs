@@ -35,21 +35,6 @@ public static class Extensions
         return options.UseRabbitMq(_ => settings);
     }
 
-    public static TransponderTransportBuilder AddRabbitMqTransport(
-        this TransponderTransportBuilder builder,
-        Func<IServiceProvider, IRabbitMqHostSettings> settingsFactory)
-    {
-        ArgumentNullException.ThrowIfNull(builder);
-        ArgumentNullException.ThrowIfNull(settingsFactory);
-
-        _ = builder.AddTransportFactory<RabbitMqTransportFactory>();
-        _ = builder.AddTransportHost(
-            settingsFactory,
-            (_, settings) => new RabbitMqTransportHost(settings));
-
-        return builder;
-    }
-
     public static IServiceCollection UseRabbitMq(
         this IServiceCollection services,
         Func<IServiceProvider, IRabbitMqHostSettings> settingsFactory)
@@ -68,6 +53,21 @@ public static class Extensions
         ArgumentNullException.ThrowIfNull(settings);
 
         return services.UseRabbitMq(_ => settings);
+    }
+
+    public static TransponderTransportBuilder AddRabbitMqTransport(
+        this TransponderTransportBuilder builder,
+        Func<IServiceProvider, IRabbitMqHostSettings> settingsFactory)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(settingsFactory);
+
+        _ = builder.AddTransportFactory<RabbitMqTransportFactory>();
+        _ = builder.AddTransportHost(
+            settingsFactory,
+            (_, settings) => new RabbitMqTransportHost(settings));
+
+        return builder;
     }
 
     private static IServiceCollection AddTransportRegistration(

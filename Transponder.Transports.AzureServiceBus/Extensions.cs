@@ -35,21 +35,6 @@ public static class Extensions
         return options.UseAzureServiceBus(_ => settings);
     }
 
-    public static TransponderTransportBuilder AddAzureServiceBusTransport(
-        this TransponderTransportBuilder builder,
-        Func<IServiceProvider, IAzureServiceBusHostSettings> settingsFactory)
-    {
-        ArgumentNullException.ThrowIfNull(builder);
-        ArgumentNullException.ThrowIfNull(settingsFactory);
-
-        _ = builder.AddTransportFactory<AzureServiceBusTransportFactory>();
-        _ = builder.AddTransportHost(
-            settingsFactory,
-            (_, settings) => new AzureServiceBusTransportHost(settings));
-
-        return builder;
-    }
-
     public static IServiceCollection UseAzureServiceBus(
         this IServiceCollection services,
         Func<IServiceProvider, IAzureServiceBusHostSettings> settingsFactory)
@@ -68,6 +53,21 @@ public static class Extensions
         ArgumentNullException.ThrowIfNull(settings);
 
         return services.UseAzureServiceBus(_ => settings);
+    }
+
+    public static TransponderTransportBuilder AddAzureServiceBusTransport(
+        this TransponderTransportBuilder builder,
+        Func<IServiceProvider, IAzureServiceBusHostSettings> settingsFactory)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(settingsFactory);
+
+        _ = builder.AddTransportFactory<AzureServiceBusTransportFactory>();
+        _ = builder.AddTransportHost(
+            settingsFactory,
+            (_, settings) => new AzureServiceBusTransportHost(settings));
+
+        return builder;
     }
 
     private static IServiceCollection AddTransportRegistration(
