@@ -43,9 +43,9 @@ public sealed class PostgreSqlContainerTests : IAsyncLifetime
             .Options;
 
         await using var context = new OrdersDbContext(options);
-        _ = await context.Database.EnsureCreatedAsync();
+        await context.Database.MigrateAsync();
 
-        Order order = Order.Create("Test Customer", 42.5m);
+        var order = Order.Create("Test Customer", 42.5m);
         _ = context.Orders.Add(order);
         _ = await context.SaveChangesAsync();
 

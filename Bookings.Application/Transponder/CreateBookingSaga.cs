@@ -35,7 +35,7 @@ public sealed class CreateBookingSaga : ISagaMessageHandler<CreateBookingSagaSta
 
         if (existing is null)
         {
-            Booking booking = Booking.Create(request.OrderId, request.CustomerName);
+            var booking = Booking.Create(request.OrderId, request.CustomerName);
             await _repository.AddAsync(booking, context.CancellationToken).ConfigureAwait(false);
             await _repository.SaveChangesAsync(context.CancellationToken).ConfigureAwait(false);
             bookingId = booking.Id;

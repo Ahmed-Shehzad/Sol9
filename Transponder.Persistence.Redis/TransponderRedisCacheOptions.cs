@@ -13,6 +13,8 @@ public sealed class TransponderRedisCacheOptions
 
     public bool AbortOnConnectFail { get; set; }
 
+    public bool AllowUntrustedCertificates { get; set; }
+
     public TimeSpan? ConnectTimeout { get; set; }
 
     public TimeSpan? SyncTimeout { get; set; }

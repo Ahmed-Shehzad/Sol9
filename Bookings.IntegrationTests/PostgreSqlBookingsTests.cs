@@ -29,9 +29,9 @@ public sealed class PostgreSqlBookingsTests : IAsyncLifetime
             .Options;
 
         await using var context = new BookingsDbContext(options);
-        _ = await context.Database.EnsureCreatedAsync();
+        await context.Database.MigrateAsync();
 
-        Booking booking = Booking.Create(Guid.NewGuid(), "Test Customer");
+        var booking = Booking.Create(Guid.NewGuid(), "Test Customer");
         _ = context.Bookings.Add(booking);
         _ = await context.SaveChangesAsync();
 

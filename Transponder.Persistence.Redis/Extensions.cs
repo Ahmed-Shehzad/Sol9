@@ -25,6 +25,9 @@ public static class Extensions
         var configurationOptions = ConfigurationOptions.Parse(options.ConnectionString);
         configurationOptions.AbortOnConnectFail = options.AbortOnConnectFail;
 
+        if (options.AllowUntrustedCertificates)
+            configurationOptions.CertificateValidation += (_, _, _, _) => true;
+
         if (options.ConnectTimeout.HasValue)
             configurationOptions.ConnectTimeout = (int)options.ConnectTimeout.Value.TotalMilliseconds;
 

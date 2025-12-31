@@ -1,0 +1,225 @@
+{
+  "$schema": "https://json.schemastore.org/aspire-8.0.json",
+  "resources": {
+    "postgres": {
+      "type": "container.v0",
+      "connectionString": "Host={postgres.bindings.tcp.host};Port={postgres.bindings.tcp.port};Username=postgres;Password={postgres-password.value}",
+      "image": "docker.io/library/postgres:17.6",
+      "env": {
+        "POSTGRES_HOST_AUTH_METHOD": "scram-sha-256",
+        "POSTGRES_INITDB_ARGS": "--auth-host=scram-sha-256 --auth-local=scram-sha-256",
+        "POSTGRES_USER": "postgres",
+        "POSTGRES_PASSWORD": "{postgres-password.value}"
+      },
+      "bindings": {
+        "tcp": {
+          "scheme": "tcp",
+          "protocol": "tcp",
+          "transport": "tcp",
+          "targetPort": 5432
+        }
+      }
+    },
+    "bookings": {
+      "type": "value.v0",
+      "connectionString": "{postgres.connectionString};Database=bookings"
+    },
+    "orders": {
+      "type": "value.v0",
+      "connectionString": "{postgres.connectionString};Database=orders"
+    },
+    "transponder": {
+      "type": "value.v0",
+      "connectionString": "{postgres.connectionString};Database=transponder"
+    },
+    "redis": {
+      "type": "container.v0",
+      "connectionString": "{redis.bindings.tcp.host}:{redis.bindings.tcp.port},password={redis-password.value}",
+      "image": "docker.io/library/redis:8.2",
+      "entrypoint": "/bin/sh",
+      "args": [
+        "-c",
+        "redis-server --requirepass $REDIS_PASSWORD",
+        "--tls-port",
+        "6379",
+        "--port",
+        "0",
+        "--tls-cert-file",
+        "/tls/redis.crt",
+        "--tls-key-file",
+        "/tls/redis.key",
+        "--tls-ca-cert-file",
+        "/tls/ca.crt",
+        "--tls-auth-clients",
+        "no"
+      ],
+      "bindMounts": [
+        {
+          "source": "certs/redis",
+          "target": "/tls",
+          "readOnly": true
+        }
+      ],
+      "env": {
+        "REDIS_PASSWORD": "{redis-password.value}"
+      },
+      "bindings": {
+        "tcp": {
+          "scheme": "tcp",
+          "protocol": "tcp",
+          "transport": "tcp",
+          "targetPort": 6379
+        }
+      }
+    },
+    "bookings-api": {
+      "type": "project.v0",
+      "path": "../Bookings.API/Bookings.API.csproj",
+      "env": {
+        "OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EXCEPTION_LOG_ATTRIBUTES": "true",
+        "OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EVENT_LOG_ATTRIBUTES": "true",
+        "OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY": "in_memory",
+        "ASPNETCORE_FORWARDEDHEADERS_ENABLED": "true",
+        "HTTP_PORTS": "{bookings-api.bindings.http.targetPort}",
+        "ConnectionStrings__bookings": "{bookings.connectionString}",
+        "BOOKINGS_HOST": "{postgres.bindings.tcp.host}",
+        "BOOKINGS_PORT": "{postgres.bindings.tcp.port}",
+        "BOOKINGS_USERNAME": "postgres",
+        "BOOKINGS_PASSWORD": "{postgres-password.value}",
+        "BOOKINGS_URI": "postgresql://postgres:{postgres-password-uri-encoded.value}@{postgres.bindings.tcp.host}:{postgres.bindings.tcp.port}/bookings",
+        "BOOKINGS_JDBCCONNECTIONSTRING": "jdbc:postgresql://{postgres.bindings.tcp.host}:{postgres.bindings.tcp.port}/bookings",
+        "BOOKINGS_DATABASENAME": "bookings",
+        "ConnectionStrings__transponder": "{transponder.connectionString}",
+        "TRANSPONDER_HOST": "{postgres.bindings.tcp.host}",
+        "TRANSPONDER_PORT": "{postgres.bindings.tcp.port}",
+        "TRANSPONDER_USERNAME": "postgres",
+        "TRANSPONDER_PASSWORD": "{postgres-password.value}",
+        "TRANSPONDER_URI": "postgresql://postgres:{postgres-password-uri-encoded.value}@{postgres.bindings.tcp.host}:{postgres.bindings.tcp.port}/transponder",
+        "TRANSPONDER_JDBCCONNECTIONSTRING": "jdbc:postgresql://{postgres.bindings.tcp.host}:{postgres.bindings.tcp.port}/transponder",
+        "TRANSPONDER_DATABASENAME": "transponder",
+        "ConnectionStrings__Redis": "rediss://{redis.bindings.tcp.host}:{redis.bindings.tcp.port}"
+      },
+      "bindings": {
+        "http": {
+          "scheme": "http",
+          "protocol": "tcp",
+          "transport": "http"
+        },
+        "https": {
+          "scheme": "https",
+          "protocol": "tcp",
+          "transport": "http"
+        }
+      }
+    },
+    "orders-api": {
+      "type": "project.v0",
+      "path": "../Orders.API/Orders.API.csproj",
+      "env": {
+        "OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EXCEPTION_LOG_ATTRIBUTES": "true",
+        "OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EVENT_LOG_ATTRIBUTES": "true",
+        "OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY": "in_memory",
+        "ASPNETCORE_FORWARDEDHEADERS_ENABLED": "true",
+        "HTTP_PORTS": "{orders-api.bindings.http.targetPort}",
+        "ConnectionStrings__orders": "{orders.connectionString}",
+        "ORDERS_HOST": "{postgres.bindings.tcp.host}",
+        "ORDERS_PORT": "{postgres.bindings.tcp.port}",
+        "ORDERS_USERNAME": "postgres",
+        "ORDERS_PASSWORD": "{postgres-password.value}",
+        "ORDERS_URI": "postgresql://postgres:{postgres-password-uri-encoded.value}@{postgres.bindings.tcp.host}:{postgres.bindings.tcp.port}/orders",
+        "ORDERS_JDBCCONNECTIONSTRING": "jdbc:postgresql://{postgres.bindings.tcp.host}:{postgres.bindings.tcp.port}/orders",
+        "ORDERS_DATABASENAME": "orders",
+        "ConnectionStrings__transponder": "{transponder.connectionString}",
+        "TRANSPONDER_HOST": "{postgres.bindings.tcp.host}",
+        "TRANSPONDER_PORT": "{postgres.bindings.tcp.port}",
+        "TRANSPONDER_USERNAME": "postgres",
+        "TRANSPONDER_PASSWORD": "{postgres-password.value}",
+        "TRANSPONDER_URI": "postgresql://postgres:{postgres-password-uri-encoded.value}@{postgres.bindings.tcp.host}:{postgres.bindings.tcp.port}/transponder",
+        "TRANSPONDER_JDBCCONNECTIONSTRING": "jdbc:postgresql://{postgres.bindings.tcp.host}:{postgres.bindings.tcp.port}/transponder",
+        "TRANSPONDER_DATABASENAME": "transponder",
+        "ConnectionStrings__Redis": "rediss://{redis.bindings.tcp.host}:{redis.bindings.tcp.port}"
+      },
+      "bindings": {
+        "http": {
+          "scheme": "http",
+          "protocol": "tcp",
+          "transport": "http"
+        },
+        "https": {
+          "scheme": "https",
+          "protocol": "tcp",
+          "transport": "http"
+        }
+      }
+    },
+    "gateway-api": {
+      "type": "project.v0",
+      "path": "../Gateway.API/Gateway.API.csproj",
+      "env": {
+        "OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EXCEPTION_LOG_ATTRIBUTES": "true",
+        "OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EVENT_LOG_ATTRIBUTES": "true",
+        "OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY": "in_memory",
+        "ASPNETCORE_FORWARDEDHEADERS_ENABLED": "true",
+        "HTTP_PORTS": "{gateway-api.bindings.http.targetPort}",
+        "BOOKINGS_API_HTTP": "{bookings-api.bindings.http.url}",
+        "services__bookings-api__http__0": "{bookings-api.bindings.http.url}",
+        "BOOKINGS_API_HTTPS": "{bookings-api.bindings.https.url}",
+        "services__bookings-api__https__0": "{bookings-api.bindings.https.url}",
+        "ORDERS_API_HTTP": "{orders-api.bindings.http.url}",
+        "services__orders-api__http__0": "{orders-api.bindings.http.url}",
+        "ORDERS_API_HTTPS": "{orders-api.bindings.https.url}",
+        "services__orders-api__https__0": "{orders-api.bindings.https.url}",
+        "ReverseProxy__Clusters__bookings-cluster__Destinations__bookings-1__Address": "{bookings-api.bindings.http.url}",
+        "ReverseProxy__Clusters__orders-cluster__Destinations__orders-1__Address": "{orders-api.bindings.http.url}"
+      },
+      "bindings": {
+        "http": {
+          "scheme": "http",
+          "protocol": "tcp",
+          "transport": "http"
+        },
+        "https": {
+          "scheme": "https",
+          "protocol": "tcp",
+          "transport": "http"
+        }
+      }
+    },
+    "postgres-password": {
+      "type": "parameter.v0",
+      "value": "{postgres-password.inputs.value}",
+      "inputs": {
+        "value": {
+          "type": "string",
+          "secret": true,
+          "default": {
+            "generate": {
+              "minLength": 22
+            }
+          }
+        }
+      }
+    },
+    "postgres-password-uri-encoded": {
+      "type": "annotated.string",
+      "value": "{postgres-password.value}",
+      "filter": "uri"
+    },
+    "redis-password": {
+      "type": "parameter.v0",
+      "value": "{redis-password.inputs.value}",
+      "inputs": {
+        "value": {
+          "type": "string",
+          "secret": true,
+          "default": {
+            "generate": {
+              "minLength": 22,
+              "special": false
+            }
+          }
+        }
+      }
+    }
+  }
+}

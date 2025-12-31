@@ -39,6 +39,10 @@ dotnet run --project Sol9.AppHost/Sol9.AppHost.csproj
 
 Aspire runs Bookings, Orders, Gateway, PostgreSQL, and Redis. Use the dashboard to see assigned ports and service health.
 
+Redis TLS (local dev):
+- Certs are generated under `Sol9.AppHost/certs/redis` and mounted into the Redis container.
+- Clients use `rediss://` connection strings; Development allows self-signed certs for local runs.
+
 Gateway routes:
 - `/bookings/*` -> Bookings.API
 - `/orders/*` -> Orders.API

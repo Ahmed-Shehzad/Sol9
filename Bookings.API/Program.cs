@@ -52,7 +52,7 @@ if (app.Environment.IsDevelopment())
 {
     using IServiceScope scope = app.Services.CreateScope();
     BookingsDbContext dbContext = scope.ServiceProvider.GetRequiredService<BookingsDbContext>();
-    _ = await dbContext.Database.EnsureCreatedAsync().ConfigureAwait(false);
+    await dbContext.Database.MigrateAsync().ConfigureAwait(false);
 }
 
 // Configure the HTTP request pipeline.
@@ -80,7 +80,11 @@ static void ConfigureTransponder(WebApplicationBuilder builder)
     _ = builder.Services.UseOpenTelemetry();
 
     string? redisConnection = builder.Configuration.GetConnectionString("Redis");
-    if (!string.IsNullOrWhiteSpace(redisConnection)) _ = builder.Services.AddTransponderRedisCache(options => options.ConnectionString = redisConnection);
+    if (!string.IsNullOrWhiteSpace(redisConnection))
+        _ = builder.Services.AddTransponderRedisCache(options =>
+        {
+            options.ConnectionString = redisConnection;
+        });
 
     string? transponderConnection = builder.Configuration.GetConnectionString("Transponder");
     if (!string.IsNullOrWhiteSpace(transponderConnection))
