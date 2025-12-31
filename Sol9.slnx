@@ -1,23 +1,35 @@
 <Solution>
-  <Folder Name="/Clients/">
-    <Project Path="WebApplication1.Domain/WebApplication1.Domain.csproj" />
-    <Project Path="WebApplication1.Application/WebApplication1.Application.csproj" />
-    <Project Path="WebApplication1.Infrastructure/WebApplication1.Infrastructure.csproj" />
-    <Project Path="WebApplication1/WebApplication1.csproj" />
-    <Project Path="WebApplication2.Domain/WebApplication2.Domain.csproj" />
-    <Project Path="WebApplication2.Application/WebApplication2.Application.csproj" />
-    <Project Path="WebApplication2.Infrastructure/WebApplication2.Infrastructure.csproj" />
-    <Project Path="WebApplication2/WebApplication2.csproj" />
+  <Folder Name="/Core/">
+    <Project Path="Sol9.Core\Sol9.Core.csproj" />
+  </Folder>
+  <Folder Name="/Contracts/">
+    <Project Path="Sol9.Contracts\Sol9.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/Aspire/">
+    <Project Path="Sol9.AppHost\Sol9.AppHost.csproj" />
+    <Project Path="Sol9.ServiceDefaults\Sol9.ServiceDefaults.csproj" />
   </Folder>
   <Folder Name="/Intercessor/">
     <Project Path="Intercessor/Intercessor.csproj" />
   </Folder>
-  <Folder Name="/Eventing/">
-    <Project Path="Sol9.Eventing/Sol9.Eventing.csproj" />
+  <Folder Name="/Services/" />
+  <Folder Name="/Services/Bookings/">
+    <Project Path="Bookings.API/Bookings.API.csproj" />
+    <Project Path="Bookings.Application/Bookings.Application.csproj" />
+    <Project Path="Bookings.Domain/Bookings.Domain.csproj" />
+    <Project Path="Bookings.Infrastructure/Bookings.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/Services/Gateway/">
+    <Project Path="Gateway.API/Gateway.API.csproj" />
+  </Folder>
+  <Folder Name="/Services/Orders/">
+    <Project Path="Orders.API/Orders.API.csproj" />
+    <Project Path="Orders.Application/Orders.Application.csproj" />
+    <Project Path="Orders.Domain/Orders.Domain.csproj" />
+    <Project Path="Orders.Infrastructure/Orders.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/Solution Items/" />
   <Folder Name="/Transponder/">
-    <Project Path="Transponder.Contracts/Transponder.Contracts.csproj" />
     <Project Path="Transponder.Persistence.Redis/Transponder.Persistence.Redis.csproj" />
     <Project Path="Transponder.OpenTelemetry/Transponder.OpenTelemetry.csproj" />
     <Project Path="Transponder.Persistence.EntityFramework.SqlServer\Transponder.Persistence.EntityFramework.SqlServer.csproj" />
@@ -46,6 +58,10 @@
     <Project Path="Transponder.Transports.Grpc.Tests\Transponder.Transports.Grpc.Tests.csproj" />
     <Project Path="Transponder.Transports.Kafka.Tests\Transponder.Transports.Kafka.Tests.csproj" />
     <Project Path="Transponder.Transports.RabbitMq.Tests\Transponder.Transports.RabbitMq.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Services.Tests/">
+    <Project Path="Bookings.IntegrationTests/Bookings.IntegrationTests.csproj" />
+    <Project Path="Orders.IntegrationTests/Orders.IntegrationTests.csproj" />
   </Folder>
   <Folder Name="/Verifier/">
     <Project Path="Verifier/Verifier.csproj" />

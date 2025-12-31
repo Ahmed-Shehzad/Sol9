@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Bookings.Domain\Bookings.Domain.csproj" />
+      <ProjectReference Include="..\Intercessor\Intercessor.csproj" />
+      <ProjectReference Include="..\Sol9.Contracts\Sol9.Contracts.csproj" />
+      <ProjectReference Include="..\Transponder\Transponder.csproj" />
+      <ProjectReference Include="..\Transponder.Persistence\Transponder.Persistence.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -15,26 +15,36 @@ internal sealed class RabbitMqSendTransport : ISendTransport
         _queueName = queueName ?? throw new ArgumentNullException(nameof(queueName));
     }
 
-    public Task SendAsync(ITransportMessage message, CancellationToken cancellationToken = default)
+    public async Task SendAsync(ITransportMessage message, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(message);
 
-        using IModel? channel = _connection.CreateModel();
-        _ = channel.QueueDeclare(_queueName, durable: true, exclusive: false, autoDelete: false);
+        await using IChannel channel = await _connection.CreateChannelAsync(cancellationToken: cancellationToken);
+        _ = await channel.QueueDeclareAsync(
+                _queueName,
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null,
+                noWait: false,
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
 
-        IBasicProperties? properties = channel.CreateBasicProperties();
-        properties.ContentType = message.ContentType;
-        properties.MessageId = message.MessageId?.ToString();
-        properties.CorrelationId = message.CorrelationId?.ToString();
-        properties.Headers = RabbitMqTransportHeaders.BuildHeaders(message);
+        var properties = new BasicProperties
+        {
+            ContentType = message.ContentType,
+            MessageId = message.MessageId?.ToString(),
+            CorrelationId = message.CorrelationId?.ToString(),
+            Headers = RabbitMqTransportHeaders.BuildHeaders(message)
+        };
 
-        channel.BasicPublish(
-            exchange: string.Empty,
-            routingKey: _queueName,
-            mandatory: false,
-            basicProperties: properties,
-            body: message.Body.ToArray());
-
-        return Task.CompletedTask;
+        await channel.BasicPublishAsync(
+                exchange: string.Empty,
+                routingKey: _queueName,
+                mandatory: false,
+                basicProperties: properties,
+                body: message.Body,
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
     }
 }

@@ -12,7 +12,9 @@ namespace Transponder.Transports.RabbitMq;
 /// </summary>
 public sealed class RabbitMqTransportHost : TransportHostBase
 {
-    private readonly IConnection _connection;
+    private readonly ConnectionFactory _factory;
+    private readonly Lock _connectionSync = new();
+    private Task<IConnection>? _connectionTask;
     private readonly List<RabbitMqReceiveEndpoint> _receiveEndpoints = [];
     private readonly ResiliencePipeline _resiliencePipeline;
     private readonly TransportResilienceOptions? _resilienceOptions;
@@ -23,51 +25,57 @@ public sealed class RabbitMqTransportHost : TransportHostBase
         Settings = settings;
         _resilienceOptions = (settings as ITransportHostResilienceSettings)?.ResilienceOptions;
         _resiliencePipeline = TransportResiliencePipeline.Create(_resilienceOptions);
-        var factory = new ConnectionFactory
+        _factory = new ConnectionFactory
         {
             HostName = settings.Host,
             Port = settings.Port,
             VirtualHost = settings.VirtualHost,
-            DispatchConsumersAsync = true
+            ConsumerDispatchConcurrency = 1
         };
 
-        if (!string.IsNullOrWhiteSpace(settings.Username)) factory.UserName = settings.Username;
+        if (!string.IsNullOrWhiteSpace(settings.Username)) _factory.UserName = settings.Username;
 
-        if (!string.IsNullOrWhiteSpace(settings.Password)) factory.Password = settings.Password;
+        if (!string.IsNullOrWhiteSpace(settings.Password)) _factory.Password = settings.Password;
 
-        if (settings.UseTls) factory.Ssl.Enabled = true;
+        if (settings.UseTls) _factory.Ssl.Enabled = true;
 
-        if (settings.RequestedHeartbeat.HasValue) factory.RequestedHeartbeat = settings.RequestedHeartbeat.Value;
-
-        _connection = factory.CreateConnection();
+        if (settings.RequestedHeartbeat.HasValue) _factory.RequestedHeartbeat = settings.RequestedHeartbeat.Value;
     }
 
     public IRabbitMqHostSettings Settings { get; }
 
-    public override Task<ISendTransport> GetSendTransportAsync(
+    public async override Task StartAsync(CancellationToken cancellationToken = default)
+    {
+        _ = await GetConnectionAsync(cancellationToken).ConfigureAwait(false);
+        await base.StartAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    public async override Task<ISendTransport> GetSendTransportAsync(
         Uri address,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(address);
+        IConnection connection = await GetConnectionAsync(cancellationToken).ConfigureAwait(false);
         string queueName = Settings.Topology.GetQueueName(address);
-        var transport = new RabbitMqSendTransport(_connection, queueName);
+        var transport = new RabbitMqSendTransport(connection, queueName);
         ISendTransport resilientTransport = TransportResiliencePipeline.WrapSend(transport, _resiliencePipeline);
-        return Task.FromResult(resilientTransport);
+        return resilientTransport;
     }
 
-    public override Task<IPublishTransport> GetPublishTransportAsync(
+    public async override Task<IPublishTransport> GetPublishTransportAsync(
         Type messageType,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(messageType);
+        IConnection connection = await GetConnectionAsync(cancellationToken).ConfigureAwait(false);
         string exchangeName = Settings.Topology.GetExchangeName(messageType);
         var transport = new RabbitMqPublishTransport(
-            _connection,
+            connection,
             exchangeName,
             Settings.Topology,
             messageType);
         IPublishTransport resilientTransport = TransportResiliencePipeline.WrapPublish(transport, _resiliencePipeline);
-        return Task.FromResult(resilientTransport);
+        return resilientTransport;
     }
 
     public override IReceiveEndpoint ConnectReceiveEndpoint(IReceiveEndpointConfiguration configuration)
@@ -76,7 +84,7 @@ public sealed class RabbitMqTransportHost : TransportHostBase
         ReceiveEndpointFaultSettings? faultSettings = ReceiveEndpointFaultSettingsResolver.Resolve(configuration);
         ResiliencePipeline pipeline = TransportResiliencePipeline.Create(faultSettings?.ResilienceOptions ?? _resilienceOptions);
         var endpoint = new RabbitMqReceiveEndpoint(
-            _connection,
+            GetConnectionAsync,
             configuration,
             Settings.Topology,
             Address,
@@ -96,6 +104,18 @@ public sealed class RabbitMqTransportHost : TransportHostBase
     public async override ValueTask DisposeAsync()
     {
         await StopAsync().ConfigureAwait(false);
-        _connection.Dispose();
+        if (_connectionTask is null) return;
+        IConnection connection = await _connectionTask.ConfigureAwait(false);
+        await connection.DisposeAsync();
+    }
+
+    private Task<IConnection> GetConnectionAsync(CancellationToken cancellationToken)
+    {
+        lock (_connectionSync)
+        {
+            if (_connectionTask is null || _connectionTask.IsCanceled || _connectionTask.IsFaulted) _connectionTask = _factory.CreateConnectionAsync(cancellationToken);
+
+            return _connectionTask;
+        }
     }
 }

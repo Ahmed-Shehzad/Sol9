@@ -1,0 +1,119 @@
+using System;
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+
+using Orders.API;
+using Orders.Infrastructure;
+using Orders.Infrastructure.Contexts;
+
+using Serilog;
+
+using Sol9.ServiceDefaults;
+
+using Transponder;
+using Transponder.OpenTelemetry;
+using Transponder.Persistence.EntityFramework.PostgreSql;
+using Transponder.Persistence.EntityFramework.PostgreSql.Abstractions;
+using Transponder.Persistence.Redis;
+using Transponder.Serilog;
+using Transponder.Transports.Grpc;
+
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, services, configuration) =>
+    configuration.ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext()
+        .WriteTo.Console());
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ConfigureEndpointDefaults(listener => listener.Protocols = HttpProtocols.Http1AndHttp2);
+});
+
+// Add services to the container.
+
+builder.AddServiceDefaults();
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+
+// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddOpenApi();
+builder.Services.AddGrpc();
+
+builder.Services.AddInfrastructure(builder.Configuration);
+ConfigureTransponder(builder);
+
+WebApplication app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    using IServiceScope scope = app.Services.CreateScope();
+    OrdersDbContext dbContext = scope.ServiceProvider.GetRequiredService<OrdersDbContext>();
+    _ = await dbContext.Database.EnsureCreatedAsync().ConfigureAwait(false);
+}
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment()) _ = app.MapOpenApi();
+
+app.UseHttpsRedirection();
+
+app.UseAuthorization();
+
+app.MapGrpcService<GrpcTransportService>();
+app.MapDefaultEndpoints();
+app.MapControllers();
+
+await app.RunAsync();
+
+static void ConfigureTransponder(WebApplicationBuilder builder)
+{
+    TransponderSettings settings = LoadTransponderSettings(builder.Services, builder.Configuration);
+    string defaultLocal = builder.Configuration["TransponderDefaults:LocalAddress"] ?? "http://localhost:5296";
+    string defaultRemote = builder.Configuration["TransponderDefaults:RemoteAddress"] ?? "http://localhost:5187";
+
+    (Uri localAddress, RemoteAddressResolution remoteResolution) = settings.ResolveAddresses(defaultLocal, defaultRemote);
+
+    _ = builder.Services.UseSerilog();
+    _ = builder.Services.UseOpenTelemetry();
+
+    string? redisConnection = builder.Configuration.GetConnectionString("Redis");
+    if (!string.IsNullOrWhiteSpace(redisConnection)) _ = builder.Services.AddTransponderRedisCache(options => options.ConnectionString = redisConnection);
+
+    string? transponderConnection = builder.Configuration.GetConnectionString("Transponder");
+    if (!string.IsNullOrWhiteSpace(transponderConnection))
+    {
+        string schema = builder.Configuration["TransponderPersistence:Schema"] ?? "orders_transponder";
+        _ = builder.Services.AddSingleton<IPostgreSqlStorageOptions>(_ => new PostgreSqlStorageOptions(schema: schema));
+        _ = builder.Services.AddDbContextFactory<PostgreSqlTransponderDbContext>(options => options.UseNpgsql(transponderConnection));
+        _ = builder.Services.AddTransponderPostgreSqlPersistence();
+    }
+
+    _ = builder.Services.AddTransponder(localAddress, options =>
+    {
+        _ = options.TransportBuilder.UseGrpc(localAddress, remoteResolution.Addresses);
+        options.RequestAddressResolver = TransponderRequestAddressResolver.Create(
+            remoteResolution.Addresses,
+            remoteResolution.Strategy,
+            options.RequestPathPrefix,
+            options.RequestPathFormatter);
+        _ = options.UseOutbox();
+        _ = options.UsePersistedMessageScheduler();
+    });
+
+    _ = builder.Services.AddHostedService<TransponderBusHostedService>();
+}
+
+static TransponderSettings LoadTransponderSettings(IServiceCollection services, IConfiguration configuration)
+{
+    TransponderSettings settings = configuration.GetSection("TransponderSettings").Get<TransponderSettings>()
+                                  ?? new TransponderSettings();
+    _ = services.AddSingleton(settings);
+    return settings;
+}

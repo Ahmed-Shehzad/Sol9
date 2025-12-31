@@ -10,25 +10,25 @@ namespace Transponder.Transports.RabbitMq;
 
 internal sealed class RabbitMqReceiveEndpoint : IReceiveEndpoint
 {
-    private readonly IConnection _connection;
+    private readonly Func<CancellationToken, Task<IConnection>> _connectionFactory;
     private readonly Func<IReceiveContext, Task> _handler;
     private readonly string _queueName;
     private readonly Uri _inputAddress;
     private readonly Uri _hostAddress;
     private readonly ResiliencePipeline _resiliencePipeline;
     private readonly string? _deadLetterQueueName;
-    private IModel? _channel;
+    private IChannel? _channel;
     private string? _consumerTag;
 
     public RabbitMqReceiveEndpoint(
-        IConnection connection,
+        Func<CancellationToken, Task<IConnection>> connectionFactory,
         IReceiveEndpointConfiguration configuration,
         IRabbitMqTopology topology,
         Uri hostAddress,
         ReceiveEndpointFaultSettings? faultSettings,
         ResiliencePipeline resiliencePipeline)
     {
-        _connection = connection ?? throw new ArgumentNullException(nameof(connection));
+        _connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
         ArgumentNullException.ThrowIfNull(configuration);
         ArgumentNullException.ThrowIfNull(topology);
         ArgumentNullException.ThrowIfNull(hostAddress);
@@ -46,48 +46,67 @@ internal sealed class RabbitMqReceiveEndpoint : IReceiveEndpoint
 
     public Uri InputAddress => _inputAddress;
 
-    public Task StartAsync(CancellationToken cancellationToken = default)
+    public async Task StartAsync(CancellationToken cancellationToken = default)
     {
-        if (_channel is not null) return Task.CompletedTask;
+        if (_channel is not null) return;
 
-        _channel = _connection.CreateModel();
-        IDictionary<string, object>? arguments = null;
+        IConnection connection = await _connectionFactory(cancellationToken).ConfigureAwait(false);
+        _channel = await connection.CreateChannelAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        IDictionary<string, object?>? arguments = null;
 
         if (!string.IsNullOrWhiteSpace(_deadLetterQueueName))
         {
-            _ = _channel.QueueDeclare(_deadLetterQueueName, durable: true, exclusive: false, autoDelete: false);
-            arguments = new Dictionary<string, object>
+            _ = await _channel.QueueDeclareAsync(
+                    _deadLetterQueueName,
+                    durable: true,
+                    exclusive: false,
+                    autoDelete: false,
+                    arguments: null,
+                    noWait: false,
+                    cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+            arguments = new Dictionary<string, object?>
             {
                 ["x-dead-letter-exchange"] = string.Empty,
                 ["x-dead-letter-routing-key"] = _deadLetterQueueName
             };
         }
 
-        _ = _channel.QueueDeclare(_queueName, durable: true, exclusive: false, autoDelete: false, arguments: arguments);
-        _channel.BasicQos(0, 1, false);
+        _ = await _channel.QueueDeclareAsync(
+                _queueName,
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: arguments,
+                noWait: false,
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+        await _channel.BasicQosAsync(0, 1, false, cancellationToken).ConfigureAwait(false);
 
         var consumer = new AsyncEventingBasicConsumer(_channel);
-        consumer.Received += OnReceivedAsync;
+        consumer.ReceivedAsync += OnReceivedAsync;
 
-        _consumerTag = _channel.BasicConsume(
-            queue: _queueName,
-            autoAck: false,
-            consumer: consumer);
+        _consumerTag = await _channel.BasicConsumeAsync(
+                _queueName,
+                autoAck: false,
+                consumer: consumer,
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
 
-        return Task.CompletedTask;
+        return;
     }
 
-    public Task StopAsync(CancellationToken cancellationToken = default)
+    public async Task StopAsync(CancellationToken cancellationToken = default)
     {
-        if (_channel is null) return Task.CompletedTask;
+        if (_channel is null) return;
 
-        if (!string.IsNullOrWhiteSpace(_consumerTag)) _channel.BasicCancel(_consumerTag);
+        if (!string.IsNullOrWhiteSpace(_consumerTag)) await _channel.BasicCancelAsync(_consumerTag, false, cancellationToken).ConfigureAwait(false);
 
-        _channel.Close();
+        await _channel.CloseAsync(cancellationToken).ConfigureAwait(false);
         _channel.Dispose();
         _channel = null;
         _consumerTag = null;
-        return Task.CompletedTask;
+        return;
     }
 
     public ValueTask DisposeAsync() => new(StopAsync());
@@ -128,12 +147,12 @@ internal sealed class RabbitMqReceiveEndpoint : IReceiveEndpoint
                     async ct => await _handler(context).ConfigureAwait(false),
                     CancellationToken.None)
                 .ConfigureAwait(false);
-            _channel.BasicAck(args.DeliveryTag, false);
+            await _channel.BasicAckAsync(args.DeliveryTag, false, CancellationToken.None).ConfigureAwait(false);
         }
         catch
         {
-            if (!string.IsNullOrWhiteSpace(_deadLetterQueueName)) _channel.BasicReject(args.DeliveryTag, false);
-            else _channel.BasicNack(args.DeliveryTag, false, true);
+            if (!string.IsNullOrWhiteSpace(_deadLetterQueueName)) await _channel.BasicRejectAsync(args.DeliveryTag, false, CancellationToken.None).ConfigureAwait(false);
+            else await _channel.BasicNackAsync(args.DeliveryTag, false, true, CancellationToken.None).ConfigureAwait(false);
         }
     }
 }

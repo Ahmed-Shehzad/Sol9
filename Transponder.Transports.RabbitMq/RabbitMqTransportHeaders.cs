@@ -6,9 +6,9 @@ namespace Transponder.Transports.RabbitMq;
 
 internal static class RabbitMqTransportHeaders
 {
-    public static IDictionary<string, object> BuildHeaders(ITransportMessage message)
+    public static IDictionary<string, object?> BuildHeaders(ITransportMessage message)
     {
-        var headers = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        var headers = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
         foreach (KeyValuePair<string, object?> header in message.Headers)
         {
@@ -28,13 +28,13 @@ internal static class RabbitMqTransportHeaders
         return headers;
     }
 
-    public static Dictionary<string, object?> ReadHeaders(IDictionary<string, object>? headers)
+    public static Dictionary<string, object?> ReadHeaders(IDictionary<string, object?>? headers)
     {
         var result = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
         if (headers is null) return result;
 
-        foreach (KeyValuePair<string, object> header in headers)
+        foreach (KeyValuePair<string, object?> header in headers)
             result[header.Key] = header.Value switch
             {
                 byte[] bytes => Encoding.UTF8.GetString(bytes),

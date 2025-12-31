@@ -150,10 +150,7 @@ public class IntercessorBuilder
 
     private void RegisterPipelineBehaviors(IEnumerable<Type> behaviorTypes)
     {
-        foreach (Type behaviorType in behaviorTypes)
-        {
-            RegisterPipelineBehavior(behaviorType);
-        }
+        foreach (Type behaviorType in behaviorTypes) RegisterPipelineBehavior(behaviorType);
     }
 
     private void RegisterPipelineBehavior(Type behaviorType)
