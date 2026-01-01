@@ -1,6 +1,5 @@
 using Bookings.Application.Contexts;
 using Bookings.Domain.Entities;
-using Bookings.Infrastructure.Contexts;
 
 using Microsoft.EntityFrameworkCore;
 

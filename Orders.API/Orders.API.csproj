@@ -7,10 +7,19 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi"/>
+        <PackageReference Include="Asp.Versioning.Http" />
+        <PackageReference Include="Asp.Versioning.Http.Client" />
+        <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" ExcludeAssets="analyzers" />
+        <PackageReference Include="Microsoft.OpenApi" />
         <PackageReference Include="Serilog.AspNetCore" />
         <PackageReference Include="Serilog.Settings.Configuration" />
         <PackageReference Include="Serilog.Sinks.Console" />
+        <PackageReference Include="Microsoft.OpenApi.Readers" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Analyzer Remove="$(NuGetPackageRoot)microsoft.aspnetcore.openapi/**/analyzers/dotnet/cs/Microsoft.AspNetCore.OpenApi.SourceGenerators.dll" />
     </ItemGroup>
 
     <ItemGroup>

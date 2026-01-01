@@ -1,3 +1,5 @@
+using Asp.Versioning;
+
 using Bookings.API.Requests;
 using Bookings.Application.Commands.CreateBooking;
 using Bookings.Application.Dtos;
@@ -11,7 +13,9 @@ using Microsoft.AspNetCore.Mvc;
 namespace Bookings.API.Controllers;
 
 [ApiController]
-[Route("api/bookings")]
+[ApiVersion("1.0")]
+[ApiVersion("2.0")]
+[Route("api/v{version:apiVersion}/bookings")]
 public class BookingsController : ControllerBase
 {
     private readonly ISender _sender;
@@ -20,6 +24,7 @@ public class BookingsController : ControllerBase
     {
         _sender = sender;
     }
+
 
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<BookingDto>), StatusCodes.Status200OK)]

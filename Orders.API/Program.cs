@@ -1,20 +1,17 @@
 using System;
-using System.IO;
+
+using Asp.Versioning;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.OpenApi;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi;
 
 using Orders.API;
 using Orders.Infrastructure;
-using Orders.Infrastructure.Contexts;
 
 using Serilog;
 
@@ -42,39 +39,49 @@ builder.WebHost.ConfigureKestrel(options =>
 });
 
 // Add services to the container.
-
 builder.AddServiceDefaults();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi(options => options.OpenApiVersion = OpenApiSpecVersion.OpenApi3_1);
 builder.Services.AddGrpc();
 
 builder.Services.AddInfrastructure(builder.Configuration);
 ConfigureTransponder(builder);
 
-WebApplication app = builder.Build();
+// 1. Add API Versioning Services
+builder.Services.AddApiVersioning(options =>
+    {
+        options.DefaultApiVersion = new ApiVersion(1, 0);
+        options.AssumeDefaultVersionWhenUnspecified = true;
+        options.ReportApiVersions = true;
+        options.ApiVersionReader = new UrlSegmentApiVersionReader();
+    })
+    .AddApiExplorer(options =>
+    {
+        // Format the group name as 'v1', 'v2', etc.
+        options.GroupNameFormat = "'v'VVV";
+        options.SubstituteApiVersionInUrl = true;
+    });
 
-if (app.Environment.IsDevelopment())
-{
-    using IServiceScope scope = app.Services.CreateScope();
-    OrdersDbContext dbContext = scope.ServiceProvider.GetRequiredService<OrdersDbContext>();
-    await dbContext.Database.MigrateAsync().ConfigureAwait(false);
-}
+// 2. Register OpenAPI for each version
+// Note: .NET 10 allows multiple documents by providing a unique name
+builder.Services.AddOpenApi("v1", options => options.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi3_1);
+builder.Services.AddOpenApi("v2", options => options.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi3_1);
+
+WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    // Map standard JSON endpoints: /openapi/v1.json, /openapi/v2.json
     _ = app.MapOpenApi();
-    _ = app.MapGet("/openapi/v1.yaml", async (HttpContext context, IOpenApiDocumentProvider provider) =>
-    {
-        context.Response.ContentType = "application/yaml";
-        OpenApiDocument document = await provider.GetOpenApiDocumentAsync(context.RequestAborted);
-        await using var writer = new StreamWriter(context.Response.Body);
-        document.SerializeAsV31(new OpenApiYamlWriter(writer));
-    });
+
+    // Map custom YAML endpoints: /openapi/v1.yaml, /openapi/v2.yaml
+    _ = app.MapOpenApi("/openapi/{documentName}.yaml");
 }
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment()) _ = app.MapOpenApi();
 
 app.UseHttpsRedirection();
 
@@ -109,7 +116,11 @@ static void ConfigureTransponder(WebApplicationBuilder builder)
     {
         string schema = builder.Configuration["TransponderPersistence:Schema"] ?? "orders_transponder";
         _ = builder.Services.AddSingleton<IPostgreSqlStorageOptions>(_ => new PostgreSqlStorageOptions(schema: schema));
-        _ = builder.Services.AddDbContextFactory<PostgreSqlTransponderDbContext>(options => options.UseNpgsql(transponderConnection));
+        string migrationsAssembly = typeof(Program).Assembly.GetName().Name ?? "Orders.API";
+        _ = builder.Services.AddDbContextFactory<PostgreSqlTransponderDbContext>(options =>
+            _ = options.UseNpgsql(transponderConnection, npgsql =>
+                _ = npgsql.MigrationsHistoryTable("__EFMigrationsHistory", schema)
+                    .MigrationsAssembly(migrationsAssembly)));
         _ = builder.Services.AddTransponderPostgreSqlPersistence();
     }
 

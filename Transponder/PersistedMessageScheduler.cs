@@ -18,6 +18,7 @@ public sealed class PersistedMessageScheduler : IMessageScheduler, IAsyncDisposa
     private readonly PersistedMessageSchedulerOptions _options;
     private readonly CancellationTokenSource _cts = new();
     private readonly Task _loop;
+    private int _disposed;
 
     public PersistedMessageScheduler(
         TransponderBus bus,
@@ -91,7 +92,17 @@ public sealed class PersistedMessageScheduler : IMessageScheduler, IAsyncDisposa
 
     public async ValueTask DisposeAsync()
     {
-        await _cts.CancelAsync().ConfigureAwait(false);
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+            return;
+
+        try
+        {
+            await _cts.CancelAsync().ConfigureAwait(false);
+        }
+        catch (ObjectDisposedException)
+        {
+            return;
+        }
 
         try
         {

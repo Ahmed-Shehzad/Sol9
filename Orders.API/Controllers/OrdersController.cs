@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
+using Asp.Versioning;
+
 using Intercessor.Abstractions;
 
 using Microsoft.AspNetCore.Http;
@@ -16,7 +18,9 @@ using Orders.Application.Queries.GetOrders;
 namespace Orders.API.Controllers;
 
 [ApiController]
-[Route("api/orders")]
+[ApiVersion("1.0")]
+[ApiVersion("2.0")]
+[Route("api/v{version:apiVersion}/orders")]
 public class OrdersController : ControllerBase
 {
     private readonly ISender _sender;
