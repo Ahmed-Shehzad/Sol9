@@ -13,7 +13,7 @@ public partial class InitialCreate : Migration
 {
     protected override void Up(MigrationBuilder migrationBuilder)
     {
-        migrationBuilder.CreateTable(
+        _ = migrationBuilder.CreateTable(
             name: "Orders",
             columns: table => new
             {
@@ -28,13 +28,13 @@ public partial class InitialCreate : Migration
             },
             constraints: table =>
             {
-                table.PrimaryKey("PK_Orders", x => x.Id);
+                _ = table.PrimaryKey("PK_Orders", x => x.Id);
             });
     }
 
     protected override void Down(MigrationBuilder migrationBuilder)
     {
-        migrationBuilder.DropTable(
+        _ = migrationBuilder.DropTable(
             name: "Orders");
     }
 }

@@ -27,7 +27,7 @@ partial class InitialCreate
 
         NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-        string? schema = null;
+        string schema = null;
 
         modelBuilder.Entity("Transponder.Persistence.EntityFramework.InboxStateEntity", b =>
             {

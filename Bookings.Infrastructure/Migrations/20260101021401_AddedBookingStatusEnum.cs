@@ -10,7 +10,7 @@ namespace Bookings.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(
+            _ = migrationBuilder.Sql(
                 @"ALTER TABLE ""Bookings""
 ALTER COLUMN ""Status"" TYPE integer
 USING CASE ""Status""
@@ -25,7 +25,7 @@ END;");
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(
+            _ = migrationBuilder.Sql(
                 @"ALTER TABLE ""Bookings""
 ALTER COLUMN ""Status"" TYPE character varying(100)
 USING CASE ""Status""

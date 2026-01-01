@@ -94,7 +94,7 @@ public sealed class PostgreSqlOrdersTests : IAsyncLifetime
         await context.Database.MigrateAsync();
 
         IRequestClient<CreateBookingRequest> requestClient = Substitute.For<IRequestClient<CreateBookingRequest>>();
-        requestClient.GetResponseAsync<CreateBookingResponse>(Arg.Any<CreateBookingRequest>(), Arg.Any<CancellationToken>())
+        _ = requestClient.GetResponseAsync<CreateBookingResponse>(Arg.Any<CreateBookingRequest>(), Arg.Any<CancellationToken>())
             .Returns(callInfo =>
             {
                 CreateBookingRequest request = callInfo.ArgAt<CreateBookingRequest>(0);
@@ -105,7 +105,7 @@ public sealed class PostgreSqlOrdersTests : IAsyncLifetime
             });
 
         IClientFactory clientFactory = Substitute.For<IClientFactory>();
-        clientFactory.CreateRequestClient<CreateBookingRequest>(Arg.Any<TimeSpan?>())
+        _ = clientFactory.CreateRequestClient<CreateBookingRequest>(Arg.Any<TimeSpan?>())
             .Returns(requestClient);
 
         var handler = new CreateOrderCommandHandler(context, clientFactory);
@@ -117,7 +117,7 @@ public sealed class PostgreSqlOrdersTests : IAsyncLifetime
         result.Status.ShouldBe(OrderStatus.Booked);
 
         Order? stored = await context.Orders.SingleOrDefaultAsync(o => o.Id == result.Id);
-        stored.ShouldNotBeNull();
+        _ = stored.ShouldNotBeNull();
         stored.Status.ShouldBe(OrderStatus.Booked);
 
         _ = clientFactory.Received(1).CreateRequestClient<CreateBookingRequest>(null);

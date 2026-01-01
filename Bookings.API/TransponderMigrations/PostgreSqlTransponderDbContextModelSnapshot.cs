@@ -10,139 +10,139 @@ public partial class PostgreSqlTransponderDbContextModelSnapshot : ModelSnapshot
 {
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
-        modelBuilder
+        _ = modelBuilder
             .HasAnnotation("ProductVersion", "10.0.0")
             .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-        NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+        _ = NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
         const string schema = "bookings_transponder";
 
-        modelBuilder.Entity("Transponder.Persistence.EntityFramework.InboxStateEntity", b =>
+        _ = modelBuilder.Entity("Transponder.Persistence.EntityFramework.InboxStateEntity", b =>
         {
-            b.Property<Guid>("MessageId")
+            _ = b.Property<Guid>("MessageId")
                 .HasColumnType("uuid");
 
-            b.Property<string>("ConsumerId")
+            _ = b.Property<string>("ConsumerId")
                 .IsRequired()
                 .HasMaxLength(200)
                 .HasColumnType("character varying(200)");
 
-            b.Property<DateTimeOffset>("ReceivedTime")
+            _ = b.Property<DateTimeOffset>("ReceivedTime")
                 .HasColumnType("timestamp with time zone");
 
-            b.Property<DateTimeOffset?>("ProcessedTime")
+            _ = b.Property<DateTimeOffset?>("ProcessedTime")
                 .HasColumnType("timestamp with time zone");
 
-            b.HasKey("MessageId", "ConsumerId");
+            _ = b.HasKey("MessageId", "ConsumerId");
 
-            b.ToTable("InboxStates", schema);
+            _ = b.ToTable("InboxStates", schema);
         });
 
-        modelBuilder.Entity("Transponder.Persistence.EntityFramework.OutboxMessageEntity", b =>
+        _ = modelBuilder.Entity("Transponder.Persistence.EntityFramework.OutboxMessageEntity", b =>
         {
-            b.Property<Guid>("MessageId")
+            _ = b.Property<Guid>("MessageId")
                 .HasColumnType("uuid");
 
-            b.Property<Guid?>("CorrelationId")
+            _ = b.Property<Guid?>("CorrelationId")
                 .HasColumnType("uuid");
 
-            b.Property<Guid?>("ConversationId")
+            _ = b.Property<Guid?>("ConversationId")
                 .HasColumnType("uuid");
 
-            b.Property<string>("SourceAddress")
+            _ = b.Property<string>("SourceAddress")
                 .HasMaxLength(2048)
                 .HasColumnType("text");
 
-            b.Property<string>("DestinationAddress")
+            _ = b.Property<string>("DestinationAddress")
                 .HasMaxLength(2048)
                 .HasColumnType("text");
 
-            b.Property<string>("MessageType")
+            _ = b.Property<string>("MessageType")
                 .HasColumnType("text");
 
-            b.Property<string>("ContentType")
+            _ = b.Property<string>("ContentType")
                 .HasColumnType("text");
 
-            b.Property<byte[]>("Body")
+            _ = b.Property<byte[]>("Body")
                 .IsRequired()
                 .HasColumnType("bytea");
 
-            b.Property<string>("Headers")
+            _ = b.Property<string>("Headers")
                 .HasColumnType("jsonb");
 
-            b.Property<DateTimeOffset>("EnqueuedTime")
+            _ = b.Property<DateTimeOffset>("EnqueuedTime")
                 .HasColumnType("timestamp with time zone");
 
-            b.Property<DateTimeOffset?>("SentTime")
+            _ = b.Property<DateTimeOffset?>("SentTime")
                 .HasColumnType("timestamp with time zone");
 
-            b.HasKey("MessageId");
+            _ = b.HasKey("MessageId");
 
-            b.ToTable("OutboxMessages", schema);
+            _ = b.ToTable("OutboxMessages", schema);
         });
 
-        modelBuilder.Entity("Transponder.Persistence.EntityFramework.SagaStateEntity", b =>
+        _ = modelBuilder.Entity("Transponder.Persistence.EntityFramework.SagaStateEntity", b =>
         {
-            b.Property<Guid>("CorrelationId")
+            _ = b.Property<Guid>("CorrelationId")
                 .HasColumnType("uuid");
 
-            b.Property<string>("StateType")
+            _ = b.Property<string>("StateType")
                 .IsRequired()
                 .HasMaxLength(500)
                 .HasColumnType("text");
 
-            b.Property<string>("StateData")
+            _ = b.Property<string>("StateData")
                 .IsRequired()
                 .HasColumnType("jsonb");
 
-            b.Property<Guid?>("ConversationId")
+            _ = b.Property<Guid?>("ConversationId")
                 .HasColumnType("uuid");
 
-            b.Property<DateTimeOffset>("UpdatedTime")
+            _ = b.Property<DateTimeOffset>("UpdatedTime")
                 .HasColumnType("timestamp with time zone");
 
-            b.HasKey("CorrelationId", "StateType");
+            _ = b.HasKey("CorrelationId", "StateType");
 
-            b.HasIndex("ConversationId");
+            _ = b.HasIndex("ConversationId");
 
-            b.ToTable("SagaStates", schema);
+            _ = b.ToTable("SagaStates", schema);
         });
 
-        modelBuilder.Entity("Transponder.Persistence.EntityFramework.ScheduledMessageEntity", b =>
+        _ = modelBuilder.Entity("Transponder.Persistence.EntityFramework.ScheduledMessageEntity", b =>
         {
-            b.Property<Guid>("TokenId")
+            _ = b.Property<Guid>("TokenId")
                 .HasColumnType("uuid");
 
-            b.Property<string>("MessageType")
+            _ = b.Property<string>("MessageType")
                 .IsRequired()
                 .HasMaxLength(500)
                 .HasColumnType("text");
 
-            b.Property<string>("ContentType")
+            _ = b.Property<string>("ContentType")
                 .HasColumnType("text");
 
-            b.Property<byte[]>("Body")
+            _ = b.Property<byte[]>("Body")
                 .IsRequired()
                 .HasColumnType("bytea");
 
-            b.Property<string>("Headers")
+            _ = b.Property<string>("Headers")
                 .HasColumnType("jsonb");
 
-            b.Property<DateTimeOffset>("ScheduledTime")
+            _ = b.Property<DateTimeOffset>("ScheduledTime")
                 .HasColumnType("timestamp with time zone");
 
-            b.Property<DateTimeOffset>("CreatedTime")
+            _ = b.Property<DateTimeOffset>("CreatedTime")
                 .HasColumnType("timestamp with time zone");
 
-            b.Property<DateTimeOffset?>("DispatchedTime")
+            _ = b.Property<DateTimeOffset?>("DispatchedTime")
                 .HasColumnType("timestamp with time zone");
 
-            b.HasKey("TokenId");
+            _ = b.HasKey("TokenId");
 
-            b.HasIndex("ScheduledTime", "DispatchedTime");
+            _ = b.HasIndex("ScheduledTime", "DispatchedTime");
 
-            b.ToTable("ScheduledMessages", schema);
+            _ = b.ToTable("ScheduledMessages", schema);
         });
     }
 }

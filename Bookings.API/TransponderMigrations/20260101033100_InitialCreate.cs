@@ -8,9 +8,9 @@ public partial class InitialCreate : Migration
     {
         const string schema = "bookings_transponder";
 
-        migrationBuilder.EnsureSchema(name: schema);
+        _ = migrationBuilder.EnsureSchema(name: schema);
 
-        migrationBuilder.CreateTable(
+        _ = migrationBuilder.CreateTable(
             name: "OutboxMessages",
             schema: schema,
             columns: table => new
@@ -29,10 +29,10 @@ public partial class InitialCreate : Migration
             },
             constraints: table =>
             {
-                table.PrimaryKey("PK_OutboxMessages", x => x.MessageId);
+                _ = table.PrimaryKey("PK_OutboxMessages", x => x.MessageId);
             });
 
-        migrationBuilder.CreateTable(
+        _ = migrationBuilder.CreateTable(
             name: "InboxStates",
             schema: schema,
             columns: table => new
@@ -44,10 +44,10 @@ public partial class InitialCreate : Migration
             },
             constraints: table =>
             {
-                table.PrimaryKey("PK_InboxStates", x => new { x.MessageId, x.ConsumerId });
+                _ = table.PrimaryKey("PK_InboxStates", x => new { x.MessageId, x.ConsumerId });
             });
 
-        migrationBuilder.CreateTable(
+        _ = migrationBuilder.CreateTable(
             name: "ScheduledMessages",
             schema: schema,
             columns: table => new
@@ -63,10 +63,10 @@ public partial class InitialCreate : Migration
             },
             constraints: table =>
             {
-                table.PrimaryKey("PK_ScheduledMessages", x => x.TokenId);
+                _ = table.PrimaryKey("PK_ScheduledMessages", x => x.TokenId);
             });
 
-        migrationBuilder.CreateTable(
+        _ = migrationBuilder.CreateTable(
             name: "SagaStates",
             schema: schema,
             columns: table => new
@@ -79,16 +79,16 @@ public partial class InitialCreate : Migration
             },
             constraints: table =>
             {
-                table.PrimaryKey("PK_SagaStates", x => new { x.CorrelationId, x.StateType });
+                _ = table.PrimaryKey("PK_SagaStates", x => new { x.CorrelationId, x.StateType });
             });
 
-        migrationBuilder.CreateIndex(
+        _ = migrationBuilder.CreateIndex(
             name: "IX_ScheduledMessages_ScheduledTime_DispatchedTime",
             schema: schema,
             table: "ScheduledMessages",
             columns: new[] { "ScheduledTime", "DispatchedTime" });
 
-        migrationBuilder.CreateIndex(
+        _ = migrationBuilder.CreateIndex(
             name: "IX_SagaStates_ConversationId",
             schema: schema,
             table: "SagaStates",
@@ -99,19 +99,19 @@ public partial class InitialCreate : Migration
     {
         const string schema = "bookings_transponder";
 
-        migrationBuilder.DropTable(
+        _ = migrationBuilder.DropTable(
             name: "ScheduledMessages",
             schema: schema);
 
-        migrationBuilder.DropTable(
+        _ = migrationBuilder.DropTable(
             name: "SagaStates",
             schema: schema);
 
-        migrationBuilder.DropTable(
+        _ = migrationBuilder.DropTable(
             name: "InboxStates",
             schema: schema);
 
-        migrationBuilder.DropTable(
+        _ = migrationBuilder.DropTable(
             name: "OutboxMessages",
             schema: schema);
     }

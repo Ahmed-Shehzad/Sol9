@@ -87,7 +87,7 @@ public sealed class PostgreSqlBookingsTests : IAsyncLifetime
         string ignoredCustomer = faker.Name.FullName();
 
         IBookingsRepository repository = Substitute.For<IBookingsRepository>();
-        repository.GetByOrderIdAsync(orderId, Arg.Any<CancellationToken>())
+        _ = repository.GetByOrderIdAsync(orderId, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<Booking?>(existing));
 
         var handler = new CreateBookingCommandHandler(repository);
