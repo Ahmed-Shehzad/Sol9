@@ -12,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 
 using Orders.API;
 using Orders.Infrastructure;
+using Orders.Infrastructure.Contexts;
 
 using Serilog;
 
@@ -69,6 +70,22 @@ builder.Services.AddOpenApi("v1", options => options.OpenApiVersion = Microsoft.
 builder.Services.AddOpenApi("v2", options => options.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi3_1);
 
 WebApplication app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    using IServiceScope scope = app.Services.CreateScope();
+    OrdersDbContext dbContext = scope.ServiceProvider.GetRequiredService<OrdersDbContext>();
+    await dbContext.Database.MigrateAsync().ConfigureAwait(false);
+
+    IDbContextFactory<PostgreSqlTransponderDbContext>? transponderFactory =
+        scope.ServiceProvider.GetService<IDbContextFactory<PostgreSqlTransponderDbContext>>();
+    if (transponderFactory is not null)
+    {
+        await using PostgreSqlTransponderDbContext transponderDb =
+            await transponderFactory.CreateDbContextAsync().ConfigureAwait(false);
+        await transponderDb.Database.MigrateAsync().ConfigureAwait(false);
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
