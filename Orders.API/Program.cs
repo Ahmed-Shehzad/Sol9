@@ -1,14 +1,24 @@
 using System;
+using System.Diagnostics;
+using System.Linq;
 
 using Asp.Versioning;
 
+using FluentResults;
+
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+
+using OpenTelemetry.Trace;
 
 using Orders.API;
 using Orders.Infrastructure;
@@ -25,6 +35,10 @@ using Transponder.Persistence.EntityFramework.PostgreSql.Abstractions;
 using Transponder.Persistence.Redis;
 using Transponder.Serilog;
 using Transponder.Transports.Grpc;
+
+using Verifier.Exceptions;
+
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +57,7 @@ builder.WebHost.ConfigureKestrel(options =>
 builder.AddServiceDefaults();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddProblemDetails();
 
 builder.Services.AddGrpc();
 
@@ -87,6 +102,38 @@ if (app.Environment.IsDevelopment())
     }
 }
 
+app.UseExceptionHandler(handler =>
+{
+    handler.Run(async context =>
+    {
+        IExceptionHandlerFeature? feature = context.Features.Get<IExceptionHandlerFeature>();
+        if (feature?.Error is null) return;
+
+        Exception exception = feature.Error;
+        ILogger logger = context.RequestServices.GetRequiredService<ILoggerFactory>()
+            .CreateLogger("GlobalExceptionHandler");
+        logger.LogError(exception, "Unhandled exception");
+
+        IHostEnvironment environment = context.RequestServices.GetRequiredService<IHostEnvironment>();
+        bool includeDetails = environment.IsDevelopment();
+
+        _ = (Activity.Current?.AddException(exception));
+        _ = (Activity.Current?.SetStatus(ActivityStatusCode.Error, exception.Message));
+
+        (Result result, ProblemDetails problemDetails, int statusCode) = exception switch
+        {
+            ValidationException validationException => BuildValidationProblemDetails(validationException, context),
+            _ => BuildUnexpectedProblemDetails(exception, context, includeDetails)
+        };
+
+        logger.LogError("Error result: {@Result}", result);
+
+        context.Response.StatusCode = statusCode;
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsJsonAsync(problemDetails);
+    });
+});
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -109,6 +156,46 @@ app.MapDefaultEndpoints();
 app.MapControllers();
 
 await app.RunAsync();
+
+static (Result result, ProblemDetails problemDetails, int statusCode) BuildValidationProblemDetails(
+    ValidationException exception,
+    HttpContext context)
+{
+    var errors = exception.Errors
+        .GroupBy(error => error.PropertyName)
+        .ToDictionary(group => group.Key, group => group.Select(error => error.ErrorMessage).ToArray());
+
+    var result = Result.Fail(new Error("Validation failed")
+        .WithMetadata("errors", errors));
+
+    var problemDetails = new ProblemDetails
+    {
+        Status = StatusCodes.Status400BadRequest,
+        Title = "Validation failed",
+        Detail = "One or more validation errors occurred.",
+        Instance = context.Request.Path,
+        Extensions = { ["errors"] = errors }
+    };
+
+    return (result, problemDetails, StatusCodes.Status400BadRequest);
+}
+
+static (Result result, ProblemDetails problemDetails, int statusCode) BuildUnexpectedProblemDetails(
+    Exception exception,
+    HttpContext context,
+    bool includeDetails)
+{
+    var result = Result.Fail("An unexpected error occurred.");
+    var problemDetails = new ProblemDetails
+    {
+        Status = StatusCodes.Status500InternalServerError,
+        Title = "An unexpected error occurred.",
+        Detail = "The server encountered an unexpected error.",
+        Instance = context.Request.Path
+    };
+    if (includeDetails) problemDetails.Extensions["stackTrace"] = exception.ToString();
+    return (result, problemDetails, StatusCodes.Status500InternalServerError);
+}
 
 static void ConfigureTransponder(WebApplicationBuilder builder)
 {
