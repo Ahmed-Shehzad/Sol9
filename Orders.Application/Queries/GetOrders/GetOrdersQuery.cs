@@ -23,7 +23,7 @@ public sealed class GetOrdersQueryHandler : IQueryHandler<GetOrdersQuery, IReadO
         _dbContext = dbContext;
     }
 
-    public async Task<IReadOnlyList<OrderDto>> HandleAsync(GetOrdersQuery request, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<OrderDto>> HandleAsync(GetOrdersQuery request, CancellationToken cancellationToken = default)
     {
         return await _dbContext.Orders
             .OrderByDescending(order => order.CreatedAtUtc)

@@ -18,7 +18,7 @@ public sealed class GetBookingsQueryHandler : IQueryHandler<GetBookingsQuery, IR
         _context = context;
     }
 
-    public async Task<IReadOnlyList<BookingDto>> HandleAsync(GetBookingsQuery request, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<BookingDto>> HandleAsync(GetBookingsQuery request, CancellationToken cancellationToken = default)
     {
         IReadOnlyList<Domain.Entities.Booking> bookings = await _context.Bookings.ToListAsync(cancellationToken).ConfigureAwait(false);
 

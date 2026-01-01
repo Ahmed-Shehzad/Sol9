@@ -23,7 +23,7 @@ public sealed class GetOrderByIdQueryHandler : IQueryHandler<GetOrderByIdQuery, 
         _dbContext = dbContext;
     }
 
-    public async Task<OrderDto?> HandleAsync(GetOrderByIdQuery request, CancellationToken cancellationToken)
+    public async Task<OrderDto?> HandleAsync(GetOrderByIdQuery request, CancellationToken cancellationToken = default)
     {
         return await _dbContext.Orders
             .Where(order => order.Id == request.Id)

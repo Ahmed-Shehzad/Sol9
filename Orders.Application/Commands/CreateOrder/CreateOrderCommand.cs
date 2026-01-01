@@ -26,7 +26,7 @@ public sealed class CreateOrderCommandHandler : ICommandHandler<CreateOrderComma
         _clientFactory = clientFactory;
     }
 
-    public async Task<OrderDto> HandleAsync(CreateOrderCommand request, CancellationToken cancellationToken)
+    public async Task<OrderDto> HandleAsync(CreateOrderCommand request, CancellationToken cancellationToken = default)
     {
         var order = Order.Create(request.CustomerName, request.TotalAmount);
         _ = _dbContext.Orders.Add(order);

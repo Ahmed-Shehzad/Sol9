@@ -18,7 +18,7 @@ public sealed class GetBookingByOrderIdQueryHandler : IQueryHandler<GetBookingBy
         _context = context;
     }
 
-    public async Task<BookingDto?> HandleAsync(GetBookingByOrderIdQuery request, CancellationToken cancellationToken)
+    public async Task<BookingDto?> HandleAsync(GetBookingByOrderIdQuery request, CancellationToken cancellationToken = default)
     {
         Domain.Entities.Booking? booking =
             await _context.Bookings.FirstOrDefaultAsync(b => b.OrderId == request.OrderId, cancellationToken).ConfigureAwait(false);

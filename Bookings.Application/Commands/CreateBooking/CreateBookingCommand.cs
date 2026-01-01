@@ -17,7 +17,7 @@ public sealed class CreateBookingCommandHandler : ICommandHandler<CreateBookingC
         _repository = repository;
     }
 
-    public async Task<BookingDto> HandleAsync(CreateBookingCommand request, CancellationToken cancellationToken)
+    public async Task<BookingDto> HandleAsync(CreateBookingCommand request, CancellationToken cancellationToken = default)
     {
         Booking? existing = await _repository.GetByOrderIdAsync(request.OrderId, cancellationToken).ConfigureAwait(false);
         if (existing is not null)
