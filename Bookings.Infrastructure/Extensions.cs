@@ -1,7 +1,10 @@
 using Bookings.Application;
-using Bookings.Application.Contracts;
+using Bookings.Application.Contexts;
 using Bookings.Infrastructure.Contexts;
+using Bookings.Infrastructure.Interceptors;
 using Bookings.Infrastructure.Repositories;
+
+using Intercessor.Abstractions;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -18,12 +21,21 @@ public static class Extensions
         string? connectionString = configuration.GetConnectionString("Bookings");
         if (string.IsNullOrWhiteSpace(connectionString)) return services;
 
-        _ = services.AddDbContext<BookingsDbContext>(options =>
+        _ = services.AddDbContext<BookingsDbContext>((serviceProvider, options) =>
         {
             _ = options.UseNpgsql(connectionString);
+            IPublisher publisher = serviceProvider.GetRequiredService<IPublisher>();
+            _ = options.AddInterceptors(new AuditableInterceptor(), new DomainEventDispatchInterceptor(publisher));
+        });
+        _ = services.AddDbContext<ReadOnlyBookingsDbContext>(options =>
+        {
+            _ = options.UseNpgsql(connectionString);
+            _ = options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
         });
 
         _ = services.AddScoped<IBookingsRepository, BookingsRepository>();
+        _ = services.AddScoped<IBookingsDbContext>(sp => sp.GetRequiredService<BookingsDbContext>());
+        _ = services.AddScoped<IReadOnlyBookingsDbContext>(sp => sp.GetRequiredService<ReadOnlyBookingsDbContext>());
         return services;
     }
 }

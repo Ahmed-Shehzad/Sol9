@@ -1,3 +1,5 @@
+using System.Linq;
+
 using Microsoft.EntityFrameworkCore;
 
 using Orders.Application.Contracts;
@@ -5,11 +7,13 @@ using Orders.Domain.Entities;
 
 namespace Orders.Infrastructure.Contexts;
 
-public class OrdersDbContext : DbContext, IOrdersDbContext
+public class ReadOnlyOrdersDbContext : DbContext, IReadOnlyOrdersDbContext
 {
-    public DbSet<Order> Orders => Set<Order>();
+    public IQueryable<Order> Orders => OrdersDbSet.AsQueryable();
 
-    public OrdersDbContext(DbContextOptions<OrdersDbContext> options) : base(options)
+    public DbSet<Order> OrdersDbSet => Set<Order>();
+
+    public ReadOnlyOrdersDbContext(DbContextOptions<ReadOnlyOrdersDbContext> options) : base(options)
     {
     }
 

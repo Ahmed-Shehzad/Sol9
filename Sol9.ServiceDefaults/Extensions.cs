@@ -25,21 +25,20 @@ public static class Extensions
         });
 
         _ = builder.Services.AddHealthChecks()
-            .AddCheck("self", () => HealthCheckResult.Healthy(), new[] { "live" });
+            .AddCheck("self", () => HealthCheckResult.Healthy(), ["live"]);
 
         return builder;
     }
 
     public static WebApplication MapDefaultEndpoints(this WebApplication app)
     {
-        if (app.Environment.IsDevelopment())
+        if (!app.Environment.IsDevelopment()) return app;
+
+        _ = app.MapHealthChecks("/health");
+        _ = app.MapHealthChecks("/alive", new HealthCheckOptions
         {
-            _ = app.MapHealthChecks("/health");
-            _ = app.MapHealthChecks("/alive", new HealthCheckOptions
-            {
-                Predicate = registration => registration.Tags.Contains("live")
-            });
-        }
+            Predicate = registration => registration.Tags.Contains("live")
+        });
 
         return app;
     }

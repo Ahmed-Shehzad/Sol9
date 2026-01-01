@@ -1,7 +1,9 @@
-using Bookings.Application.Contracts;
+using Bookings.Application.Contexts;
 using Bookings.Application.Dtos;
 
 using Intercessor.Abstractions;
+
+using Microsoft.EntityFrameworkCore;
 
 namespace Bookings.Application.Queries.GetBookingByOrderId;
 
@@ -9,17 +11,17 @@ public sealed record GetBookingByOrderIdQuery(Guid OrderId) : IQuery<BookingDto?
 
 public sealed class GetBookingByOrderIdQueryHandler : IQueryHandler<GetBookingByOrderIdQuery, BookingDto?>
 {
-    private readonly IBookingsRepository _repository;
+    private readonly IReadOnlyBookingsDbContext _context;
 
-    public GetBookingByOrderIdQueryHandler(IBookingsRepository repository)
+    public GetBookingByOrderIdQueryHandler(IReadOnlyBookingsDbContext context)
     {
-        _repository = repository;
+        _context = context;
     }
 
     public async Task<BookingDto?> HandleAsync(GetBookingByOrderIdQuery request, CancellationToken cancellationToken)
     {
-        Bookings.Domain.Entities.Booking? booking = await _repository.GetByOrderIdAsync(request.OrderId, cancellationToken)
-            .ConfigureAwait(false);
+        Domain.Entities.Booking? booking =
+            await _context.Bookings.FirstOrDefaultAsync(b => b.OrderId == request.OrderId, cancellationToken).ConfigureAwait(false);
 
         return booking is null
             ? null

@@ -1,6 +1,6 @@
 using Bookings.Domain.Entities;
 
-namespace Bookings.Application.Contracts;
+namespace Bookings.Application.Contexts;
 
 public interface IBookingsRepository
 {

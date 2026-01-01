@@ -51,6 +51,6 @@ public sealed class PostgreSqlContainerTests : IAsyncLifetime
 
         Order? stored = await context.Orders.SingleOrDefaultAsync(o => o.Id == order.Id);
         Assert.NotNull(stored);
-        Assert.Equal("Created", stored!.Status);
+        Assert.Equal(OrderStatus.Created, stored.Status);
     }
 }

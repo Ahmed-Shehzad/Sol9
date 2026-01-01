@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,5 +16,5 @@ public interface IOrdersDbContext
 
 public interface IReadOnlyOrdersDbContext
 {
-    DbSet<Order> Orders { get; }
+    IQueryable<Order> Orders { get; }
 }

@@ -6,7 +6,7 @@ public class Order : AggregateRoot
 {
     public string CustomerName { get; private set; } = string.Empty;
     public decimal TotalAmount { get; private set; }
-    public string Status { get; private set; } = string.Empty;
+    public OrderStatus Status { get; private set; }
 
     private Order()
     {
@@ -16,15 +16,13 @@ public class Order : AggregateRoot
     {
         CustomerName = customerName;
         TotalAmount = totalAmount;
-        Status = "Created";
+        Status = OrderStatus.Created;
     }
 
-    public static Order Create(string customerName, decimal totalAmount)
-        => new(customerName, totalAmount);
+    public static Order Create(string customerName, decimal totalAmount) => new(customerName, totalAmount);
 
-    public void MarkBooked()
-    {
-        Status = "Booked";
-        ApplyUpdateDateTime();
-    }
+    public void MarkBooked() => Status = OrderStatus.Booked;
+    public void MarkCancelled() => Status = OrderStatus.Cancelled;
+    public void MarkCompleted() => Status = OrderStatus.Completed;
+    public void MarkExpired() => Status = OrderStatus.Expired;
 }

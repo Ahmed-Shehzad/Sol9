@@ -1,7 +1,9 @@
-using Bookings.Application.Contracts;
+using Bookings.Application.Contexts;
 using Bookings.Application.Dtos;
 
 using Intercessor.Abstractions;
+
+using Microsoft.EntityFrameworkCore;
 
 namespace Bookings.Application.Queries.GetBookings;
 
@@ -9,17 +11,16 @@ public sealed record GetBookingsQuery : IQuery<IReadOnlyList<BookingDto>>;
 
 public sealed class GetBookingsQueryHandler : IQueryHandler<GetBookingsQuery, IReadOnlyList<BookingDto>>
 {
-    private readonly IBookingsRepository _repository;
+    private readonly IReadOnlyBookingsDbContext _context;
 
-    public GetBookingsQueryHandler(IBookingsRepository repository)
+    public GetBookingsQueryHandler(IReadOnlyBookingsDbContext context)
     {
-        _repository = repository;
+        _context = context;
     }
 
     public async Task<IReadOnlyList<BookingDto>> HandleAsync(GetBookingsQuery request, CancellationToken cancellationToken)
     {
-        IReadOnlyList<Bookings.Domain.Entities.Booking> bookings = await _repository.GetAllAsync(cancellationToken)
-            .ConfigureAwait(false);
+        IReadOnlyList<Domain.Entities.Booking> bookings = await _context.Bookings.ToListAsync(cancellationToken).ConfigureAwait(false);
 
         return bookings
             .Select(booking => new BookingDto(

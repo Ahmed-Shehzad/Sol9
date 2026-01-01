@@ -5,11 +5,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Bookings.Infrastructure.Contexts;
 
-public class BookingsDbContext : DbContext, IBookingsDbContext
+public class ReadOnlyBookingsDbContext : DbContext, IReadOnlyBookingsDbContext
 {
-    public DbSet<Booking> Bookings => Set<Booking>();
+    public IQueryable<Booking> Bookings => BookingsDbSet.AsQueryable();
 
-    public BookingsDbContext(DbContextOptions<BookingsDbContext> options) : base(options)
+    public DbSet<Booking> BookingsDbSet => Set<Booking>();
+
+    public ReadOnlyBookingsDbContext(DbContextOptions<ReadOnlyBookingsDbContext> options) : base(options)
     {
     }
 

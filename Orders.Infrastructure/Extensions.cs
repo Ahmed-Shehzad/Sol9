@@ -1,10 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Intercessor.Abstractions;
+
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using Orders.Application;
 using Orders.Application.Contracts;
 using Orders.Infrastructure.Contexts;
+using Orders.Infrastructure.Interceptors;
 
 namespace Orders.Infrastructure;
 
@@ -17,13 +20,22 @@ public static class Extensions
         string? connectionString = configuration.GetConnectionString("Orders");
         if (string.IsNullOrWhiteSpace(connectionString)) return services;
 
-        _ = services.AddDbContext<OrdersDbContext>(options =>
+        _ = services.AddDbContext<OrdersDbContext>((serviceProvider, options) =>
         {
             _ = options.UseNpgsql(connectionString);
+
+            IPublisher publisher = serviceProvider.GetRequiredService<IPublisher>();
+            _ = options.AddInterceptors(new AuditableInterceptor(), new DomainEventDispatchInterceptor(publisher));
+        });
+
+        _ = services.AddDbContext<ReadOnlyOrdersDbContext>(options =>
+        {
+            _ = options.UseNpgsql(connectionString);
+            _ = options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
         });
 
         _ = services.AddScoped<IOrdersDbContext>(sp => sp.GetRequiredService<OrdersDbContext>());
-        _ = services.AddScoped<IReadOnlyOrdersDbContext>(sp => sp.GetRequiredService<OrdersDbContext>());
+        _ = services.AddScoped<IReadOnlyOrdersDbContext>(sp => sp.GetRequiredService<ReadOnlyOrdersDbContext>());
         return services;
     }
 }

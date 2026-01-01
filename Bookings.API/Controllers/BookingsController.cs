@@ -1,4 +1,4 @@
-using Bookings.API.Contracts;
+using Bookings.API.Requests;
 using Bookings.Application.Commands.CreateBooking;
 using Bookings.Application.Dtos;
 using Bookings.Application.Queries.GetBookingByOrderId;
@@ -29,7 +29,7 @@ public class BookingsController : ControllerBase
         return Ok(bookings);
     }
 
-    [HttpGet("by-order/{orderId:guid}")]
+    [HttpGet("order/{orderId:guid}")]
     [ProducesResponseType(typeof(BookingDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<BookingDto>> GetByOrderIdAsync(Guid orderId)
@@ -42,10 +42,7 @@ public class BookingsController : ControllerBase
     [ProducesResponseType(typeof(BookingDto), StatusCodes.Status201Created)]
     public async Task<ActionResult<BookingDto>> CreateAsync([FromBody] CreateBookingRequest request)
     {
-        BookingDto booking = await _sender
-            .SendAsync(new CreateBookingCommand(request.OrderId, request.CustomerName))
-            .ConfigureAwait(false);
-
+        BookingDto booking = await _sender.SendAsync(new CreateBookingCommand(request.OrderId, request.CustomerName)).ConfigureAwait(false);
         return CreatedAtAction(nameof(GetByOrderIdAsync), new { orderId = booking.OrderId }, booking);
     }
 }

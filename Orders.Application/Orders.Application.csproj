@@ -7,17 +7,16 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
-      <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" />
     </ItemGroup>
-  
+
     <ItemGroup>
       <ProjectReference Include="..\Orders.Domain\Orders.Domain.csproj" />
       <ProjectReference Include="..\Intercessor\Intercessor.csproj" />
       <ProjectReference Include="..\Sol9.Contracts\Sol9.Contracts.csproj" />
       <ProjectReference Include="..\Transponder\Transponder.csproj" />
     </ItemGroup>
-  
+
     <ItemGroup>
       <Folder Include="Commands\" />
       <Folder Include="Events\" />

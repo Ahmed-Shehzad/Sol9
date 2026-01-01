@@ -7,7 +7,7 @@ using Intercessor.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-using Orders.API.Contracts;
+using Orders.API.Requests;
 using Orders.Application.Commands.CreateOrder;
 using Orders.Application.Dtos.Orders;
 using Orders.Application.Queries.GetOrderById;

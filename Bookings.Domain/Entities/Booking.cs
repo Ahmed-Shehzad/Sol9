@@ -2,29 +2,30 @@ using Sol9.Core;
 
 namespace Bookings.Domain.Entities;
 
+public enum BookingStatus
+{
+    Created,
+    Confirmed,
+}
+
 public class Booking : AggregateRoot
 {
     public Guid OrderId { get; private set; }
     public string CustomerName { get; private set; } = string.Empty;
-    public string Status { get; private set; } = string.Empty;
+    public BookingStatus Status { get; private set; }
 
     private Booking()
     {
     }
 
-    private Booking(Guid orderId, string customerName, string status)
+    private Booking(Guid orderId, string customerName, BookingStatus status)
     {
         OrderId = orderId;
         CustomerName = customerName;
         Status = status;
     }
 
-    public static Booking Create(Guid orderId, string customerName)
-        => new(orderId, customerName, "Created");
+    public static Booking Create(Guid orderId, string customerName) => new(orderId, customerName, BookingStatus.Created);
 
-    public void MarkConfirmed()
-    {
-        Status = "Confirmed";
-        ApplyUpdateDateTime();
-    }
+    public void MarkConfirmed() => Status = BookingStatus.Confirmed;
 }

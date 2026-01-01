@@ -37,6 +37,6 @@ public sealed class PostgreSqlBookingsTests : IAsyncLifetime
 
         Booking? stored = await context.Bookings.SingleOrDefaultAsync(b => b.Id == booking.Id);
         Assert.NotNull(stored);
-        Assert.Equal("Created", stored!.Status);
+        Assert.Equal(BookingStatus.Created, stored.Status);
     }
 }

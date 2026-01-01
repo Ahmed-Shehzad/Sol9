@@ -138,7 +138,7 @@ public static class TransponderRequestAddressResolver
 
     private static int NextIndex(int count, ref int counter)
     {
-        int next = System.Threading.Interlocked.Increment(ref counter);
+        int next = Interlocked.Increment(ref counter);
         int index = next % count;
         return index < 0 ? index + count : index;
     }

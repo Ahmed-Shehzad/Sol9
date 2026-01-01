@@ -1,4 +1,3 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -35,12 +34,10 @@ public sealed class CreateOrderCommandHandler : ICommandHandler<CreateOrderComma
 
         IRequestClient<CreateBookingRequest> bookingClient = _clientFactory.CreateRequestClient<CreateBookingRequest>();
         CreateBookingResponse response = await bookingClient
-            .GetResponseAsync<CreateBookingResponse>(
-                new CreateBookingRequest(order.Id, order.CustomerName),
-                cancellationToken)
+            .GetResponseAsync<CreateBookingResponse>(new CreateBookingRequest(order.Id, order.CustomerName), cancellationToken)
             .ConfigureAwait(false);
 
-        if (!string.Equals(response.Status, "Created", StringComparison.OrdinalIgnoreCase))
+        if ((BookingStatus)response.Status is not BookingStatus.Created)
             return new OrderDto(
                 order.Id,
                 order.CustomerName,

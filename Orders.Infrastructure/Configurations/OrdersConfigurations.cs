@@ -30,5 +30,7 @@ public class OrdersConfigurations : IEntityTypeConfiguration<Order>
         _ = builder.Property(o => o.UpdatedAtUtc);
         _ = builder.Property(o => o.DeletedAtUtc);
         _ = builder.Property(o => o.IsDeleted);
+
+        _ = builder.HasQueryFilter(o => !o.IsDeleted);
     }
 }

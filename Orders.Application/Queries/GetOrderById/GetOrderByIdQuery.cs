@@ -26,7 +26,6 @@ public sealed class GetOrderByIdQueryHandler : IQueryHandler<GetOrderByIdQuery, 
     public async Task<OrderDto?> HandleAsync(GetOrderByIdQuery request, CancellationToken cancellationToken)
     {
         return await _dbContext.Orders
-            .AsNoTracking()
             .Where(order => order.Id == request.Id)
             .Select(order => new OrderDto(
                 order.Id,

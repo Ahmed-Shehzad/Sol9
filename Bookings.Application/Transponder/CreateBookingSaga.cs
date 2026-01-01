@@ -1,4 +1,4 @@
-using Bookings.Application.Contracts;
+using Bookings.Application.Contexts;
 using Bookings.Domain.Entities;
 
 using Sol9.Contracts.Bookings;
@@ -27,30 +27,19 @@ public sealed class CreateBookingSaga : ISagaMessageHandler<CreateBookingSagaSta
     public async Task HandleAsync(ISagaConsumeContext<CreateBookingSagaState, CreateBookingRequest> context)
     {
         CreateBookingRequest request = context.Message;
-        Booking? existing = await _repository.GetByOrderIdAsync(request.OrderId, context.CancellationToken)
+        Booking? booking = await _repository.GetByOrderIdAsync(request.OrderId, context.CancellationToken)
             .ConfigureAwait(false);
 
-        string status;
-        Guid bookingId;
-
-        if (existing is null)
+        if (booking is null)
         {
-            var booking = Booking.Create(request.OrderId, request.CustomerName);
+            booking = Booking.Create(request.OrderId, request.CustomerName);
             await _repository.AddAsync(booking, context.CancellationToken).ConfigureAwait(false);
             await _repository.SaveChangesAsync(context.CancellationToken).ConfigureAwait(false);
-            bookingId = booking.Id;
-            status = booking.Status;
-        }
-        else
-        {
-            bookingId = existing.Id;
-            status = existing.Status;
         }
 
         context.Saga.OrderId = request.OrderId;
         context.MarkCompleted();
 
-        await context.RespondAsync(new CreateBookingResponse(bookingId, request.OrderId, status), context.CancellationToken)
-            .ConfigureAwait(false);
+        await context.RespondAsync(new CreateBookingResponse(booking.Id, request.OrderId, (int)booking.Status), context.CancellationToken).ConfigureAwait(false);
     }
 }

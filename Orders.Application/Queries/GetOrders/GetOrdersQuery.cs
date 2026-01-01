@@ -26,7 +26,6 @@ public sealed class GetOrdersQueryHandler : IQueryHandler<GetOrdersQuery, IReadO
     public async Task<IReadOnlyList<OrderDto>> HandleAsync(GetOrdersQuery request, CancellationToken cancellationToken)
     {
         return await _dbContext.Orders
-            .AsNoTracking()
             .OrderByDescending(order => order.CreatedAtUtc)
             .Select(order => new OrderDto(
                 order.Id,

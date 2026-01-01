@@ -1,4 +1,4 @@
-using Bookings.Application.Contracts;
+using Bookings.Application.Contexts;
 using Bookings.Domain.Entities;
 using Bookings.Infrastructure.Contexts;
 
@@ -8,9 +8,9 @@ namespace Bookings.Infrastructure.Repositories;
 
 public sealed class BookingsRepository : IBookingsRepository
 {
-    private readonly BookingsDbContext _context;
+    private readonly IBookingsDbContext _context;
 
-    public BookingsRepository(BookingsDbContext context)
+    public BookingsRepository(IBookingsDbContext context)
     {
         _context = context;
     }

@@ -1,12 +1,16 @@
 using System;
+using System.IO;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.OpenApi;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi;
 
 using Orders.API;
 using Orders.Infrastructure;
@@ -44,7 +48,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options => options.OpenApiVersion = OpenApiSpecVersion.OpenApi3_1);
 builder.Services.AddGrpc();
 
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -60,7 +64,17 @@ if (app.Environment.IsDevelopment())
 }
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment()) _ = app.MapOpenApi();
+if (app.Environment.IsDevelopment())
+{
+    _ = app.MapOpenApi();
+    _ = app.MapGet("/openapi/v1.yaml", async (HttpContext context, IOpenApiDocumentProvider provider) =>
+    {
+        context.Response.ContentType = "application/yaml";
+        OpenApiDocument document = await provider.GetOpenApiDocumentAsync(context.RequestAborted);
+        await using var writer = new StreamWriter(context.Response.Body);
+        document.SerializeAsV31(new OpenApiYamlWriter(writer));
+    });
+}
 
 app.UseHttpsRedirection();
 
