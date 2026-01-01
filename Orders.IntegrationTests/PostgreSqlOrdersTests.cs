@@ -5,9 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 
 using Orders.Application.Commands.CreateOrder;
+using Orders.Application.Contexts;
 using Orders.Application.Dtos.Orders;
 using Orders.Domain.Entities;
 using Orders.Infrastructure.Contexts;
+using Orders.Infrastructure.Repositories;
 
 using Shouldly;
 
@@ -69,7 +71,7 @@ public sealed class PostgreSqlOrdersTests : IAsyncLifetime
         await context.Orders.AddRangeAsync(orders);
         _ = await context.SaveChangesAsync();
 
-        List<Guid> ids = orders.Select(o => o.Id).ToList();
+        var ids = orders.Select(o => o.Id).ToList();
         List<Order> stored = await context.Orders
             .Where(o => ids.Contains(o.Id))
             .ToListAsync();
@@ -108,7 +110,8 @@ public sealed class PostgreSqlOrdersTests : IAsyncLifetime
         _ = clientFactory.CreateRequestClient<CreateBookingRequest>(Arg.Any<TimeSpan?>())
             .Returns(requestClient);
 
-        var handler = new CreateOrderCommandHandler(context, clientFactory);
+        IOrdersRepository repository = new OrdersRepository(context);
+        var handler = new CreateOrderCommandHandler(repository, clientFactory);
 
         OrderDto result = await handler.HandleAsync(new CreateOrderCommand(customerName, totalAmount), CancellationToken.None);
 

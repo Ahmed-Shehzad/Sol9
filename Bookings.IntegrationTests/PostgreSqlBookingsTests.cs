@@ -66,7 +66,7 @@ public sealed class PostgreSqlBookingsTests : IAsyncLifetime
         await context.Bookings.AddRangeAsync(bookings);
         _ = await context.SaveChangesAsync();
 
-        List<Guid> ids = bookings.Select(b => b.Id).ToList();
+        var ids = bookings.Select(b => b.Id).ToList();
         List<Booking> stored = await context.Bookings
             .Where(b => ids.Contains(b.Id))
             .ToListAsync();
@@ -81,7 +81,7 @@ public sealed class PostgreSqlBookingsTests : IAsyncLifetime
     public async Task CreateBookingCommandHandler_returns_existing_booking_without_savingAsync()
     {
         var faker = new Faker();
-        Guid orderId = Guid.NewGuid();
+        var orderId = Guid.NewGuid();
         string existingCustomer = faker.Name.FullName();
         var existing = Booking.Create(orderId, existingCustomer);
         string ignoredCustomer = faker.Name.FullName();

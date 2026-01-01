@@ -5,9 +5,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using Orders.Application;
-using Orders.Application.Contracts;
+using Orders.Application.Contexts;
 using Orders.Infrastructure.Contexts;
 using Orders.Infrastructure.Interceptors;
+using Orders.Infrastructure.Repositories;
 
 namespace Orders.Infrastructure;
 
@@ -34,6 +35,7 @@ public static class Extensions
             _ = options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
         });
 
+        _ = services.AddScoped<IOrdersRepository, OrdersRepository>();
         _ = services.AddScoped<IOrdersDbContext>(sp => sp.GetRequiredService<OrdersDbContext>());
         _ = services.AddScoped<IReadOnlyOrdersDbContext>(sp => sp.GetRequiredService<ReadOnlyOrdersDbContext>());
         return services;

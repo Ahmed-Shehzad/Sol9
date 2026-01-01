@@ -7,7 +7,7 @@ using Intercessor.Abstractions;
 
 using Microsoft.EntityFrameworkCore;
 
-using Orders.Application.Contracts;
+using Orders.Application.Contexts;
 using Orders.Application.Dtos.Orders;
 
 namespace Orders.Application.Queries.GetOrders;

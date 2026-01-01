@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 using Intercessor.Abstractions;
 
-using Orders.Application.Contracts;
+using Orders.Application.Contexts;
 using Orders.Application.Dtos.Orders;
 using Orders.Domain.Entities;
 
@@ -17,20 +17,20 @@ public sealed record CreateOrderCommand(string CustomerName, decimal TotalAmount
 
 public sealed class CreateOrderCommandHandler : ICommandHandler<CreateOrderCommand, OrderDto>
 {
-    private readonly IOrdersDbContext _dbContext;
+    private readonly IOrdersRepository _ordersRepository;
     private readonly IClientFactory _clientFactory;
 
-    public CreateOrderCommandHandler(IOrdersDbContext dbContext, IClientFactory clientFactory)
+    public CreateOrderCommandHandler(IOrdersRepository ordersRepository, IClientFactory clientFactory)
     {
-        _dbContext = dbContext;
+        _ordersRepository = ordersRepository;
         _clientFactory = clientFactory;
     }
 
     public async Task<OrderDto> HandleAsync(CreateOrderCommand request, CancellationToken cancellationToken = default)
     {
         var order = Order.Create(request.CustomerName, request.TotalAmount);
-        _ = _dbContext.Orders.Add(order);
-        _ = await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        _ = _ordersRepository.AddAsync(order, cancellationToken);
+        await _ordersRepository.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         IRequestClient<CreateBookingRequest> bookingClient = _clientFactory.CreateRequestClient<CreateBookingRequest>();
         CreateBookingResponse response = await bookingClient
@@ -46,7 +46,7 @@ public sealed class CreateOrderCommandHandler : ICommandHandler<CreateOrderComma
                 order.CreatedAtUtc);
 
         order.MarkBooked();
-        _ = await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await _ordersRepository.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         return new OrderDto(
             order.Id,

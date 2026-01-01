@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-using Orders.Application.Contracts;
+using Orders.Application.Contexts;
 using Orders.Domain.Entities;
 
 namespace Orders.Infrastructure.Contexts;

@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -6,15 +5,10 @@ using Microsoft.EntityFrameworkCore;
 
 using Orders.Domain.Entities;
 
-namespace Orders.Application.Contracts;
+namespace Orders.Application.Contexts;
 
 public interface IOrdersDbContext
 {
     DbSet<Order> Orders { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
-}
-
-public interface IReadOnlyOrdersDbContext
-{
-    IQueryable<Order> Orders { get; }
 }
