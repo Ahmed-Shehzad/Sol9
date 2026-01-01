@@ -42,9 +42,8 @@ namespace Orders.Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("Status")
-                        .HasMaxLength(100)
-                        .HasColumnType("integer");
+            b.Property<int>("Status")
+                .HasColumnType("integer");
 
                     b.Property<decimal>("TotalAmount")
                         .HasPrecision(18, 2)

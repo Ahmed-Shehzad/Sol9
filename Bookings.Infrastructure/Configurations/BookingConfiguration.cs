@@ -22,9 +22,7 @@ public class BookingConfiguration : IEntityTypeConfiguration<Booking>
             .HasMaxLength(200)
             .IsRequired();
 
-        _ = builder.Property(b => b.Status)
-            .HasMaxLength(100)
-            .IsRequired();
+        _ = ConfigurationExtensions.ConfigureEnumProperty(builder.Property(o => o.Status)).IsRequired();
 
         _ = builder.Property(b => b.CreatedAtUtc);
         _ = builder.Property(b => b.UpdatedAtUtc);

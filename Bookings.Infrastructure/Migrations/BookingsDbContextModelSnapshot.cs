@@ -45,9 +45,8 @@ namespace Bookings.Infrastructure.Migrations
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("Status")
-                        .HasMaxLength(100)
-                        .HasColumnType("integer");
+            b.Property<int>("Status")
+                .HasColumnType("integer");
 
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone");

@@ -46,7 +46,6 @@ namespace Orders.Infrastructure.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<int>("Status")
-                        .HasMaxLength(100)
                         .HasColumnType("integer");
 
                     b.Property<decimal>("TotalAmount")

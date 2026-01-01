@@ -10,29 +10,29 @@ namespace Bookings.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<int>(
-                name: "Status",
-                table: "Bookings",
-                type: "integer",
-                maxLength: 100,
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "character varying(100)",
-                oldMaxLength: 100);
+            migrationBuilder.Sql(
+                @"ALTER TABLE ""Bookings""
+ALTER COLUMN ""Status"" TYPE integer
+USING CASE ""Status""
+    WHEN 'Created' THEN 0
+    WHEN 'Confirmed' THEN 1
+    WHEN '0' THEN 0
+    WHEN '1' THEN 1
+    ELSE 0
+END;");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<string>(
-                name: "Status",
-                table: "Bookings",
-                type: "character varying(100)",
-                maxLength: 100,
-                nullable: false,
-                oldClrType: typeof(int),
-                oldType: "integer",
-                oldMaxLength: 100);
+            migrationBuilder.Sql(
+                @"ALTER TABLE ""Bookings""
+ALTER COLUMN ""Status"" TYPE character varying(100)
+USING CASE ""Status""
+    WHEN 0 THEN 'Created'
+    WHEN 1 THEN 'Confirmed'
+    ELSE 'Created'
+END;");
         }
     }
 }

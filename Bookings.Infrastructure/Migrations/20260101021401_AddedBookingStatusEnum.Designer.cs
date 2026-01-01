@@ -49,7 +49,6 @@ namespace Bookings.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<int>("Status")
-                        .HasMaxLength(100)
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("UpdatedAtUtc")

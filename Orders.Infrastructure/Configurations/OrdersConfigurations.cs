@@ -1,3 +1,5 @@
+using System;
+
 using Humanizer;
 
 using Microsoft.EntityFrameworkCore;
@@ -22,9 +24,7 @@ public class OrdersConfigurations : IEntityTypeConfiguration<Order>
         _ = builder.Property(o => o.TotalAmount)
             .HasPrecision(18, 2);
 
-        _ = builder.Property(o => o.Status)
-            .HasMaxLength(100)
-            .IsRequired();
+        _ = ConfigurationExtensions.ConfigureEnumProperty(builder.Property(o => o.Status)).IsRequired();
 
         _ = builder.Property(o => o.CreatedAtUtc);
         _ = builder.Property(o => o.UpdatedAtUtc);
