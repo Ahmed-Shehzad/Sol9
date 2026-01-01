@@ -10,9 +10,18 @@ using Microsoft.EntityFrameworkCore;
 using Orders.Application.Contexts;
 using Orders.Application.Dtos.Orders;
 
+using Verifier;
+
 namespace Orders.Application.Queries.GetOrders;
 
 public sealed record GetOrdersQuery : IQuery<IReadOnlyList<OrderDto>>;
+
+public sealed class GetOrdersQueryValidator : AbstractValidator<GetOrdersQuery>
+{
+    public GetOrdersQueryValidator()
+    {
+    }
+}
 
 public sealed class GetOrdersQueryHandler : IQueryHandler<GetOrdersQuery, IReadOnlyList<OrderDto>>
 {

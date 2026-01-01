@@ -46,6 +46,12 @@ IResourceBuilder<ProjectResource> ordersApi = builder.AddProject<Projects.Orders
     .WithEnvironment("ConnectionStrings__Redis", redisTlsConnection)
     .WaitFor(redis);
 
+_ = bookingsApi.WithEnvironment("TransponderDefaults__LocalAddress", bookingsApi.GetEndpoint("http"))
+    .WithEnvironment("TransponderDefaults__RemoteAddress", ordersApi.GetEndpoint("http"));
+
+_ = ordersApi.WithEnvironment("TransponderDefaults__LocalAddress", ordersApi.GetEndpoint("http"))
+    .WithEnvironment("TransponderDefaults__RemoteAddress", bookingsApi.GetEndpoint("http"));
+
 builder.AddProject<Projects.Gateway_API>("gateway-api")
     .WithReference(bookingsApi)
     .WithReference(ordersApi)

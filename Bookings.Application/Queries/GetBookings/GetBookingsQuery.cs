@@ -5,9 +5,18 @@ using Intercessor.Abstractions;
 
 using Microsoft.EntityFrameworkCore;
 
+using Verifier;
+
 namespace Bookings.Application.Queries.GetBookings;
 
 public sealed record GetBookingsQuery : IQuery<IReadOnlyList<BookingDto>>;
+
+public sealed class GetBookingsQueryValidator : AbstractValidator<GetBookingsQuery>
+{
+    public GetBookingsQueryValidator()
+    {
+    }
+}
 
 public sealed class GetBookingsQueryHandler : IQueryHandler<GetBookingsQuery, IReadOnlyList<BookingDto>>
 {

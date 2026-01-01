@@ -5,9 +5,21 @@ using Intercessor.Abstractions;
 
 using Microsoft.EntityFrameworkCore;
 
+using Verifier;
+
 namespace Bookings.Application.Queries.GetBookingByOrderId;
 
 public sealed record GetBookingByOrderIdQuery(Guid OrderId) : IQuery<BookingDto?>;
+
+public sealed class GetBookingByOrderIdQueryValidator : AbstractValidator<GetBookingByOrderIdQuery>
+{
+    public GetBookingByOrderIdQueryValidator()
+    {
+        _ = RuleFor(query => query.OrderId)
+            .Must(id => id != Guid.Empty, "OrderId must not be empty.");
+    }
+}
+
 
 public sealed class GetBookingByOrderIdQueryHandler : IQueryHandler<GetBookingByOrderIdQuery, BookingDto?>
 {

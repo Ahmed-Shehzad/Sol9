@@ -11,9 +11,23 @@ using Sol9.Contracts.Bookings;
 
 using Transponder.Abstractions;
 
+using Verifier;
+
 namespace Orders.Application.Commands.CreateOrder;
 
 public sealed record CreateOrderCommand(string CustomerName, decimal TotalAmount) : ICommand<OrderDto>;
+
+public sealed class CreateOrderCommandValidator : AbstractValidator<CreateOrderCommand>
+{
+    public CreateOrderCommandValidator()
+    {
+        _ = RuleFor(command => command.CustomerName)
+            .NotEmpty("CustomerName must not be empty.");
+
+        _ = RuleFor(command => command.TotalAmount)
+            .Must(amount => amount > 0, "TotalAmount must be greater than zero.");
+    }
+}
 
 public sealed class CreateOrderCommandHandler : ICommandHandler<CreateOrderCommand, OrderDto>
 {

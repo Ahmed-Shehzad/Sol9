@@ -10,9 +10,20 @@ using Microsoft.EntityFrameworkCore;
 using Orders.Application.Contexts;
 using Orders.Application.Dtos.Orders;
 
+using Verifier;
+
 namespace Orders.Application.Queries.GetOrderById;
 
 public sealed record GetOrderByIdQuery(Guid Id) : IQuery<OrderDto?>;
+
+public sealed class GetOrderByIdQueryValidator : AbstractValidator<GetOrderByIdQuery>
+{
+    public GetOrderByIdQueryValidator()
+    {
+        _ = RuleFor(query => query.Id)
+            .Must(id => id != Guid.Empty, "Id must not be empty.");
+    }
+}
 
 public sealed class GetOrderByIdQueryHandler : IQueryHandler<GetOrderByIdQuery, OrderDto?>
 {
