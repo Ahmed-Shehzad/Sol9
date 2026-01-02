@@ -140,7 +140,7 @@ bool allowUnsecuredTransport = string.Equals(
     Environment.GetEnvironmentVariable("ASPIRE_ALLOW_UNSECURED_TRANSPORT"),
     "true",
     StringComparison.OrdinalIgnoreCase);
-if (!allowUnsecuredTransport) app.UseHttpsRedirection();
+if (!allowUnsecuredTransport) _ = app.UseHttpsRedirection();
 
 app.UseAuthorization();
 

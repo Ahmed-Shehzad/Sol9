@@ -8,7 +8,7 @@ public abstract class Repository<TEntity> : IRepository<TEntity> where TEntity :
 {
     private readonly IDbContext _context;
 
-    public Repository(IDbContext context)
+    protected Repository(IDbContext context)
     {
         _context = context;
     }
@@ -21,7 +21,7 @@ public abstract class Repository<TEntity> : IRepository<TEntity> where TEntity :
     public abstract Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> expression,
         CancellationToken cancellationToken = default);
 
-    public abstract Task AddAsync(TEntity order,
+    public abstract Task AddAsync(TEntity entity,
         CancellationToken cancellationToken = default);
 
     public abstract void Update(TEntity entity);
