@@ -8,15 +8,12 @@ using Bookings.Infrastructure.Contexts;
 using FluentResults;
 
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.OpenApi;
 
 using Asp.Versioning;
-
-using OpenTelemetry.Trace;
 
 using Serilog;
 
@@ -140,7 +137,11 @@ if (app.Environment.IsDevelopment())
     _ = app.MapOpenApi("/openapi/{documentName}.yaml");
 }
 
-app.UseHttpsRedirection();
+bool allowUnsecuredTransport = string.Equals(
+    Environment.GetEnvironmentVariable("ASPIRE_ALLOW_UNSECURED_TRANSPORT"),
+    "true",
+    StringComparison.OrdinalIgnoreCase);
+if (!allowUnsecuredTransport) app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
@@ -206,6 +207,7 @@ static void ConfigureTransponder(WebApplicationBuilder builder)
         _ = builder.Services.AddTransponderRedisCache(options =>
         {
             options.ConnectionString = redisConnection;
+            options.AllowUntrustedCertificates = builder.Environment.IsDevelopment();
         });
 
     string? transponderConnection = builder.Configuration.GetConnectionString("Transponder");

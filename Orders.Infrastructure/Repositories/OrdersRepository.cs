@@ -22,14 +22,12 @@ public class OrdersRepository : IOrdersRepository
 
     public async Task<IReadOnlyList<Order>> GetAllAsync(CancellationToken cancellationToken = default)
         => await _context.Orders
-            .AsNoTracking()
             .OrderByDescending(order => order.CreatedAtUtc)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
     public async Task<Order?> GetByIdAsync(Guid orderId, CancellationToken cancellationToken = default)
         => await _context.Orders
-            .AsNoTracking()
             .FirstOrDefaultAsync(order => order.Id == orderId, cancellationToken)
             .ConfigureAwait(false);
 

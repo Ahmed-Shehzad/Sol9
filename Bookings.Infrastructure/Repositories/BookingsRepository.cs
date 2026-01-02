@@ -16,14 +16,12 @@ public sealed class BookingsRepository : IBookingsRepository
 
     public async Task<IReadOnlyList<Booking>> GetAllAsync(CancellationToken cancellationToken = default)
         => await _context.Bookings
-            .AsNoTracking()
             .OrderByDescending(booking => booking.CreatedAtUtc)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
     public async Task<Booking?> GetByOrderIdAsync(Guid orderId, CancellationToken cancellationToken = default)
         => await _context.Bookings
-            .AsNoTracking()
             .FirstOrDefaultAsync(booking => booking.OrderId == orderId, cancellationToken)
             .ConfigureAwait(false);
 

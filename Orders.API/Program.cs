@@ -18,8 +18,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-using OpenTelemetry.Trace;
-
 using Orders.API;
 using Orders.Infrastructure;
 using Orders.Infrastructure.Contexts;
@@ -147,7 +145,11 @@ if (app.Environment.IsDevelopment())
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment()) _ = app.MapOpenApi();
 
-app.UseHttpsRedirection();
+bool allowUnsecuredTransport = string.Equals(
+    Environment.GetEnvironmentVariable("ASPIRE_ALLOW_UNSECURED_TRANSPORT"),
+    "true",
+    StringComparison.OrdinalIgnoreCase);
+if (!allowUnsecuredTransport) app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
@@ -213,6 +215,7 @@ static void ConfigureTransponder(WebApplicationBuilder builder)
         _ = builder.Services.AddTransponderRedisCache(options =>
         {
             options.ConnectionString = redisConnection;
+            options.AllowUntrustedCertificates = builder.Environment.IsDevelopment();
         });
 
     string? transponderConnection = builder.Configuration.GetConnectionString("Transponder");

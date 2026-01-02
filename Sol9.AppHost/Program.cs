@@ -11,40 +11,34 @@ IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(ar
 
 IResourceBuilder<ParameterResource> pgUser = builder.AddParameter("postgres-user", "postgres");
 IResourceBuilder<ParameterResource> pgPassword = builder.AddParameter("postgres-password", "postgres", secret: true);
+IResourceBuilder<ParameterResource> redisPassword = builder.AddParameter("redis-password", "redis", secret: true);
 IResourceBuilder<PostgresServerResource> postgres = builder.AddPostgres("postgres", pgUser, pgPassword, 5432);
 IResourceBuilder<PostgresDatabaseResource> bookingsDb = postgres.AddDatabase("bookings");
 IResourceBuilder<PostgresDatabaseResource> ordersDb = postgres.AddDatabase("orders");
 IResourceBuilder<PostgresDatabaseResource> transponderDb = postgres.AddDatabase("transponder");
 
-IResourceBuilder<RedisResource> redis = builder.AddRedis("redis")
-    .WithBindMount("certs/redis", "/tls", isReadOnly: true)
-    .WithArgs(
-        "--tls-port", "6379",
-        "--port", "0",
-        "--tls-cert-file", "/tls/redis.crt",
-        "--tls-key-file", "/tls/redis.key",
-        "--tls-ca-cert-file", "/tls/ca.crt",
-        "--tls-auth-clients", "no");
+IResourceBuilder<ContainerResource> redis = builder.AddContainer("redis", "redis:8.2")
+    .WithEnvironment("REDIS_PASSWORD", redisPassword)
+    .WithArgs("--requirepass", redisPassword, "--port", "6379")
+    .WithEndpoint(targetPort: 6379, name: "tcp");
 
-ReferenceExpression redisHost = redis.Resource.GetConnectionProperty("Host");
-ReferenceExpression redisPort = redis.Resource.GetConnectionProperty("Port");
-var redisUri = ReferenceExpression.Create($"rediss://{redisHost}:{redisPort}");
-var redisTlsConnection = ReferenceExpression.Create($"{redisHost}:{redisPort},ssl=true,sslHost=redis");
-redis.WithConnectionProperty("Uri", redisUri);
-IResourceBuilder<ConnectionStringResource> redisTls = builder.AddConnectionString("redis-tls", redisTlsConnection);
-redis.WithConnectionStringRedirection(redisTls.Resource);
+EndpointReference redisEndpoint = redis.GetEndpoint("tcp");
+EndpointReferenceExpression redisHost = redisEndpoint.Property(EndpointProperty.Host);
+EndpointReferenceExpression redisPort = redisEndpoint.Property(EndpointProperty.Port);
+var redisConnection = ReferenceExpression.Create(
+    $"{redisHost}:{redisPort},password={redisPassword}");
 
 IResourceBuilder<ProjectResource> bookingsApi = builder.AddProject<Projects.Bookings_API>("bookings-api")
     .WithReference(bookingsDb)
     .WithReference(transponderDb)
-    .WithEnvironment("ConnectionStrings__Redis", redisTlsConnection)
-    .WaitFor(redis);
+    .WithEnvironment("ConnectionStrings__Redis", redisConnection)
+    .WaitForStart(redis);
 
 IResourceBuilder<ProjectResource> ordersApi = builder.AddProject<Projects.Orders_API>("orders-api")
     .WithReference(ordersDb)
     .WithReference(transponderDb)
-    .WithEnvironment("ConnectionStrings__Redis", redisTlsConnection)
-    .WaitFor(redis);
+    .WithEnvironment("ConnectionStrings__Redis", redisConnection)
+    .WaitForStart(redis);
 
 _ = bookingsApi.WithEnvironment("TransponderDefaults__LocalAddress", bookingsApi.GetEndpoint("http"))
     .WithEnvironment("TransponderDefaults__RemoteAddress", ordersApi.GetEndpoint("http"));
