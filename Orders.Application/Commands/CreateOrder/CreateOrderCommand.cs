@@ -1,6 +1,3 @@
-using System.Threading;
-using System.Threading.Tasks;
-
 using Intercessor.Abstractions;
 
 using Orders.Application.Contexts;

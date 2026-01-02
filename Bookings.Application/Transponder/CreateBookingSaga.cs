@@ -27,8 +27,7 @@ public sealed class CreateBookingSaga : ISagaMessageHandler<CreateBookingSagaSta
     public async Task HandleAsync(ISagaConsumeContext<CreateBookingSagaState, CreateBookingRequest> context)
     {
         CreateBookingRequest request = context.Message;
-        Booking? booking = await _repository.GetByOrderIdAsync(request.OrderId, context.CancellationToken)
-            .ConfigureAwait(false);
+        Booking? booking = await _repository.GetAsync(b => b.OrderId == request.OrderId, context.CancellationToken).ConfigureAwait(false);
 
         if (booking is null)
         {

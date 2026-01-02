@@ -1,8 +1,3 @@
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-
 using Intercessor.Abstractions;
 
 using Microsoft.EntityFrameworkCore;
@@ -21,21 +16,18 @@ public sealed class DomainEventDispatchInterceptor : SaveChangesInterceptor
         _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
     }
 
-    // ASYNC PATH
-    public async override ValueTask<int> SavedChangesAsync(SaveChangesCompletedEventData eventData, int result, CancellationToken cancellationToken = default)
+    public async override ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = new CancellationToken())
     {
         if (eventData.Context is not null) await DispatchDomainEventsAsync(eventData.Context, cancellationToken);
 
-        return await base.SavedChangesAsync(eventData, result, cancellationToken);
+        return await base.SavingChangesAsync(eventData, result, cancellationToken);
     }
 
-    // SYNC PATH
-    public override int SavedChanges(SaveChangesCompletedEventData eventData, int result)
+    public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
     {
-        if (eventData.Context is not null)
-            DispatchDomainEventsAsync(eventData.Context, CancellationToken.None).GetAwaiter().GetResult();
+        if (eventData.Context is not null) DispatchDomainEventsAsync(eventData.Context, CancellationToken.None).GetAwaiter().GetResult();
 
-        return base.SavedChanges(eventData, result);
+        return base.SavingChanges(eventData, result);
     }
 
     private async Task DispatchDomainEventsAsync(DbContext context, CancellationToken cancellationToken)

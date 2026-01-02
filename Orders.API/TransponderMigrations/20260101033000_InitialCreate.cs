@@ -1,5 +1,3 @@
-using System;
-
 using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Orders.API.TransponderMigrations;

@@ -1,11 +1,7 @@
 using Bookings.Domain.Entities;
 
+using Sol9.Core.Abstractions;
+
 namespace Bookings.Application.Contexts;
 
-public interface IBookingsRepository
-{
-    Task<IReadOnlyList<Booking>> GetAllAsync(CancellationToken cancellationToken = default);
-    Task<Booking?> GetByOrderIdAsync(Guid orderId, CancellationToken cancellationToken = default);
-    Task AddAsync(Booking booking, CancellationToken cancellationToken = default);
-    Task SaveChangesAsync(CancellationToken cancellationToken = default);
-}
+public interface IBookingsRepository : IRepository<Booking>;

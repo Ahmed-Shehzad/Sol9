@@ -1,5 +1,3 @@
-using System;
-
 namespace Orders.API;
 
 public class WeatherForecast

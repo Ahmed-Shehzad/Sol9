@@ -1,5 +1,3 @@
-using System.Linq;
-
 using Orders.Domain.Entities;
 
 namespace Orders.Application.Contexts;

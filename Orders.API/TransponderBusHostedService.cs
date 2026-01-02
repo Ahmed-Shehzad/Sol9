@@ -1,8 +1,3 @@
-using System.Threading;
-using System.Threading.Tasks;
-
-using Microsoft.Extensions.Hosting;
-
 using Transponder.Abstractions;
 
 namespace Orders.API;

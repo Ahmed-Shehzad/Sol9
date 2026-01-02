@@ -25,7 +25,10 @@ public static class Extensions
         {
             _ = options.UseNpgsql(connectionString);
             IPublisher publisher = serviceProvider.GetRequiredService<IPublisher>();
-            _ = options.AddInterceptors(new AuditableInterceptor(), new DomainEventDispatchInterceptor(publisher));
+            _ = options.AddInterceptors(
+                new AuditableInterceptor(),
+                new DomainEventDispatchInterceptor(publisher),
+                new IntegrationEventDispatcherInterceptor(publisher));
         });
         _ = services.AddDbContext<ReadOnlyBookingsDbContext>(options =>
         {
