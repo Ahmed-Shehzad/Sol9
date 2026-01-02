@@ -55,6 +55,6 @@ public class OrdersController : ControllerBase
             .SendAsync(new CreateOrderCommand(request.CustomerName, request.TotalAmount))
             .ConfigureAwait(false);
 
-        return CreatedAtAction(nameof(GetByIdAsync), new { id = order.Id }, order);
+        return Ok(order);
     }
 }

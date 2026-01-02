@@ -1,5 +1,4 @@
 SetIfMissing("ASPNETCORE_URLS", "http://localhost:18888");
-SetIfMissing("ASPIRE_ALLOW_UNSECURED_TRANSPORT", "true");
 if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL")) &&
     string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ASPIRE_DASHBOARD_OTLP_HTTP_ENDPOINT_URL")))
 {
@@ -31,30 +30,32 @@ var redisConnection = ReferenceExpression.Create(
 IResourceBuilder<ProjectResource> bookingsApi = builder.AddProject<Projects.Bookings_API>("bookings-api")
     .WithReference(bookingsDb)
     .WithReference(transponderDb)
+    .WithHttpsEndpoint()
     .WithEnvironment("ConnectionStrings__Redis", redisConnection)
     .WaitForStart(redis);
 
 IResourceBuilder<ProjectResource> ordersApi = builder.AddProject<Projects.Orders_API>("orders-api")
     .WithReference(ordersDb)
     .WithReference(transponderDb)
+    .WithHttpsEndpoint()
     .WithEnvironment("ConnectionStrings__Redis", redisConnection)
     .WaitForStart(redis);
 
-_ = bookingsApi.WithEnvironment("TransponderDefaults__LocalAddress", bookingsApi.GetEndpoint("http"))
-    .WithEnvironment("TransponderDefaults__RemoteAddress", ordersApi.GetEndpoint("http"));
+_ = bookingsApi.WithEnvironment("TransponderDefaults__LocalAddress", bookingsApi.GetEndpoint("https"))
+    .WithEnvironment("TransponderDefaults__RemoteAddress", ordersApi.GetEndpoint("https"));
 
-_ = ordersApi.WithEnvironment("TransponderDefaults__LocalAddress", ordersApi.GetEndpoint("http"))
-    .WithEnvironment("TransponderDefaults__RemoteAddress", bookingsApi.GetEndpoint("http"));
+_ = ordersApi.WithEnvironment("TransponderDefaults__LocalAddress", ordersApi.GetEndpoint("https"))
+    .WithEnvironment("TransponderDefaults__RemoteAddress", bookingsApi.GetEndpoint("https"));
 
 builder.AddProject<Projects.Gateway_API>("gateway-api")
     .WithReference(bookingsApi)
     .WithReference(ordersApi)
     .WithEnvironment(
         "ReverseProxy__Clusters__bookings-cluster__Destinations__bookings-1__Address",
-        bookingsApi.GetEndpoint("http"))
+        bookingsApi.GetEndpoint("https"))
     .WithEnvironment(
         "ReverseProxy__Clusters__orders-cluster__Destinations__orders-1__Address",
-        ordersApi.GetEndpoint("http"));
+        ordersApi.GetEndpoint("https"));
 
 await builder.Build().RunAsync();
 
