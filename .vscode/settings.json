@@ -5,5 +5,9 @@
     "source.fixAll": "explicit"
   },
   "csharp.format.enable": true,
-  "csharp.organizeImportsOnFormat": true
+  "csharp.organizeImportsOnFormat": true,
+  "sonarlint.connectedMode.project": {
+    "connectionId": "ahmed-shehzad",
+    "projectKey": "Ahmed-Shehzad_Sol9"
+  }
 }
