@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Reflection;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -13,7 +14,7 @@ internal sealed class SagaReceiveEndpointHandler
     private static readonly MethodInfo InvokeMethod =
         typeof(SagaReceiveEndpointHandler).GetMethod(
             nameof(InvokeInternalAsync),
-            BindingFlags.NonPublic | BindingFlags.Static)
+            BindingFlags.Public | BindingFlags.Static)
         ?? throw new InvalidOperationException("Saga handler invoker method not found.");
 
     private readonly Uri _inputAddress;
@@ -40,9 +41,28 @@ internal sealed class SagaReceiveEndpointHandler
         ITransportMessage transportMessage = context.Message;
         string? messageTypeName = transportMessage.MessageType;
 
-        if (string.IsNullOrWhiteSpace(messageTypeName)) return;
+        if (string.IsNullOrWhiteSpace(messageTypeName))
+        {
+#if DEBUG
+            Trace.TraceWarning(
+                $"[Transponder] SagaReceiveEndpointHandler missing message type for {_inputAddress}.");
+#endif
+            return;
+        }
 
-        if (!_registry.TryGetHandlers(_inputAddress, messageTypeName, out IReadOnlyList<SagaMessageRegistration> registrations)) return;
+        if (!_registry.TryGetHandlers(_inputAddress, messageTypeName, out IReadOnlyList<SagaMessageRegistration> registrations))
+        {
+#if DEBUG
+            Trace.TraceWarning(
+                $"[Transponder] SagaReceiveEndpointHandler no handlers for {_inputAddress} messageType={messageTypeName}.");
+#endif
+            return;
+        }
+
+#if DEBUG
+        Trace.TraceInformation(
+            $"[Transponder] SagaReceiveEndpointHandler dispatching {registrations.Count} handler(s) for {_inputAddress} messageType={messageTypeName}.");
+#endif
 
         using IServiceScope scope = _scopeFactory.CreateScope();
 
@@ -71,7 +91,7 @@ internal sealed class SagaReceiveEndpointHandler
         }
     }
 
-    private async static Task InvokeInternalAsync<TSaga, TState, TMessage>(
+    public static async Task InvokeInternalAsync<TSaga, TState, TMessage>(
         IServiceProvider serviceProvider,
         SagaMessageRegistration registration,
         object message,
@@ -101,7 +121,14 @@ internal sealed class SagaReceiveEndpointHandler
         using IDisposable? scope = bus.BeginConsumeScope(messageContext);
 
         Guid? correlationId = consumeContext.CorrelationId ?? consumeContext.ConversationId;
-        if (!correlationId.HasValue) return;
+        if (!correlationId.HasValue)
+        {
+#if DEBUG
+            Trace.TraceWarning(
+                $"[Transponder] SagaReceiveEndpointHandler missing correlation id for messageType={typeof(TMessage).Name}.");
+#endif
+            return;
+        }
 
         ISagaRepository<TState> repository = serviceProvider.GetRequiredService<ISagaRepository<TState>>();
         TState? state = await repository.GetAsync(correlationId.Value, cancellationToken).ConfigureAwait(false);

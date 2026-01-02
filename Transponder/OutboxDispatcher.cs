@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Threading.Channels;
 
 using Transponder.Persistence;
@@ -168,11 +169,19 @@ public sealed class OutboxDispatcher : IAsyncDisposable
         string destinationKey,
         CancellationToken cancellationToken)
     {
+        string destination = message.DestinationAddress?.ToString()
+            ?? $"publish:{message.MessageType ?? "unknown"}";
+
         try
         {
             while (!cancellationToken.IsCancellationRequested)
                 try
                 {
+#if DEBUG
+                    Trace.TraceInformation(
+                        $"[Transponder] OutboxDispatcher dispatching messageId={message.MessageId:D} " +
+                        $"destination={destination} messageType={message.MessageType ?? "unknown"}.");
+#endif
                     await DispatchMessageAsync(message, cancellationToken).ConfigureAwait(false);
                     await MarkSentAsync(message.MessageId, cancellationToken).ConfigureAwait(false);
                     return;
@@ -181,8 +190,13 @@ public sealed class OutboxDispatcher : IAsyncDisposable
                 {
                     return;
                 }
-                catch
+                catch (Exception ex)
                 {
+#if DEBUG
+                    Trace.TraceWarning(
+                        $"[Transponder] OutboxDispatcher dispatch failed messageId={message.MessageId:D} " +
+                        $"destination={destination} error={ex.GetType().Name}: {ex.Message}");
+#endif
                     await Task.Delay(_options.RetryDelay, cancellationToken).ConfigureAwait(false);
                 }
         }

@@ -9,6 +9,205 @@ Multi-project .NET solution with a modular monolith layout: Bookings and Orders 
 - Library projects for messaging/transports, persistence, and cross-cutting helpers.
 - See `Intercessor/README.md` and `Verifier/README.md` for those libraries.
 
+## Libraries usage guide
+This solution ships with several internal libraries. Each question below includes a short code snippet.
+
+### Transponder (messaging, gRPC, outbox)
+#### What to use?
+Use `IRequestClient<T>`, `IPublishEndpoint`, and `ISagaMessageHandler<TState, TMessage>`.
+```csharp
+IRequestClient<CreateBookingRequest> client =
+    _clientFactory.CreateRequestClient<CreateBookingRequest>();
+```
+
+#### How to use?
+Register Transponder + gRPC in `Program.cs`, then map the gRPC service.
+```csharp
+builder.Services.AddTransponder(localAddress, options =>
+{
+    options.TransportBuilder.UseGrpc(localAddress, remoteAddresses);
+    options.UseOutbox();
+});
+app.MapGrpcService<GrpcTransportService>();
+```
+
+#### When to use?
+Use it for cross-module workflows or request/response between services.
+```csharp
+CreateBookingResponse response = await client
+    .GetResponseAsync<CreateBookingResponse>(new CreateBookingRequest(order.Id, order.CustomerName), ct);
+```
+
+#### Where to use?
+Transport config lives in API startup; requests live in Application handlers.
+```csharp
+// API startup
+ConfigureTransponder(builder);
+
+// Application handler
+public sealed class CreateOrderCommandHandler : ICommandHandler<CreateOrderCommand, OrderDto> { }
+```
+
+#### Why to use?
+It provides resilience and transport abstraction (outbox, retries, gRPC).
+```csharp
+options.UseOutbox();
+options.UsePersistedMessageScheduler();
+```
+
+### Intercessor (mediator + pipeline)
+#### What to use?
+Use commands, queries, and handlers.
+```csharp
+public sealed record GetOrdersQuery() : IQuery<IReadOnlyList<OrderDto>>;
+public sealed class GetOrdersQueryHandler : IQueryHandler<GetOrdersQuery, IReadOnlyList<OrderDto>> { }
+```
+
+#### How to use?
+Register Intercessor and scan the Application assembly.
+```csharp
+services.AddIntercessor(options =>
+{
+    options.RegisterFromAssembly(typeof(OrdersApplication).Assembly);
+});
+```
+
+#### When to use?
+Use it when a controller should delegate to application logic.
+```csharp
+public async Task<IActionResult> GetAsync() =>
+    Ok(await _sender.SendAsync(new GetOrdersQuery()));
+```
+
+#### Where to use?
+Handlers and behaviors live in Application, controllers in API.
+```csharp
+// Orders.Application
+public sealed class CreateOrderCommandHandler : ICommandHandler<CreateOrderCommand, OrderDto> { }
+```
+
+#### Why to use?
+It centralizes cross-cutting concerns via pipeline behaviors.
+```csharp
+services.AddIntercessor(options =>
+{
+    options.RegisterFromAssembly(typeof(OrdersApplication).Assembly);
+    options.AddBehavior<LoggingBehavior<,>>();
+});
+```
+
+### Verifier (validation)
+#### What to use?
+Use `AbstractValidator<T>` and rule definitions.
+```csharp
+public sealed class CreateOrderCommandValidator : AbstractValidator<CreateOrderCommand> { }
+```
+
+#### How to use?
+Define rules per request.
+```csharp
+_ = RuleFor(x => x.TotalAmount)
+    .Must(amount => amount > 0, "TotalAmount must be greater than zero.");
+```
+
+#### When to use?
+Use validators for all commands/queries that accept input.
+```csharp
+public sealed record CreateOrderCommand(string CustomerName, decimal TotalAmount) : ICommand<OrderDto>;
+```
+
+#### Where to use?
+Validators live in Application next to the command/query.
+```csharp
+// Orders.Application/Commands/CreateOrder/CreateOrderCommand.cs
+public sealed class CreateOrderCommandValidator : AbstractValidator<CreateOrderCommand> { }
+```
+
+#### Why to use?
+Consistent validation ensures uniform error handling.
+```csharp
+// Intercessor registers ValidationBehavior automatically.
+```
+
+### Sol9.Contracts (shared message contracts)
+#### What to use?
+Use shared message records for cross-module calls.
+```csharp
+public sealed record CreateBookingRequest(Guid OrderId, string CustomerName) : ICorrelatedMessage;
+```
+
+#### How to use?
+Reference the contracts package/project from both producer and consumer.
+```csharp
+using Sol9.Contracts.Bookings;
+```
+
+#### When to use?
+When a message crosses module boundaries.
+```csharp
+await client.GetResponseAsync<CreateBookingResponse>(new CreateBookingRequest(order.Id, order.CustomerName), ct);
+```
+
+#### Where to use?
+Define in `Sol9.Contracts`, reference from APIs/Application.
+```csharp
+// Sol9.Contracts/Bookings/CreateBookingRequest.cs
+```
+
+#### Why to use?
+Shared contracts prevent schema drift between services.
+```csharp
+// Single source of truth for message shape.
+```
+
+### Sol9.ServiceDefaults (host defaults)
+#### What to use?
+Use `AddServiceDefaults()` for logging/telemetry defaults.
+```csharp
+builder.AddServiceDefaults();
+```
+
+#### How to use?
+Call it once in each API `Program.cs`.
+```csharp
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+builder.AddServiceDefaults();
+```
+
+#### When to use?
+Always for hosted APIs (Orders/Bookings/Gateway).
+```csharp
+// Program.cs
+builder.AddServiceDefaults();
+```
+
+#### Where to use?
+At API startup before registering custom services.
+```csharp
+builder.AddServiceDefaults();
+builder.Services.AddControllers();
+```
+
+#### Why to use?
+It standardizes diagnostics and configuration conventions.
+```csharp
+// Consistent telemetry/logging across all services.
+```
+
+## Best practices and recommendations
+- Prefer HTTPS endpoints for gRPC so HTTP/2 is enabled and reliable.
+```csharp
+_ = bookingsApi.WithEnvironment("TransponderDefaults__LocalAddress", bookingsApi.GetEndpoint("https"));
+```
+- Keep handlers small: orchestration in Application, persistence in Infrastructure, HTTP in API.
+- Use outbox for cross-module messaging and make handlers idempotent.
+```csharp
+options.UseOutbox();
+```
+- Ensure only one validator registration per request to avoid duplicate errors.
+- Put message types in `Sol9.Contracts` and keep them backward compatible.
+- Use OpenTelemetry scopes and `Activity.AddException` for failure visibility.
+
 ## Stack
 - Language: C# (.NET)
 - Frameworks: ASP.NET Core, gRPC, Entity Framework Core, .NET Aspire, YARP, Transponder

@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 using Grpc.Core;
 
 using Transponder.Transports.Abstractions;
@@ -22,8 +24,19 @@ public sealed class GrpcTransportService : Transport.TransportBase
 
         var destination = new Uri(request.Destination);
 
-        if (!_host.TryGetEndpoint(destination, out GrpcReceiveEndpoint endpoint)) throw new RpcException(new Status(StatusCode.NotFound, "No matching receive endpoint."));
+        if (!_host.TryGetEndpoint(destination, out GrpcReceiveEndpoint endpoint))
+        {
+#if DEBUG
+            Trace.TraceWarning(
+                $"[Transponder] GrpcTransportService no endpoint for destination {destination}.");
+#endif
+            throw new RpcException(new Status(StatusCode.NotFound, "No matching receive endpoint."));
+        }
 
+#if DEBUG
+        Trace.TraceInformation(
+            $"[Transponder] GrpcTransportService dispatching to {destination}.");
+#endif
         ITransportMessage message = GrpcTransportMessageMapper.FromProto(request.Message);
         await endpoint.HandleAsync(message, _host.Address, destination, context.CancellationToken).ConfigureAwait(false);
         return new SendResponse();
@@ -34,6 +47,10 @@ public sealed class GrpcTransportService : Transport.TransportBase
         ITransportMessage message = GrpcTransportMessageMapper.FromProto(request.Message);
         IReadOnlyCollection<GrpcReceiveEndpoint> endpoints = _host.GetEndpoints();
 
+#if DEBUG
+        Trace.TraceInformation(
+            $"[Transponder] GrpcTransportService publishing to {endpoints.Count} endpoints.");
+#endif
         foreach (GrpcReceiveEndpoint endpoint in endpoints)
             await endpoint.HandleAsync(message, _host.Address, endpoint.InputAddress, context.CancellationToken)
                 .ConfigureAwait(false);

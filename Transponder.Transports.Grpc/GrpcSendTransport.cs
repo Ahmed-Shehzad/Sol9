@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 using Grpc.Net.Client;
 
 using Transponder.Transports.Abstractions;
@@ -26,6 +28,26 @@ internal sealed class GrpcSendTransport : ISendTransport
             Message = GrpcTransportMessageMapper.ToProto(message)
         };
 
-        _ = await _client.SendAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
+        try
+        {
+#if DEBUG
+            Trace.TraceInformation(
+                $"[Transponder] GrpcSendTransport sending to {_destination} messageType={message.MessageType ?? "unknown"}.");
+#endif
+            _ = await _client.SendAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
+#if DEBUG
+            Trace.TraceInformation(
+                $"[Transponder] GrpcSendTransport sent to {_destination} messageType={message.MessageType ?? "unknown"}.");
+#endif
+        }
+        catch (Exception ex)
+        {
+#if DEBUG
+            Trace.TraceError(
+                $"[Transponder] GrpcSendTransport failed to send to {_destination} " +
+                $"messageType={message.MessageType ?? "unknown"} error={ex.GetType().Name}: {ex.Message}");
+#endif
+            throw;
+        }
     }
 }

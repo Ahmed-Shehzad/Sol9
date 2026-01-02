@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 
 using Transponder.Abstractions;
 using Transponder.Transports.Abstractions;
@@ -14,7 +15,7 @@ internal sealed class RequestClient<TRequest> : IRequestClient<TRequest>
     private readonly Uri _destinationAddress;
     private readonly TimeSpan _timeout;
     private readonly ConcurrentDictionary<Guid, PendingRequest> _pendingRequests = new();
-    private readonly object _sync = new();
+    private readonly Lock _sync = new();
     private IReceiveEndpoint? _responseEndpoint;
     private Uri? _responseAddress;
 
@@ -39,7 +40,17 @@ internal sealed class RequestClient<TRequest> : IRequestClient<TRequest>
     {
         ArgumentNullException.ThrowIfNull(request);
 
+#if DEBUG
+        Trace.TraceInformation(
+            $"[Transponder] RequestClient<{typeof(TRequest).Name}> starting. Destination={_destinationAddress}");
+#endif
+
         await EnsureResponseEndpointAsync(cancellationToken).ConfigureAwait(false);
+
+#if DEBUG
+        Trace.TraceInformation(
+            $"[Transponder] RequestClient<{typeof(TRequest).Name}> response endpoint ready. ResponseAddress={_responseAddress}");
+#endif
 
         var requestId = Guid.NewGuid();
         var pending = new PendingRequest(typeof(TResponse));
@@ -63,6 +74,11 @@ internal sealed class RequestClient<TRequest> : IRequestClient<TRequest>
                     headers,
                     cancellationToken)
                 .ConfigureAwait(false);
+
+#if DEBUG
+            Trace.TraceInformation(
+                $"[Transponder] RequestClient<{typeof(TRequest).Name}> sent request. RequestId={requestId:D}");
+#endif
 
             var delayTask = Task.Delay(_timeout, cancellationToken);
             Task completed = await Task.WhenAny(pending.Task, delayTask).ConfigureAwait(false);
@@ -115,15 +131,31 @@ internal sealed class RequestClient<TRequest> : IRequestClient<TRequest>
         using IDisposable? scope = _bus.BeginConsumeScope(messageContext);
 
         if (!TryGetRequestId(message, out Guid requestId) || !_pendingRequests.TryGetValue(requestId, out PendingRequest? pending))
+        {
+#if DEBUG
+            Trace.TraceWarning(
+                $"[Transponder] RequestClient<{typeof(TRequest).Name}> response ignored. " +
+                $"HasRequestId={TryGetRequestId(message, out _)} " +
+                $"MessageType={message.MessageType ?? "unknown"}");
+#endif
             return Task.CompletedTask;
+        }
 
         try
         {
+#if DEBUG
+            Trace.TraceInformation(
+                $"[Transponder] RequestClient<{typeof(TRequest).Name}> response received. RequestId={requestId:D}");
+#endif
             object response = _serializer.Deserialize(message.Body.Span, pending.ResponseType);
             pending.TrySetResult(response);
         }
         catch (Exception ex)
         {
+#if DEBUG
+            Trace.TraceError(
+                $"[Transponder] RequestClient<{typeof(TRequest).Name}> response deserialize failed. RequestId={requestId:D} Error={ex.Message}");
+#endif
             string responseTypeName = pending.ResponseType.FullName ?? pending.ResponseType.Name;
             string messageTypeName = message.MessageType ?? "unknown";
             var wrapped = new InvalidOperationException(
