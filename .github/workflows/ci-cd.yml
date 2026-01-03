@@ -1,0 +1,79 @@
+name: ci-cd
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
+jobs:
+  build_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore
+        run: dotnet restore Sol9.slnx
+
+      - name: Build
+        run: dotnet build Sol9.slnx -c Release --no-restore
+
+      - name: Test
+        run: dotnet test Sol9.slnx -c Release --no-build --verbosity normal
+
+  publish:
+    if: github.ref == 'refs/heads/main'
+    needs: build_test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore Sol9.slnx
+
+      - name: Publish Bookings API
+        run: dotnet publish Bookings.API/Bookings.API.csproj -c Release -o artifacts/bookings-api
+
+      - name: Publish Orders API
+        run: dotnet publish Orders.API/Orders.API.csproj -c Release -o artifacts/orders-api
+
+      - name: Publish Gateway API
+        run: dotnet publish Gateway.API/Gateway.API.csproj -c Release -o artifacts/gateway-api
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-artifacts
+          path: artifacts
