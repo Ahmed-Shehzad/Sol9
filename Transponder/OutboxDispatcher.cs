@@ -196,6 +196,8 @@ public sealed class OutboxDispatcher : IAsyncDisposable
                     Trace.TraceWarning(
                         $"[Transponder] OutboxDispatcher dispatch failed messageId={message.MessageId:D} " +
                         $"destination={destination} error={ex.GetType().Name}: {ex.Message}");
+#else
+                    _ = ex;
 #endif
                     await Task.Delay(_options.RetryDelay, cancellationToken).ConfigureAwait(false);
                 }
