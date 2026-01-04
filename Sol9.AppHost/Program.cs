@@ -11,8 +11,10 @@ IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(ar
 IResourceBuilder<ParameterResource> pgUser = builder.AddParameter("postgres-user", "postgres");
 IResourceBuilder<ParameterResource> pgPassword = builder.AddParameter("postgres-password", "postgres", secret: true);
 IResourceBuilder<ParameterResource> redisPassword = builder.AddParameter("redis-password", "redis", secret: true);
+
 IResourceBuilder<PostgresServerResource> postgres = builder.AddPostgres("postgres", pgUser, pgPassword, 5432)
     .WithDataBindMount("./.data/postgres");
+
 IResourceBuilder<PostgresDatabaseResource> bookingsDb = postgres.AddDatabase("bookings");
 IResourceBuilder<PostgresDatabaseResource> ordersDb = postgres.AddDatabase("orders");
 
@@ -24,6 +26,7 @@ IResourceBuilder<ContainerResource> redis = builder.AddContainer("redis", "redis
 EndpointReference redisEndpoint = redis.GetEndpoint("tcp");
 EndpointReferenceExpression redisHost = redisEndpoint.Property(EndpointProperty.Host);
 EndpointReferenceExpression redisPort = redisEndpoint.Property(EndpointProperty.Port);
+
 var redisConnection = ReferenceExpression.Create(
     $"{redisHost}:{redisPort},password={redisPassword}");
 
@@ -41,23 +44,23 @@ IResourceBuilder<ProjectResource> ordersApi = builder.AddProject<Projects.Orders
     .WithEnvironment("ConnectionStrings__Redis", redisConnection)
     .WaitForStart(redis);
 
-const string Https = "https";
+const string https = "https";
 
-_ = bookingsApi.WithEnvironment("TransponderDefaults__LocalAddress", bookingsApi.GetEndpoint(Https))
-    .WithEnvironment("TransponderDefaults__RemoteAddress", ordersApi.GetEndpoint(Https));
+_ = bookingsApi.WithEnvironment("TransponderDefaults__LocalAddress", bookingsApi.GetEndpoint(https))
+    .WithEnvironment("TransponderDefaults__RemoteAddress", ordersApi.GetEndpoint(https));
 
-_ = ordersApi.WithEnvironment("TransponderDefaults__LocalAddress", ordersApi.GetEndpoint(Https))
-    .WithEnvironment("TransponderDefaults__RemoteAddress", bookingsApi.GetEndpoint(Https));
+_ = ordersApi.WithEnvironment("TransponderDefaults__LocalAddress", ordersApi.GetEndpoint(https))
+    .WithEnvironment("TransponderDefaults__RemoteAddress", bookingsApi.GetEndpoint(https));
 
 builder.AddProject<Projects.Gateway_API>("gateway-api")
     .WithReference(bookingsApi)
     .WithReference(ordersApi)
     .WithEnvironment(
         "ReverseProxy__Clusters__bookings-cluster__Destinations__bookings-1__Address",
-        bookingsApi.GetEndpoint(Https))
+        bookingsApi.GetEndpoint(https))
     .WithEnvironment(
         "ReverseProxy__Clusters__orders-cluster__Destinations__orders-1__Address",
-        ordersApi.GetEndpoint(Https));
+        ordersApi.GetEndpoint(https));
 
 await builder.Build().RunAsync();
 
