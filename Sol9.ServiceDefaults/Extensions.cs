@@ -22,6 +22,8 @@ namespace Sol9.ServiceDefaults;
 
 public static class Extensions
 {
+    private const string Ready = "ready";
+
     public static IHostApplicationBuilder AddServiceDefaults(this IHostApplicationBuilder builder)
     {
         ConfigureMessagePack();
@@ -132,17 +134,17 @@ public static class Extensions
 
             if (connection.Key.Contains("Redis", StringComparison.OrdinalIgnoreCase))
             {
-                _ = healthChecks.AddRedis(value, name: $"redis-{connection.Key}", tags: ["ready"]);
+                _ = healthChecks.AddRedis(value, name: $"redis-{connection.Key}", tags: [Ready]);
                 continue;
             }
 
-            _ = healthChecks.AddNpgSql(value, name: $"postgres-{connection.Key}", tags: ["ready"]);
+            _ = healthChecks.AddNpgSql(value, name: $"postgres-{connection.Key}", tags: [Ready]);
         }
 
         IConfigurationSection transponderDefaults = builder.Configuration.GetSection("TransponderDefaults");
-        if (Uri.TryCreate(transponderDefaults["LocalAddress"], UriKind.Absolute, out Uri? localAddress)) _ = healthChecks.AddUrlGroup(localAddress, name: "transponder-local", tags: ["ready"]);
+        if (Uri.TryCreate(transponderDefaults["LocalAddress"], UriKind.Absolute, out Uri? localAddress)) _ = healthChecks.AddUrlGroup(localAddress, name: "transponder-local", tags: [Ready]);
 
-        if (Uri.TryCreate(transponderDefaults["RemoteAddress"], UriKind.Absolute, out Uri? remoteAddress)) _ = healthChecks.AddUrlGroup(remoteAddress, name: "transponder-remote", tags: ["ready"]);
+        if (Uri.TryCreate(transponderDefaults["RemoteAddress"], UriKind.Absolute, out Uri? remoteAddress)) _ = healthChecks.AddUrlGroup(remoteAddress, name: "transponder-remote", tags: [Ready]);
     }
 
     private static IHostApplicationBuilder ConfigureOpenTelemetry(this IHostApplicationBuilder builder)

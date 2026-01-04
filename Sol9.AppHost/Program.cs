@@ -11,7 +11,8 @@ IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(ar
 IResourceBuilder<ParameterResource> pgUser = builder.AddParameter("postgres-user", "postgres");
 IResourceBuilder<ParameterResource> pgPassword = builder.AddParameter("postgres-password", "postgres", secret: true);
 IResourceBuilder<ParameterResource> redisPassword = builder.AddParameter("redis-password", "redis", secret: true);
-IResourceBuilder<PostgresServerResource> postgres = builder.AddPostgres("postgres", pgUser, pgPassword, 5432);
+IResourceBuilder<PostgresServerResource> postgres = builder.AddPostgres("postgres", pgUser, pgPassword, 5432)
+    .WithDataBindMount("./.data/postgres");
 IResourceBuilder<PostgresDatabaseResource> bookingsDb = postgres.AddDatabase("bookings");
 IResourceBuilder<PostgresDatabaseResource> ordersDb = postgres.AddDatabase("orders");
 
