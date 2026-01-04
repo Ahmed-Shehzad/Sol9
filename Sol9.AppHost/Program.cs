@@ -41,21 +41,23 @@ IResourceBuilder<ProjectResource> ordersApi = builder.AddProject<Projects.Orders
     .WithEnvironment("ConnectionStrings__Redis", redisConnection)
     .WaitForStart(redis);
 
-_ = bookingsApi.WithEnvironment("TransponderDefaults__LocalAddress", bookingsApi.GetEndpoint("https"))
-    .WithEnvironment("TransponderDefaults__RemoteAddress", ordersApi.GetEndpoint("https"));
+const string Https = "https";
 
-_ = ordersApi.WithEnvironment("TransponderDefaults__LocalAddress", ordersApi.GetEndpoint("https"))
-    .WithEnvironment("TransponderDefaults__RemoteAddress", bookingsApi.GetEndpoint("https"));
+_ = bookingsApi.WithEnvironment("TransponderDefaults__LocalAddress", bookingsApi.GetEndpoint(Https))
+    .WithEnvironment("TransponderDefaults__RemoteAddress", ordersApi.GetEndpoint(Https));
+
+_ = ordersApi.WithEnvironment("TransponderDefaults__LocalAddress", ordersApi.GetEndpoint(Https))
+    .WithEnvironment("TransponderDefaults__RemoteAddress", bookingsApi.GetEndpoint(Https));
 
 builder.AddProject<Projects.Gateway_API>("gateway-api")
     .WithReference(bookingsApi)
     .WithReference(ordersApi)
     .WithEnvironment(
         "ReverseProxy__Clusters__bookings-cluster__Destinations__bookings-1__Address",
-        bookingsApi.GetEndpoint("https"))
+        bookingsApi.GetEndpoint(Https))
     .WithEnvironment(
         "ReverseProxy__Clusters__orders-cluster__Destinations__orders-1__Address",
-        ordersApi.GetEndpoint("https"));
+        ordersApi.GetEndpoint(Https));
 
 await builder.Build().RunAsync();
 
