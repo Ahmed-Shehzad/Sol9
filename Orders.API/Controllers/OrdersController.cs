@@ -30,11 +30,12 @@ public class OrdersController : ControllerBase
     [ProducesResponseType(typeof(IReadOnlyList<OrderDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<OrderDto>>> GetAsync(CancellationToken cancellationToken = default)
     {
-        IReadOnlyList<OrderDto> orders = await _sender.SendAsync(new GetOrdersQuery(), cancellationToken).ConfigureAwait(false);
+        const string key = nameof(GetOrdersQuery);
+        IReadOnlyList<OrderDto> orders = await _sender.SendAsync(new GetOrdersQuery(key), cancellationToken).ConfigureAwait(false);
         return Ok(orders);
     }
 
-    [HttpGet("{id:guid}")]
+    [HttpGet("{id}")]
     [ProducesResponseType(typeof(OrderDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<OrderDto>> GetByIdAsync([FromRoute] Ulid id, CancellationToken cancellationToken = default)
@@ -54,7 +55,7 @@ public class OrdersController : ControllerBase
         return Ok(order);
     }
 
-    [HttpPost("{id:guid}")]
+    [HttpPost("{id}")]
     [ProducesResponseType(typeof(Ulid), StatusCodes.Status200OK)]
     public async Task<ActionResult<Ulid>> CancelOrderAsync([FromRoute] Ulid id, CancellationToken cancellationToken = default)
     {

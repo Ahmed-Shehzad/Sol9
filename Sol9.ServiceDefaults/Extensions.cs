@@ -23,6 +23,7 @@ public static class Extensions
         _ = builder.ConfigureOpenTelemetry();
 
         _ = builder.Services.AddServiceDiscovery();
+        _ = builder.Services.AddGrpc();
 
         _ = builder.Services.ConfigureHttpClientDefaults(http =>
         {

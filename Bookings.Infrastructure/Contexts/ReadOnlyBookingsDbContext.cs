@@ -17,10 +17,14 @@ public class ReadOnlyBookingsDbContext : DbContext, IReadOnlyBookingsDbContext
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
-        configurationBuilder
-            .Properties<Ulid>()
+        _ = configurationBuilder.Properties<Ulid>()
             .HaveConversion<UlidToStringConverter>()
-            .HaveConversion<UlidToBytesConverter>();
+            .HaveMaxLength(26)
+            .HaveColumnType("character(26)");
+        _ = configurationBuilder.Properties<Ulid?>()
+            .HaveConversion<NullableUlidToStringConverter>()
+            .HaveMaxLength(26)
+            .HaveColumnType("character(26)");
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

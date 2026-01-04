@@ -49,7 +49,7 @@ public class RedisCachingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequ
         _logger.LogTrace("[Redis] Cache miss for {Name}", typeof(TRequest).Name);
         TResponse response = await next();
 
-        _ = await _redisDb.StringSetAsync(key, JsonSerializer.Serialize(response), _cacheDuration);
+        _ = await _redisDb.StringSetAsync(key, JsonSerializer.Serialize(response),  request.CacheDuration ?? _cacheDuration);
         return response;
     }
 }

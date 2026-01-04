@@ -77,6 +77,8 @@ builder.Services.AddGrpc();
 
 builder.Services.AddInfrastructure(builder.Configuration);
 
+builder.Services.AddOutputCache();
+
 ConfigureTransponder(builder);
 
 WebApplication app = builder.Build();

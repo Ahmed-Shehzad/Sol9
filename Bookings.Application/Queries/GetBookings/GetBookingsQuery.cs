@@ -9,7 +9,7 @@ using Verifier;
 
 namespace Bookings.Application.Queries.GetBookings;
 
-public sealed record GetBookingsQuery : IQuery<IReadOnlyList<BookingDto>>;
+public sealed record GetBookingsQuery(string CacheKey, TimeSpan? CacheDuration = null) : ICachedQuery<IReadOnlyList<BookingDto>>;
 
 public sealed class GetBookingsQueryValidator : AbstractValidator<GetBookingsQuery>
 {

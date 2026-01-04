@@ -9,7 +9,7 @@ using Verifier;
 
 namespace Orders.Application.Queries.GetOrders;
 
-public sealed record GetOrdersQuery : IQuery<IReadOnlyList<OrderDto>>;
+public sealed record GetOrdersQuery(string CacheKey, TimeSpan? CacheDuration = null) : ICachedQuery<IReadOnlyList<OrderDto>>;
 
 public sealed class GetOrdersQueryValidator : AbstractValidator<GetOrdersQuery>
 {

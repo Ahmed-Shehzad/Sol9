@@ -75,6 +75,8 @@ builder.Services.AddApiVersioning(options =>
 builder.Services.AddOpenApi("v1", options => options.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi3_1);
 builder.Services.AddOpenApi("v2", options => options.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi3_1);
 
+builder.Services.AddOutputCache();
+
 WebApplication app = builder.Build();
 
 if (app.Environment.IsDevelopment())

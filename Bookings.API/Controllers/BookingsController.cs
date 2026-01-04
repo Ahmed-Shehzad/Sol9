@@ -25,16 +25,16 @@ public class BookingsController : ControllerBase
         _sender = sender;
     }
 
-
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<BookingDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<BookingDto>>> GetAsync()
     {
-        IReadOnlyList<BookingDto> bookings = await _sender.SendAsync(new GetBookingsQuery()).ConfigureAwait(false);
+        const string key = nameof(GetBookingsQuery);
+        IReadOnlyList<BookingDto> bookings = await _sender.SendAsync(new GetBookingsQuery(key)).ConfigureAwait(false);
         return Ok(bookings);
     }
 
-    [HttpGet("order/{orderId:guid}")]
+    [HttpGet("order/{orderId}")]
     [ProducesResponseType(typeof(BookingDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<BookingDto>> GetByOrderIdAsync(Ulid orderId)
@@ -48,6 +48,7 @@ public class BookingsController : ControllerBase
     public async Task<ActionResult<BookingDto>> CreateAsync([FromBody] CreateBookingRequest request)
     {
         BookingDto booking = await _sender.SendAsync(new CreateBookingCommand(request.OrderId, request.CustomerName)).ConfigureAwait(false);
-        return CreatedAtAction(nameof(GetByOrderIdAsync), new { orderId = booking.OrderId }, booking);
+        const string action = nameof(GetByOrderIdAsync);
+        return CreatedAtAction(action, new { orderId = booking.OrderId }, booking);
     }
 }
