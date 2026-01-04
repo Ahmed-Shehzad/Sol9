@@ -8,7 +8,7 @@ public interface IScheduledMessage
     /// <summary>
     /// Gets the scheduling token identifier.
     /// </summary>
-    Guid TokenId { get; }
+    Ulid TokenId { get; }
 
     /// <summary>
     /// Gets the message type identifier.

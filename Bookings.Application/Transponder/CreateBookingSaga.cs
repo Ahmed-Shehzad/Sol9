@@ -10,9 +10,9 @@ namespace Bookings.Application.Transponder;
 
 public sealed class CreateBookingSagaState : ISagaState
 {
-    public Guid CorrelationId { get; set; }
-    public Guid? ConversationId { get; set; }
-    public Guid OrderId { get; set; }
+    public Ulid CorrelationId { get; set; }
+    public Ulid? ConversationId { get; set; }
+    public Ulid OrderId { get; set; }
 }
 
 public sealed class CreateBookingSaga : ISagaMessageHandler<CreateBookingSagaState, CreateBookingRequest>

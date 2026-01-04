@@ -88,22 +88,22 @@ internal sealed class KafkaReceiveEndpoint : IReceiveEndpoint
                 _ = headers.Remove("ContentType");
                 string? messageType = headers.TryGetValue("MessageType", out object? mt) ? mt as string : null;
                 _ = headers.Remove("MessageType");
-                Guid? correlationId = headers.TryGetValue("CorrelationId", out object? corr)
-                                      && Guid.TryParse(corr?.ToString(), out Guid parsedCorrelationId)
+                Ulid? correlationId = headers.TryGetValue("CorrelationId", out object? corr)
+                                      && Ulid.TryParse(corr?.ToString(), out Ulid parsedCorrelationId)
                     ? parsedCorrelationId
-                    : (Guid?)null;
+                    : (Ulid?)null;
                 _ = headers.Remove("CorrelationId");
-                Guid? conversationId = headers.TryGetValue("ConversationId", out object? conv)
-                                       && Guid.TryParse(conv?.ToString(), out Guid parsedConversationId)
+                Ulid? conversationId = headers.TryGetValue("ConversationId", out object? conv)
+                                       && Ulid.TryParse(conv?.ToString(), out Ulid parsedConversationId)
                     ? parsedConversationId
-                    : (Guid?)null;
+                    : (Ulid?)null;
                 _ = headers.Remove("ConversationId");
 
                 var transportMessage = new TransportMessage(
                     result.Message.Value ?? [],
                     contentType,
                     headers,
-                    Guid.TryParse(result.Message.Key, out Guid messageId) ? messageId : null,
+                    Ulid.TryParse(result.Message.Key, out Ulid messageId) ? messageId : null,
                     correlationId,
                     conversationId,
                     messageType,

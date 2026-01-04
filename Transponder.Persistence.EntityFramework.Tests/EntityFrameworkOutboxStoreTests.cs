@@ -12,8 +12,8 @@ public sealed class EntityFrameworkOutboxStoreTests
         await using EntityFrameworkTestDbContext context = CreateContext(nameof(GetPendingAsync_Returns_Unsent_MessagesAsync));
         var store = new EntityFrameworkOutboxStore(context);
 
-        var pending = new OutboxMessage(Guid.NewGuid(), new byte[] { 1 });
-        var sent = new OutboxMessage(Guid.NewGuid(), new byte[] { 2 }, new OutboxMessageOptions
+        var pending = new OutboxMessage(Ulid.NewUlid(), new byte[] { 1 });
+        var sent = new OutboxMessage(Ulid.NewUlid(), new byte[] { 2 }, new OutboxMessageOptions
         {
             SentTime = DateTimeOffset.UtcNow
         });

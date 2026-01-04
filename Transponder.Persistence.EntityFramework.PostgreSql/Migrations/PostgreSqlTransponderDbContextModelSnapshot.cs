@@ -18,8 +18,8 @@ public partial class PostgreSqlTransponderDbContextModelSnapshot : ModelSnapshot
 
         _ = modelBuilder.Entity("Transponder.Persistence.EntityFramework.InboxStateEntity", b =>
         {
-            _ = b.Property<Guid>("MessageId")
-                .HasColumnType("uuid");
+            _ = b.Property<Ulid>("MessageId")
+                .HasColumnType("character(26)");
 
             _ = b.Property<string>("ConsumerId")
                 .IsRequired()
@@ -39,14 +39,14 @@ public partial class PostgreSqlTransponderDbContextModelSnapshot : ModelSnapshot
 
         _ = modelBuilder.Entity("Transponder.Persistence.EntityFramework.OutboxMessageEntity", b =>
         {
-            _ = b.Property<Guid>("MessageId")
-                .HasColumnType("uuid");
+            _ = b.Property<Ulid>("MessageId")
+                .HasColumnType("character(26)");
 
-            _ = b.Property<Guid?>("CorrelationId")
-                .HasColumnType("uuid");
+            _ = b.Property<Ulid?>("CorrelationId")
+                .HasColumnType("character(26)");
 
-            _ = b.Property<Guid?>("ConversationId")
-                .HasColumnType("uuid");
+            _ = b.Property<Ulid?>("ConversationId")
+                .HasColumnType("character(26)");
 
             _ = b.Property<string>("SourceAddress")
                 .HasMaxLength(2048)
@@ -82,8 +82,8 @@ public partial class PostgreSqlTransponderDbContextModelSnapshot : ModelSnapshot
 
         _ = modelBuilder.Entity("Transponder.Persistence.EntityFramework.SagaStateEntity", b =>
         {
-            _ = b.Property<Guid>("CorrelationId")
-                .HasColumnType("uuid");
+            _ = b.Property<Ulid>("CorrelationId")
+                .HasColumnType("character(26)");
 
             _ = b.Property<string>("StateType")
                 .IsRequired()
@@ -94,8 +94,8 @@ public partial class PostgreSqlTransponderDbContextModelSnapshot : ModelSnapshot
                 .IsRequired()
                 .HasColumnType("jsonb");
 
-            _ = b.Property<Guid?>("ConversationId")
-                .HasColumnType("uuid");
+            _ = b.Property<Ulid?>("ConversationId")
+                .HasColumnType("character(26)");
 
             _ = b.Property<DateTimeOffset>("UpdatedTime")
                 .HasColumnType("timestamp with time zone");
@@ -109,8 +109,8 @@ public partial class PostgreSqlTransponderDbContextModelSnapshot : ModelSnapshot
 
         _ = modelBuilder.Entity("Transponder.Persistence.EntityFramework.ScheduledMessageEntity", b =>
         {
-            _ = b.Property<Guid>("TokenId")
-                .HasColumnType("uuid");
+            _ = b.Property<Ulid>("TokenId")
+                .HasColumnType("character(26)");
 
             _ = b.Property<string>("MessageType")
                 .IsRequired()

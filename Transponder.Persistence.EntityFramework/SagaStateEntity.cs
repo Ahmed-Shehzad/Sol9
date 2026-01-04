@@ -11,9 +11,9 @@ public sealed class SagaStateEntity
 {
     private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
 
-    public Guid CorrelationId { get; set; }
+    public Ulid CorrelationId { get; set; }
 
-    public Guid? ConversationId { get; set; }
+    public Ulid? ConversationId { get; set; }
 
     public string StateType { get; set; } = string.Empty;
 

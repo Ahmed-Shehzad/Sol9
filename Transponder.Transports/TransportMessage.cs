@@ -11,9 +11,9 @@ public sealed class TransportMessage : ITransportMessage
         ReadOnlyMemory<byte> body,
         string? contentType = null,
         IReadOnlyDictionary<string, object?>? headers = null,
-        Guid? messageId = null,
-        Guid? correlationId = null,
-        Guid? conversationId = null,
+        Ulid? messageId = null,
+        Ulid? correlationId = null,
+        Ulid? conversationId = null,
         string? messageType = null,
         DateTimeOffset? sentTime = null)
     {
@@ -37,13 +37,13 @@ public sealed class TransportMessage : ITransportMessage
     public IReadOnlyDictionary<string, object?> Headers { get; }
 
     /// <inheritdoc />
-    public Guid? MessageId { get; }
+    public Ulid? MessageId { get; }
 
     /// <inheritdoc />
-    public Guid? CorrelationId { get; }
+    public Ulid? CorrelationId { get; }
 
     /// <inheritdoc />
-    public Guid? ConversationId { get; }
+    public Ulid? ConversationId { get; }
 
     /// <inheritdoc />
     public string? MessageType { get; }

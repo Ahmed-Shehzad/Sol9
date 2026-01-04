@@ -2,7 +2,7 @@ namespace Sol9.Core;
 
 public abstract class BaseEntity
 {
-    public Guid Id { get; private set; } = Guid.NewGuid();
+    public Ulid Id { get; private set; } = Ulid.NewUlid();
     public DateTime CreatedAtUtc { get; private set; } = DateTime.UtcNow;
     public DateTime UpdatedAtUtc { get; private set; } = DateTime.UtcNow;
     public DateTime? DeletedAtUtc { get; private set; } = null;

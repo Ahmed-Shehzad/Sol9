@@ -10,10 +10,10 @@ namespace Transponder.Persistence;
 public sealed class InMemorySagaRepository<TState> : ISagaRepository<TState>
     where TState : class, ISagaState
 {
-    private readonly ConcurrentDictionary<Guid, TState> _states = new();
+    private readonly ConcurrentDictionary<Ulid, TState> _states = new();
 
     /// <inheritdoc />
-    public Task<TState?> GetAsync(Guid correlationId, CancellationToken cancellationToken = default)
+    public Task<TState?> GetAsync(Ulid correlationId, CancellationToken cancellationToken = default)
     {
         _ = _states.TryGetValue(correlationId, out TState? state);
         return Task.FromResult(state);
@@ -24,14 +24,14 @@ public sealed class InMemorySagaRepository<TState> : ISagaRepository<TState>
     {
         ArgumentNullException.ThrowIfNull(state);
 
-        if (state.CorrelationId == Guid.Empty) throw new ArgumentException("CorrelationId must be provided.", nameof(state));
+        if (state.CorrelationId == Ulid.Empty) throw new ArgumentException("CorrelationId must be provided.", nameof(state));
 
         _states[state.CorrelationId] = state;
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
-    public Task DeleteAsync(Guid correlationId, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(Ulid correlationId, CancellationToken cancellationToken = default)
     {
         _ = _states.TryRemove(correlationId, out _);
         return Task.CompletedTask;

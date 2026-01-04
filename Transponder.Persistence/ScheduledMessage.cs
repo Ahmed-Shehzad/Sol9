@@ -11,7 +11,7 @@ public sealed class ScheduledMessage : IScheduledMessage
     private readonly IReadOnlyDictionary<string, object?> _headers;
 
     public ScheduledMessage(
-        Guid tokenId,
+        Ulid tokenId,
         string messageType,
         ReadOnlyMemory<byte> body,
         DateTimeOffset scheduledTime,
@@ -20,7 +20,7 @@ public sealed class ScheduledMessage : IScheduledMessage
         DateTimeOffset? createdTime = null,
         DateTimeOffset? dispatchedTime = null)
     {
-        if (tokenId == Guid.Empty) throw new ArgumentException("TokenId must be provided.", nameof(tokenId));
+        if (tokenId == Ulid.Empty) throw new ArgumentException("TokenId must be provided.", nameof(tokenId));
 
         if (string.IsNullOrWhiteSpace(messageType)) throw new ArgumentException("MessageType must be provided.", nameof(messageType));
 
@@ -37,7 +37,7 @@ public sealed class ScheduledMessage : IScheduledMessage
     }
 
     /// <inheritdoc />
-    public Guid TokenId { get; }
+    public Ulid TokenId { get; }
 
     /// <inheritdoc />
     public string MessageType { get; }

@@ -11,7 +11,7 @@ public enum BookingStatus
 
 public class Booking : AggregateRoot
 {
-    public Guid OrderId { get; private set; }
+    public Ulid OrderId { get; private set; }
     public string CustomerName { get; private set; } = string.Empty;
     public BookingStatus Status { get; private set; }
 
@@ -19,14 +19,14 @@ public class Booking : AggregateRoot
     {
     }
 
-    private Booking(Guid orderId, string customerName, BookingStatus status)
+    private Booking(Ulid orderId, string customerName, BookingStatus status)
     {
         OrderId = orderId;
         CustomerName = customerName;
         Status = status;
     }
 
-    public static Booking Create(Guid orderId, string customerName) => new(orderId, customerName, BookingStatus.Created);
+    public static Booking Create(Ulid orderId, string customerName) => new(orderId, customerName, BookingStatus.Created);
 
     public void MarkConfirmed() => Status = BookingStatus.Confirmed;
     public void MarkCancelled() => Status = BookingStatus.Cancelled;

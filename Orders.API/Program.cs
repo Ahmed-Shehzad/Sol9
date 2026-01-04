@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Linq;
 
 using Asp.Versioning;
 
@@ -25,6 +24,7 @@ using Transponder.Persistence.EntityFramework.PostgreSql.Abstractions;
 using Transponder.Persistence.Redis;
 using Transponder.Serilog;
 using Transponder.Transports.Grpc;
+using Cysharp.Serialization.Json;
 
 using Verifier.Exceptions;
 
@@ -45,7 +45,8 @@ builder.WebHost.ConfigureKestrel(options =>
 
 // Add services to the container.
 builder.AddServiceDefaults();
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new UlidJsonConverter()));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddProblemDetails();
 

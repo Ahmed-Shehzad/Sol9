@@ -47,7 +47,7 @@ public sealed class EntityFrameworkOutboxStore : IOutboxStore
 
     /// <inheritdoc />
     public async Task MarkSentAsync(
-        Guid messageId,
+        Ulid messageId,
         DateTimeOffset sentTime,
         CancellationToken cancellationToken = default)
     {

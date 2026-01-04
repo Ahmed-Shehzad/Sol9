@@ -5,7 +5,7 @@ using Orders.Domain.Entities;
 namespace Orders.Application.Dtos.Orders;
 
 public sealed record OrderDto(
-    [property: JsonPropertyName("id")] Guid Id,
+    [property: JsonPropertyName("id")] Ulid Id,
     [property: JsonPropertyName("customerName")] string CustomerName,
     [property: JsonPropertyName("totalAmount")] decimal TotalAmount,
     [property: JsonPropertyName("status")] OrderStatus Status,

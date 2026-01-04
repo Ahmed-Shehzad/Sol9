@@ -37,17 +37,17 @@ public class OrdersController : ControllerBase
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(OrderDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<OrderDto>> GetByIdAsync([FromRoute] Guid id, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<OrderDto>> GetByIdAsync([FromRoute] Ulid id, CancellationToken cancellationToken = default)
     {
         OrderDto? order = await _sender.SendAsync(new GetOrderByIdQuery(id), cancellationToken).ConfigureAwait(false);
         return order is null ? NotFound() : Ok(order);
     }
 
     [HttpPost]
-    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
-    public async Task<ActionResult<Guid>> CreateAsync([FromBody] CreateOrderRequest request, CancellationToken cancellationToken = default)
+    [ProducesResponseType(typeof(Ulid), StatusCodes.Status201Created)]
+    public async Task<ActionResult<Ulid>> CreateAsync([FromBody] CreateOrderRequest request, CancellationToken cancellationToken = default)
     {
-        Guid order = await _sender
+        Ulid order = await _sender
             .SendAsync(new CreateOrderCommand(request.CustomerName, request.TotalAmount), cancellationToken)
             .ConfigureAwait(false);
 
@@ -55,8 +55,8 @@ public class OrdersController : ControllerBase
     }
 
     [HttpPost("{id:guid}")]
-    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
-    public async Task<ActionResult<Guid>> CancelOrderAsync([FromRoute] Guid id, CancellationToken cancellationToken = default)
+    [ProducesResponseType(typeof(Ulid), StatusCodes.Status200OK)]
+    public async Task<ActionResult<Ulid>> CancelOrderAsync([FromRoute] Ulid id, CancellationToken cancellationToken = default)
     {
         _ = await _sender
             .SendAsync(new CancelOrderCommand(id), cancellationToken)

@@ -3,7 +3,7 @@ using Transponder.Abstractions;
 namespace Sol9.Contracts.Bookings;
 
 public sealed record CancelBookingResponse(
-    Guid BookingId,
-    Guid OrderId,
+    Ulid BookingId,
+    Ulid OrderId,
     int Status)
     : IMessage;

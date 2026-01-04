@@ -73,13 +73,13 @@ internal sealed class OpenTelemetryMessageScopeProvider : ITransponderMessageSco
     private static void SetTags(Activity activity, TransponderMessageContext context)
     {
         if (context.MessageId.HasValue)
-            _ = activity.SetTag("messaging.message_id", context.MessageId.Value.ToString("D"));
+            _ = activity.SetTag("messaging.message_id", context.MessageId.Value.ToString());
 
         if (context.CorrelationId.HasValue)
-            _ = activity.SetTag("messaging.correlation_id", context.CorrelationId.Value.ToString("D"));
+            _ = activity.SetTag("messaging.correlation_id", context.CorrelationId.Value.ToString());
 
         if (context.ConversationId.HasValue)
-            _ = activity.SetTag("messaging.conversation_id", context.ConversationId.Value.ToString("D"));
+            _ = activity.SetTag("messaging.conversation_id", context.ConversationId.Value.ToString());
 
         if (!string.IsNullOrWhiteSpace(context.MessageType))
             _ = activity.SetTag("messaging.message_type", context.MessageType);

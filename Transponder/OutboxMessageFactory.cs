@@ -25,7 +25,7 @@ internal static class OutboxMessageFactory
             : new Dictionary<string, object?>(options.Headers, StringComparer.OrdinalIgnoreCase);
 
         return new OutboxMessage(
-            options.MessageId ?? Guid.NewGuid(),
+            options.MessageId ?? Ulid.NewUlid(),
             body,
             new OutboxMessageOptions
             {

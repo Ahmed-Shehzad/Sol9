@@ -15,7 +15,7 @@ public sealed class OutboxDispatcher : IAsyncDisposable
     private readonly ITransportHostProvider _hostProvider;
     private readonly OutboxDispatchOptions _options;
     private readonly Channel<OutboxMessage> _channel;
-    private readonly ConcurrentDictionary<Guid, byte> _inflight = new();
+    private readonly ConcurrentDictionary<Ulid, byte> _inflight = new();
     private readonly ConcurrentDictionary<string, byte> _activeDestinations = new(StringComparer.OrdinalIgnoreCase);
     private readonly SemaphoreSlim _dispatchSlots;
     private CancellationTokenSource? _cts;
@@ -179,7 +179,7 @@ public sealed class OutboxDispatcher : IAsyncDisposable
                 {
 #if DEBUG
                     Trace.TraceInformation(
-                        $"[Transponder] OutboxDispatcher dispatching messageId={message.MessageId:D} " +
+                        $"[Transponder] OutboxDispatcher dispatching messageId={message.MessageId} " +
                         $"destination={destination} messageType={message.MessageType ?? "unknown"}.");
 #endif
                     await DispatchMessageAsync(message, cancellationToken).ConfigureAwait(false);
@@ -194,7 +194,7 @@ public sealed class OutboxDispatcher : IAsyncDisposable
                 {
 #if DEBUG
                     Trace.TraceWarning(
-                        $"[Transponder] OutboxDispatcher dispatch failed messageId={message.MessageId:D} " +
+                        $"[Transponder] OutboxDispatcher dispatch failed messageId={message.MessageId} " +
                         $"destination={destination} error={ex.GetType().Name}: {ex.Message}");
 #else
                     _ = ex;
@@ -210,7 +210,7 @@ public sealed class OutboxDispatcher : IAsyncDisposable
         }
     }
 
-    private async Task MarkSentAsync(Guid messageId, CancellationToken cancellationToken)
+    private async Task MarkSentAsync(Ulid messageId, CancellationToken cancellationToken)
     {
         await using IStorageSession session = await _sessionFactory.CreateSessionAsync(cancellationToken)
             .ConfigureAwait(false);

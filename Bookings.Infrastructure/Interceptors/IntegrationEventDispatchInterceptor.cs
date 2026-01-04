@@ -106,7 +106,7 @@ public sealed class IntegrationEventDispatchInterceptor : SaveChangesInterceptor
             .SelectMany(aggregate => aggregate.IntegrationEvents)
             .ToList();
 
-        var messageIds = new HashSet<Guid>();
+        var messageIds = new HashSet<Ulid>();
         var outboxMessages = new List<OutboxMessage>(integrationEvents.Count);
         foreach (IIntegrationEvent integrationEvent in integrationEvents)
         {
@@ -205,10 +205,10 @@ public sealed class IntegrationEventDispatchInterceptor : SaveChangesInterceptor
     private OutboxMessage CreateOutboxMessage(IIntegrationEvent integrationEvent)
     {
         Type messageType = integrationEvent.GetType();
-        Guid messageId = integrationEvent is IntegrationEvent integration
+        Ulid messageId = integrationEvent is IntegrationEvent integration
             ? integration.EventId
-            : Guid.NewGuid();
-        Guid? correlationId = integrationEvent is ICorrelatedMessage correlatedMessage
+            : Ulid.NewUlid();
+        Ulid? correlationId = integrationEvent is ICorrelatedMessage correlatedMessage
             ? correlatedMessage.CorrelationId
             : null;
 

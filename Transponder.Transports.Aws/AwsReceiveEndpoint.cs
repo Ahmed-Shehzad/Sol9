@@ -129,15 +129,15 @@ internal sealed class AwsReceiveEndpoint : IReceiveEndpoint
         string? messageType = headers.TryGetValue("MessageType", out object? mt) ? mt as string : null;
         _ = headers.Remove("MessageType");
 
-        Guid? correlationId = null;
+        Ulid? correlationId = null;
         if (headers.TryGetValue("CorrelationId", out object? corr) &&
-            Guid.TryParse(corr as string, out Guid corrId)) correlationId = corrId;
+            Ulid.TryParse(corr as string, out Ulid corrId)) correlationId = corrId;
 
         _ = headers.Remove("CorrelationId");
 
-        Guid? conversationId = null;
+        Ulid? conversationId = null;
         if (headers.TryGetValue("ConversationId", out object? conv) &&
-            Guid.TryParse(conv as string, out Guid convId)) conversationId = convId;
+            Ulid.TryParse(conv as string, out Ulid convId)) conversationId = convId;
 
         _ = headers.Remove("ConversationId");
 
@@ -147,7 +147,7 @@ internal sealed class AwsReceiveEndpoint : IReceiveEndpoint
             bodyBytes,
             contentType,
             headers,
-            Guid.TryParse(message.MessageId, out Guid parsedMessageId) ? parsedMessageId : null,
+            Ulid.TryParse(message.MessageId, out Ulid parsedMessageId) ? parsedMessageId : null,
             correlationId,
             conversationId,
             messageType,

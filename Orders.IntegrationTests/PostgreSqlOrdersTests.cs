@@ -97,7 +97,7 @@ public sealed class PostgreSqlOrdersTests : IAsyncLifetime
         IOrdersRepository repository = new OrdersRepository(context);
         var handler = new CreateOrderCommandHandler(repository);
 
-        Guid orderId = await handler.HandleAsync(new CreateOrderCommand(customerName, totalAmount), CancellationToken.None);
+        Ulid orderId = await handler.HandleAsync(new CreateOrderCommand(customerName, totalAmount), CancellationToken.None);
 
         Order? stored = await context.Orders.SingleOrDefaultAsync(o => o.Id == orderId);
         _ = stored.ShouldNotBeNull();

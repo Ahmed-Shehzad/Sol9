@@ -6,14 +6,14 @@ internal sealed class ConsumeSendEndpoint : ISendEndpoint
 {
     private readonly TransponderBus _bus;
     private readonly Uri _address;
-    private readonly Guid? _correlationId;
-    private readonly Guid? _conversationId;
+    private readonly Ulid? _correlationId;
+    private readonly Ulid? _conversationId;
 
     public ConsumeSendEndpoint(
         TransponderBus bus,
         Uri address,
-        Guid? correlationId,
-        Guid? conversationId)
+        Ulid? correlationId,
+        Ulid? conversationId)
     {
         _bus = bus ?? throw new ArgumentNullException(nameof(bus));
         _address = address ?? throw new ArgumentNullException(nameof(address));

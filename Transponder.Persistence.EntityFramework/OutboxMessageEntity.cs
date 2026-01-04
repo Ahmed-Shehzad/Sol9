@@ -18,13 +18,13 @@ public sealed class OutboxMessageEntity : IOutboxMessage
     private string? _headers;
 
     /// <inheritdoc />
-    public Guid MessageId { get; set; }
+    public Ulid MessageId { get; set; }
 
     /// <inheritdoc />
-    public Guid? CorrelationId { get; set; }
+    public Ulid? CorrelationId { get; set; }
 
     /// <inheritdoc />
-    public Guid? ConversationId { get; set; }
+    public Ulid? ConversationId { get; set; }
 
     public string? SourceAddress { get; set; }
 

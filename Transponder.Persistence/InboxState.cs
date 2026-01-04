@@ -8,12 +8,12 @@ namespace Transponder.Persistence;
 public sealed class InboxState : IInboxState
 {
     public InboxState(
-        Guid messageId,
+        Ulid messageId,
         string consumerId,
         DateTimeOffset? receivedTime = null,
         DateTimeOffset? processedTime = null)
     {
-        if (messageId == Guid.Empty) throw new ArgumentException("MessageId must be provided.", nameof(messageId));
+        if (messageId == Ulid.Empty) throw new ArgumentException("MessageId must be provided.", nameof(messageId));
 
         if (string.IsNullOrWhiteSpace(consumerId)) throw new ArgumentException("ConsumerId must be provided.", nameof(consumerId));
 
@@ -24,7 +24,7 @@ public sealed class InboxState : IInboxState
     }
 
     /// <inheritdoc />
-    public Guid MessageId { get; }
+    public Ulid MessageId { get; }
 
     /// <inheritdoc />
     public string ConsumerId { get; }

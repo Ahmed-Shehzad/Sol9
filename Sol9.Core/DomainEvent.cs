@@ -7,6 +7,6 @@ namespace Sol9.Core;
 /// </summary>
 public abstract record DomainEvent : IDomainEvent
 {
-    public Guid EventId { get; init; } = Guid.NewGuid();
+    public Ulid EventId { get; init; } = Ulid.NewUlid();
     public DateTimeOffset OccurredOn { get; init; } = DateTimeOffset.UtcNow;
 }

@@ -12,7 +12,7 @@ public interface ISagaRepository<TState>
     /// </summary>
     /// <param name="correlationId">The correlation identifier.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
-    Task<TState?> GetAsync(Guid correlationId, CancellationToken cancellationToken = default);
+    Task<TState?> GetAsync(Ulid correlationId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Persists the saga state.
@@ -26,5 +26,5 @@ public interface ISagaRepository<TState>
     /// </summary>
     /// <param name="correlationId">The correlation identifier.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
-    Task DeleteAsync(Guid correlationId, CancellationToken cancellationToken = default);
+    Task DeleteAsync(Ulid correlationId, CancellationToken cancellationToken = default);
 }

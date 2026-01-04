@@ -43,9 +43,9 @@ internal static class GrpcTransportMessageMapper
             message.Body.ToByteArray(),
             string.IsNullOrWhiteSpace(message.ContentType) ? null : message.ContentType,
             headers,
-            Guid.TryParse(message.MessageId, out Guid messageId) ? messageId : null,
-            Guid.TryParse(message.CorrelationId, out Guid correlationId) ? correlationId : null,
-            Guid.TryParse(message.ConversationId, out Guid conversationId) ? conversationId : null,
+            Ulid.TryParse(message.MessageId, out Ulid messageId) ? messageId : null,
+            Ulid.TryParse(message.CorrelationId, out Ulid correlationId) ? correlationId : null,
+            Ulid.TryParse(message.ConversationId, out Ulid conversationId) ? conversationId : null,
             string.IsNullOrWhiteSpace(message.MessageType) ? null : message.MessageType,
             sentTime);
     }

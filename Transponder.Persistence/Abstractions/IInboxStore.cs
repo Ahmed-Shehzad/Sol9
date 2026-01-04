@@ -12,7 +12,7 @@ public interface IInboxStore
     /// <param name="consumerId">The consumer identifier.</param>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation.</param>
     Task<IInboxState?> GetAsync(
-        Guid messageId,
+        Ulid messageId,
         string consumerId,
         CancellationToken cancellationToken = default);
 
@@ -32,7 +32,7 @@ public interface IInboxStore
     /// <param name="processedTime">The time the message was processed.</param>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation.</param>
     Task MarkProcessedAsync(
-        Guid messageId,
+        Ulid messageId,
         string consumerId,
         DateTimeOffset processedTime,
         CancellationToken cancellationToken = default);

@@ -119,18 +119,18 @@ internal sealed class RabbitMqReceiveEndpoint : IReceiveEndpoint
         string? contentType = args.BasicProperties.ContentType;
         string? messageType = headers.TryGetValue("MessageType", out object? typeValue) ? typeValue as string : null;
         _ = headers.Remove("MessageType");
-        Guid? conversationId = headers.TryGetValue("ConversationId", out object? conv)
-                               && Guid.TryParse(conv?.ToString(), out Guid parsedConversationId)
+        Ulid? conversationId = headers.TryGetValue("ConversationId", out object? conv)
+                               && Ulid.TryParse(conv?.ToString(), out Ulid parsedConversationId)
             ? parsedConversationId
-            : (Guid?)null;
+            : (Ulid?)null;
         _ = headers.Remove("ConversationId");
 
         var transportMessage = new TransportMessage(
             args.Body.ToArray(),
             contentType,
             headers,
-            Guid.TryParse(args.BasicProperties.MessageId, out Guid messageId) ? messageId : null,
-            Guid.TryParse(args.BasicProperties.CorrelationId, out Guid correlationId) ? correlationId : null,
+            Ulid.TryParse(args.BasicProperties.MessageId, out Ulid messageId) ? messageId : null,
+            Ulid.TryParse(args.BasicProperties.CorrelationId, out Ulid correlationId) ? correlationId : null,
             conversationId,
             messageType,
             null);

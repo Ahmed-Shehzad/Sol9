@@ -14,7 +14,7 @@ internal sealed class RequestClient<TRequest> : IRequestClient<TRequest>
     private readonly ITransportHostProvider _hostProvider;
     private readonly Uri _destinationAddress;
     private readonly TimeSpan _timeout;
-    private readonly ConcurrentDictionary<Guid, PendingRequest> _pendingRequests = new();
+    private readonly ConcurrentDictionary<Ulid, PendingRequest> _pendingRequests = new();
     private readonly Lock _sync = new();
     private IReceiveEndpoint? _responseEndpoint;
     private Uri? _responseAddress;
@@ -52,7 +52,7 @@ internal sealed class RequestClient<TRequest> : IRequestClient<TRequest>
             $"[Transponder] RequestClient<{typeof(TRequest).Name}> response endpoint ready. ResponseAddress={_responseAddress}");
 #endif
 
-        var requestId = Guid.NewGuid();
+        var requestId = Ulid.NewUlid();
         var pending = new PendingRequest(typeof(TResponse));
         _pendingRequests[requestId] = pending;
 
@@ -60,7 +60,7 @@ internal sealed class RequestClient<TRequest> : IRequestClient<TRequest>
         {
             var headers = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase)
             {
-                [TransponderMessageHeaders.RequestId] = requestId.ToString("D")
+                [TransponderMessageHeaders.RequestId] = requestId.ToString()
             };
 
             if (_responseAddress is not null) headers[TransponderMessageHeaders.ResponseAddress] = _responseAddress.ToString();
@@ -77,7 +77,7 @@ internal sealed class RequestClient<TRequest> : IRequestClient<TRequest>
 
 #if DEBUG
             Trace.TraceInformation(
-                $"[Transponder] RequestClient<{typeof(TRequest).Name}> sent request. RequestId={requestId:D}");
+                $"[Transponder] RequestClient<{typeof(TRequest).Name}> sent request. RequestId={requestId}");
 #endif
 
             var delayTask = Task.Delay(_timeout, cancellationToken);
@@ -130,7 +130,7 @@ internal sealed class RequestClient<TRequest> : IRequestClient<TRequest>
             context.DestinationAddress);
         using IDisposable? scope = _bus.BeginConsumeScope(messageContext);
 
-        if (!TryGetRequestId(message, out Guid requestId) || !_pendingRequests.TryGetValue(requestId, out PendingRequest? pending))
+        if (!TryGetRequestId(message, out Ulid requestId) || !_pendingRequests.TryGetValue(requestId, out PendingRequest? pending))
         {
 #if DEBUG
             Trace.TraceWarning(
@@ -145,7 +145,7 @@ internal sealed class RequestClient<TRequest> : IRequestClient<TRequest>
         {
 #if DEBUG
             Trace.TraceInformation(
-                $"[Transponder] RequestClient<{typeof(TRequest).Name}> response received. RequestId={requestId:D}");
+                $"[Transponder] RequestClient<{typeof(TRequest).Name}> response received. RequestId={requestId}");
 #endif
             object response = _serializer.Deserialize(message.Body.Span, pending.ResponseType);
             pending.TrySetResult(response);
@@ -154,7 +154,7 @@ internal sealed class RequestClient<TRequest> : IRequestClient<TRequest>
         {
 #if DEBUG
             Trace.TraceError(
-                $"[Transponder] RequestClient<{typeof(TRequest).Name}> response deserialize failed. RequestId={requestId:D} Error={ex.Message}");
+                $"[Transponder] RequestClient<{typeof(TRequest).Name}> response deserialize failed. RequestId={requestId} Error={ex.Message}");
 #endif
             string responseTypeName = pending.ResponseType.FullName ?? pending.ResponseType.Name;
             string messageTypeName = message.MessageType ?? "unknown";
@@ -167,7 +167,7 @@ internal sealed class RequestClient<TRequest> : IRequestClient<TRequest>
         return Task.CompletedTask;
     }
 
-    private static bool TryGetRequestId(ITransportMessage message, out Guid requestId)
+    private static bool TryGetRequestId(ITransportMessage message, out Ulid requestId)
     {
         if (message.CorrelationId.HasValue)
         {
@@ -176,13 +176,13 @@ internal sealed class RequestClient<TRequest> : IRequestClient<TRequest>
         }
 
         if (message.Headers.TryGetValue(TransponderMessageHeaders.RequestId, out object? headerValue) &&
-            Guid.TryParse(headerValue?.ToString(), out Guid parsed))
+            Ulid.TryParse(headerValue?.ToString(), out Ulid parsed))
         {
             requestId = parsed;
             return true;
         }
 
-        requestId = Guid.Empty;
+        requestId = Ulid.Empty;
         return false;
     }
 

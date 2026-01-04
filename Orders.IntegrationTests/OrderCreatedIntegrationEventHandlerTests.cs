@@ -35,7 +35,7 @@ public sealed class OrderCreatedIntegrationEventHandlerTests
                 Arg.Any<CreateBookingRequest>(),
                 Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(new CreateBookingResponse(
-                Guid.NewGuid(),
+                Ulid.NewUlid(),
                 order.Id,
                 (int)BookingStatus.Created)));
 

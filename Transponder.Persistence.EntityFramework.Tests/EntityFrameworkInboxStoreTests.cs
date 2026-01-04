@@ -9,7 +9,7 @@ public sealed class EntityFrameworkInboxStoreTests
     {
         await using EntityFrameworkTestDbContext context = CreateContext(nameof(TryAddAsync_Returns_False_For_Duplicate_StateAsync));
         var store = new EntityFrameworkInboxStore(context);
-        var state = new InboxState(Guid.NewGuid(), "consumer-A");
+        var state = new InboxState(Ulid.NewUlid(), "consumer-A");
 
         bool firstAdd = await store.TryAddAsync(state);
         _ = await context.SaveChangesAsync();

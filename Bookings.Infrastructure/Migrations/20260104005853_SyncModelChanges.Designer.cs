@@ -30,9 +30,9 @@ namespace Bookings.Infrastructure.Migrations
 
             modelBuilder.Entity("Bookings.Domain.Entities.Booking", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<Ulid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("character(26)");
 
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
@@ -48,8 +48,8 @@ namespace Bookings.Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid>("OrderId")
-                        .HasColumnType("uuid");
+                    b.Property<Ulid>("OrderId")
+                        .HasColumnType("character(26)");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");

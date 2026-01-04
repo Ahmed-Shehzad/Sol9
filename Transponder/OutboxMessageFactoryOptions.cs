@@ -2,11 +2,11 @@ namespace Transponder;
 
 public sealed class OutboxMessageFactoryOptions
 {
-    public Guid? MessageId { get; init; }
+    public Ulid? MessageId { get; init; }
 
-    public Guid? CorrelationId { get; init; }
+    public Ulid? CorrelationId { get; init; }
 
-    public Guid? ConversationId { get; init; }
+    public Ulid? ConversationId { get; init; }
 
     public Uri? SourceAddress { get; init; }
 

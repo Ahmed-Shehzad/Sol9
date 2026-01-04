@@ -51,7 +51,7 @@ public sealed class EntityFrameworkScheduledMessageStore<TContext> : IScheduledM
     }
 
     public async Task MarkDispatchedAsync(
-        Guid tokenId,
+        Ulid tokenId,
         DateTimeOffset dispatchedTime,
         CancellationToken cancellationToken = default)
     {
@@ -66,7 +66,7 @@ public sealed class EntityFrameworkScheduledMessageStore<TContext> : IScheduledM
         _ = await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<bool> CancelAsync(Guid tokenId, CancellationToken cancellationToken = default)
+    public async Task<bool> CancelAsync(Ulid tokenId, CancellationToken cancellationToken = default)
     {
         await using TContext context = _contextFactory.CreateDbContext();
         ScheduledMessageEntity? message = await context.Set<ScheduledMessageEntity>()
@@ -80,7 +80,7 @@ public sealed class EntityFrameworkScheduledMessageStore<TContext> : IScheduledM
         return true;
     }
 
-    public async Task<IScheduledMessage?> GetAsync(Guid tokenId, CancellationToken cancellationToken = default)
+    public async Task<IScheduledMessage?> GetAsync(Ulid tokenId, CancellationToken cancellationToken = default)
     {
         await using TContext context = _contextFactory.CreateDbContext();
         return await context.Set<ScheduledMessageEntity>()

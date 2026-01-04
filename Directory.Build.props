@@ -5,4 +5,11 @@
     <Deterministic>true</Deterministic>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Ulid" />
+    <PackageReference Include="Ulid.MessagePack" />
+    <PackageReference Include="MessagePack" />
+  </ItemGroup>
+
 </Project>

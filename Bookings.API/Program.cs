@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Linq;
 
 using Asp.Versioning;
 
@@ -17,6 +16,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 
 using Serilog;
+using Cysharp.Serialization.Json;
 
 using Sol9.Contracts.Bookings;
 using Sol9.ServiceDefaults;
@@ -69,7 +69,8 @@ builder.Services.AddOpenApi("v2", options => options.OpenApiVersion = OpenApiSpe
 
 // Add services to the container.
 builder.AddServiceDefaults();
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new UlidJsonConverter()));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddProblemDetails();
 builder.Services.AddGrpc();

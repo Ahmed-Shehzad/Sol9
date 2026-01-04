@@ -9,9 +9,9 @@ internal static class TransportMessageFactory
     public static TransportMessage Create<TMessage>(
         TMessage message,
         IMessageSerializer serializer,
-        Guid? messageId = null,
-        Guid? correlationId = null,
-        Guid? conversationId = null,
+        Ulid? messageId = null,
+        Ulid? correlationId = null,
+        Ulid? conversationId = null,
         IReadOnlyDictionary<string, object?>? headers = null,
         DateTimeOffset? sentTime = null)
         where TMessage : class, IMessage
@@ -20,9 +20,9 @@ internal static class TransportMessageFactory
     public static TransportMessage Create(
         object message,
         IMessageSerializer serializer,
-        Guid? messageId = null,
-        Guid? correlationId = null,
-        Guid? conversationId = null,
+        Ulid? messageId = null,
+        Ulid? correlationId = null,
+        Ulid? conversationId = null,
         IReadOnlyDictionary<string, object?>? headers = null,
         DateTimeOffset? sentTime = null)
     {
@@ -39,7 +39,7 @@ internal static class TransportMessageFactory
             body,
             serializer.ContentType,
             headerMap,
-            messageId ?? Guid.NewGuid(),
+            messageId ?? Ulid.NewUlid(),
             correlationId,
             conversationId,
             messageType.FullName,

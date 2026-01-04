@@ -10,15 +10,15 @@ public sealed class InMemoryOutboxStoreTests
         var store = new InMemoryOutboxStore();
         DateTimeOffset now = DateTimeOffset.UtcNow;
 
-        var first = new OutboxMessage(Guid.NewGuid(), new byte[] { 1 }, new OutboxMessageOptions
+        var first = new OutboxMessage(Ulid.NewUlid(), new byte[] { 1 }, new OutboxMessageOptions
         {
             EnqueuedTime = now.AddMinutes(-2)
         });
-        var second = new OutboxMessage(Guid.NewGuid(), new byte[] { 2 }, new OutboxMessageOptions
+        var second = new OutboxMessage(Ulid.NewUlid(), new byte[] { 2 }, new OutboxMessageOptions
         {
             EnqueuedTime = now.AddMinutes(-1)
         });
-        var sent = new OutboxMessage(Guid.NewGuid(), new byte[] { 3 }, new OutboxMessageOptions
+        var sent = new OutboxMessage(Ulid.NewUlid(), new byte[] { 3 }, new OutboxMessageOptions
         {
             EnqueuedTime = now.AddMinutes(-3),
             SentTime = now.AddMinutes(-1)

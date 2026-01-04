@@ -6,15 +6,15 @@ public sealed class SagaExecutionTests
 {
     private sealed class TestState : ISagaStatusState
     {
-        public Guid CorrelationId { get; set; }
-        public Guid? ConversationId { get; set; }
+        public Ulid CorrelationId { get; set; }
+        public Ulid? ConversationId { get; set; }
         public SagaStatus Status { get; set; }
     }
 
     [Fact]
     public async Task ExecuteAsync_Completes_AllSteps()
     {
-        var state = new TestState { CorrelationId = Guid.NewGuid() };
+        var state = new TestState { CorrelationId = Ulid.NewUlid() };
         var executed = new List<int>();
 
         SagaStep<TestState>[] steps =
@@ -53,7 +53,7 @@ public sealed class SagaExecutionTests
     [Fact]
     public async Task ExecuteAsync_Compensates_WhenStepFails()
     {
-        var state = new TestState { CorrelationId = Guid.NewGuid() };
+        var state = new TestState { CorrelationId = Ulid.NewUlid() };
         var executed = new List<int>();
 
         SagaStep<TestState>[] steps =

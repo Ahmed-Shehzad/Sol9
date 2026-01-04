@@ -9,9 +9,9 @@ public sealed class TransponderMessageContext
         new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
     public TransponderMessageContext(
-        Guid? messageId,
-        Guid? correlationId,
-        Guid? conversationId,
+        Ulid? messageId,
+        Ulid? correlationId,
+        Ulid? conversationId,
         string? messageType,
         Uri? sourceAddress,
         Uri? destinationAddress,
@@ -28,11 +28,11 @@ public sealed class TransponderMessageContext
         Headers = headers ?? EmptyHeaders;
     }
 
-    public Guid? MessageId { get; }
+    public Ulid? MessageId { get; }
 
-    public Guid? CorrelationId { get; }
+    public Ulid? CorrelationId { get; }
 
-    public Guid? ConversationId { get; }
+    public Ulid? ConversationId { get; }
 
     public string? MessageType { get; }
 

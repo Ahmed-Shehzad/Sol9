@@ -39,7 +39,7 @@ public sealed class RuleBuilder<T, TProperty> : IValidationRule<T>
             bool isEmpty =
                 value is null ||
                 (value is string s && string.IsNullOrWhiteSpace(s))||
-                (value is Guid g && g == Guid.Empty);
+                (value is Ulid g && g == Ulid.Empty);
 
             if (isEmpty)
                 return new ValidationFailure(

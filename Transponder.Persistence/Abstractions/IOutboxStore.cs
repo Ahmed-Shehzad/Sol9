@@ -27,5 +27,5 @@ public interface IOutboxStore
     /// <param name="messageId">The message identifier.</param>
     /// <param name="sentTime">The time the message was sent.</param>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation.</param>
-    Task MarkSentAsync(Guid messageId, DateTimeOffset sentTime, CancellationToken cancellationToken = default);
+    Task MarkSentAsync(Ulid messageId, DateTimeOffset sentTime, CancellationToken cancellationToken = default);
 }

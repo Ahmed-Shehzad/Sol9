@@ -9,8 +9,8 @@ public sealed record PingResponse(string Message, string Responder, DateTimeOffs
 
 public sealed class PingState : ISagaState
 {
-    public Guid CorrelationId { get; set; }
-    public Guid? ConversationId { get; set; }
+    public Ulid CorrelationId { get; set; }
+    public Ulid? ConversationId { get; set; }
     public DateTimeOffset? LastPingAt { get; set; }
     public string? LastSender { get; set; }
     public string? LastMessage { get; set; }

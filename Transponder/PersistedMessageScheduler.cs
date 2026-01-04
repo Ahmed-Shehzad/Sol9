@@ -147,7 +147,7 @@ public sealed class PersistedMessageScheduler : IMessageScheduler, IAsyncDisposa
     {
         Type messageType = message.GetType();
         ReadOnlyMemory<byte> body = _serializer.Serialize(message, messageType);
-        var tokenId = Guid.NewGuid();
+        var tokenId = Ulid.NewUlid();
 
         var stored = new ScheduledMessage(
             tokenId,
@@ -269,15 +269,15 @@ public sealed class PersistedMessageScheduler : IMessageScheduler, IAsyncDisposa
     {
         private readonly IScheduledMessageStore _store;
 
-        public PersistedScheduledMessageHandle(IScheduledMessageStore store, Guid tokenId)
+        public PersistedScheduledMessageHandle(IScheduledMessageStore store, Ulid tokenId)
         {
             _store = store ?? throw new ArgumentNullException(nameof(store));
-            if (tokenId == Guid.Empty) throw new ArgumentException("TokenId must be provided.", nameof(tokenId));
+            if (tokenId == Ulid.Empty) throw new ArgumentException("TokenId must be provided.", nameof(tokenId));
 
             TokenId = tokenId;
         }
 
-        public Guid TokenId { get; }
+        public Ulid TokenId { get; }
 
         public Task CancelAsync(CancellationToken cancellationToken = default)
             => _store.CancelAsync(TokenId, cancellationToken);

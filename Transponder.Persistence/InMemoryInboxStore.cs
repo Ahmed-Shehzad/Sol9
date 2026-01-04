@@ -8,11 +8,11 @@ namespace Transponder.Persistence;
 public sealed class InMemoryInboxStore : IInboxStore
 {
     private readonly Lock _sync = new();
-    private readonly Dictionary<(Guid MessageId, string ConsumerId), InboxState> _states = new();
+    private readonly Dictionary<(Ulid MessageId, string ConsumerId), InboxState> _states = new();
 
     /// <inheritdoc />
     public Task<IInboxState?> GetAsync(
-        Guid messageId,
+        Ulid messageId,
         string consumerId,
         CancellationToken cancellationToken = default)
     {
@@ -35,7 +35,7 @@ public sealed class InMemoryInboxStore : IInboxStore
 
         lock (_sync)
         {
-            (Guid MessageId, string ConsumerId) key = (state.MessageId, state.ConsumerId);
+            (Ulid MessageId, string ConsumerId) key = (state.MessageId, state.ConsumerId);
 
             if (_states.ContainsKey(key)) return Task.FromResult(false);
 
@@ -46,7 +46,7 @@ public sealed class InMemoryInboxStore : IInboxStore
 
     /// <inheritdoc />
     public Task MarkProcessedAsync(
-        Guid messageId,
+        Ulid messageId,
         string consumerId,
         DateTimeOffset processedTime,
         CancellationToken cancellationToken = default)

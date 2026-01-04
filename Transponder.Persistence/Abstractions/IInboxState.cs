@@ -8,7 +8,7 @@ public interface IInboxState
     /// <summary>
     /// Gets the message identifier.
     /// </summary>
-    Guid MessageId { get; }
+    Ulid MessageId { get; }
 
     /// <summary>
     /// Gets the consumer identifier used for de-duplication.

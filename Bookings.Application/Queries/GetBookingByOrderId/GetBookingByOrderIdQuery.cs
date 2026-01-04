@@ -9,14 +9,14 @@ using Verifier;
 
 namespace Bookings.Application.Queries.GetBookingByOrderId;
 
-public sealed record GetBookingByOrderIdQuery(Guid OrderId) : IQuery<BookingDto?>;
+public sealed record GetBookingByOrderIdQuery(Ulid OrderId) : IQuery<BookingDto?>;
 
 public sealed class GetBookingByOrderIdQueryValidator : AbstractValidator<GetBookingByOrderIdQuery>
 {
     public GetBookingByOrderIdQueryValidator()
     {
         _ = RuleFor(query => query.OrderId)
-            .Must(id => id != Guid.Empty, "OrderId must not be empty.");
+            .Must(id => id != Ulid.Empty, "OrderId must not be empty.");
     }
 }
 

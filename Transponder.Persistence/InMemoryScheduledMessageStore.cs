@@ -8,7 +8,7 @@ namespace Transponder.Persistence;
 public sealed class InMemoryScheduledMessageStore : IScheduledMessageStore
 {
     private readonly Lock _sync = new();
-    private readonly Dictionary<Guid, ScheduledMessage> _messages = new();
+    private readonly Dictionary<Ulid, ScheduledMessage> _messages = new();
 
     public Task AddAsync(IScheduledMessage message, CancellationToken cancellationToken = default)
     {
@@ -45,7 +45,7 @@ public sealed class InMemoryScheduledMessageStore : IScheduledMessageStore
     }
 
     public Task MarkDispatchedAsync(
-        Guid tokenId,
+        Ulid tokenId,
         DateTimeOffset dispatchedTime,
         CancellationToken cancellationToken = default)
     {
@@ -58,14 +58,14 @@ public sealed class InMemoryScheduledMessageStore : IScheduledMessageStore
         return Task.CompletedTask;
     }
 
-    public Task<bool> CancelAsync(Guid tokenId, CancellationToken cancellationToken = default)
+    public Task<bool> CancelAsync(Ulid tokenId, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
         lock (_sync) return Task.FromResult(_messages.Remove(tokenId));
     }
 
-    public Task<IScheduledMessage?> GetAsync(Guid tokenId, CancellationToken cancellationToken = default)
+    public Task<IScheduledMessage?> GetAsync(Ulid tokenId, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 

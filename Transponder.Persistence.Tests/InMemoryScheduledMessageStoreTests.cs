@@ -10,9 +10,9 @@ public sealed class InMemoryScheduledMessageStoreTests
         var store = new InMemoryScheduledMessageStore();
         DateTimeOffset now = DateTimeOffset.UtcNow;
 
-        var dueFirst = new ScheduledMessage(Guid.NewGuid(), "Test", new byte[] { 1 }, now.AddMinutes(-2));
-        var dueSecond = new ScheduledMessage(Guid.NewGuid(), "Test", new byte[] { 2 }, now.AddMinutes(-1));
-        var future = new ScheduledMessage(Guid.NewGuid(), "Test", new byte[] { 3 }, now.AddMinutes(5));
+        var dueFirst = new ScheduledMessage(Ulid.NewUlid(), "Test", new byte[] { 1 }, now.AddMinutes(-2));
+        var dueSecond = new ScheduledMessage(Ulid.NewUlid(), "Test", new byte[] { 2 }, now.AddMinutes(-1));
+        var future = new ScheduledMessage(Ulid.NewUlid(), "Test", new byte[] { 3 }, now.AddMinutes(5));
 
         await store.AddAsync(dueSecond);
         await store.AddAsync(future);

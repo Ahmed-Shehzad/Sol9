@@ -3,9 +3,9 @@ using Transponder.Abstractions;
 namespace Sol9.Contracts.Bookings;
 
 public sealed record CreateBookingRequest(
-    Guid OrderId,
+    Ulid OrderId,
     string CustomerName)
     : ICorrelatedMessage
 {
-    public Guid CorrelationId => OrderId;
+    public Ulid CorrelationId => OrderId;
 }

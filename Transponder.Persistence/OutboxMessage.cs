@@ -11,11 +11,11 @@ public sealed class OutboxMessage : IOutboxMessage
     private readonly IReadOnlyDictionary<string, object?> _headers;
 
     public OutboxMessage(
-        Guid messageId,
+        Ulid messageId,
         ReadOnlyMemory<byte> body,
         OutboxMessageOptions? options = null)
     {
-        if (messageId == Guid.Empty) throw new ArgumentException("MessageId must be provided.", nameof(messageId));
+        if (messageId == Ulid.Empty) throw new ArgumentException("MessageId must be provided.", nameof(messageId));
 
         options ??= new OutboxMessageOptions();
 
@@ -35,13 +35,13 @@ public sealed class OutboxMessage : IOutboxMessage
     }
 
     /// <inheritdoc />
-    public Guid MessageId { get; }
+    public Ulid MessageId { get; }
 
     /// <inheritdoc />
-    public Guid? CorrelationId { get; }
+    public Ulid? CorrelationId { get; }
 
     /// <inheritdoc />
-    public Guid? ConversationId { get; }
+    public Ulid? ConversationId { get; }
 
     /// <inheritdoc />
     public Uri? SourceAddress { get; }
@@ -97,9 +97,9 @@ public sealed class OutboxMessageOptions
 
     public DateTimeOffset? EnqueuedTime { get; init; }
 
-    public Guid? CorrelationId { get; init; }
+    public Ulid? CorrelationId { get; init; }
 
-    public Guid? ConversationId { get; init; }
+    public Ulid? ConversationId { get; init; }
 
     public Uri? SourceAddress { get; init; }
 

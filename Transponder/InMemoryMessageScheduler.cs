@@ -50,7 +50,7 @@ public sealed class InMemoryMessageScheduler : IMessageScheduler
         ArgumentNullException.ThrowIfNull(message);
 
         var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        var handle = new ScheduledMessageHandle(Guid.NewGuid(), cts);
+        var handle = new ScheduledMessageHandle(Ulid.NewUlid(), cts);
 
         _ = ExecuteAsync(
             delay,
@@ -69,7 +69,7 @@ public sealed class InMemoryMessageScheduler : IMessageScheduler
         ArgumentNullException.ThrowIfNull(message);
 
         var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        var handle = new ScheduledMessageHandle(Guid.NewGuid(), cts);
+        var handle = new ScheduledMessageHandle(Ulid.NewUlid(), cts);
 
         _ = ExecuteAsync(delay, cts.Token, () => _bus.PublishInternalAsync(message, null, cts.Token));
 

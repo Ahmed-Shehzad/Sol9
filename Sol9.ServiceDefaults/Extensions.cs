@@ -1,5 +1,9 @@
+using Cysharp.Serialization.MessagePack;
+using MessagePack;
+using MessagePack.Resolvers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
@@ -15,6 +19,7 @@ public static class Extensions
 {
     public static IHostApplicationBuilder AddServiceDefaults(this IHostApplicationBuilder builder)
     {
+        ConfigureMessagePack();
         _ = builder.ConfigureOpenTelemetry();
 
         _ = builder.Services.AddServiceDiscovery();
@@ -25,8 +30,10 @@ public static class Extensions
             _ = http.AddServiceDiscovery();
         });
 
-        _ = builder.Services.AddHealthChecks()
+        IHealthChecksBuilder healthChecks = builder.Services.AddHealthChecks()
             .AddCheck("self", () => HealthCheckResult.Healthy(), ["live"]);
+        AddInfrastructureHealthChecks(builder, healthChecks);
+        _ = builder.Services.AddGrpcHealthChecks();
 
         return builder;
     }
@@ -40,8 +47,40 @@ public static class Extensions
         {
             Predicate = registration => registration.Tags.Contains("live")
         });
+        _ = app.MapGrpcHealthChecksService();
 
         return app;
+    }
+
+    private static void ConfigureMessagePack()
+    {
+        IFormatterResolver resolver = CompositeResolver.Create(
+            UlidMessagePackResolver.Instance,
+            StandardResolver.Instance);
+        MessagePackSerializer.DefaultOptions = MessagePackSerializerOptions.Standard.WithResolver(resolver);
+    }
+
+    private static void AddInfrastructureHealthChecks(IHostApplicationBuilder builder, IHealthChecksBuilder healthChecks)
+    {
+        IConfigurationSection connectionStrings = builder.Configuration.GetSection("ConnectionStrings");
+        foreach (IConfigurationSection connection in connectionStrings.GetChildren())
+        {
+            string? value = connection.Value;
+            if (string.IsNullOrWhiteSpace(value)) continue;
+
+            if (connection.Key.Contains("Redis", StringComparison.OrdinalIgnoreCase))
+            {
+                _ = healthChecks.AddRedis(value, name: $"redis-{connection.Key}", tags: ["ready"]);
+                continue;
+            }
+
+            _ = healthChecks.AddNpgSql(value, name: $"postgres-{connection.Key}", tags: ["ready"]);
+        }
+
+        IConfigurationSection transponderDefaults = builder.Configuration.GetSection("TransponderDefaults");
+        if (Uri.TryCreate(transponderDefaults["LocalAddress"], UriKind.Absolute, out Uri? localAddress)) _ = healthChecks.AddUrlGroup(localAddress, name: "transponder-local", tags: ["ready"]);
+
+        if (Uri.TryCreate(transponderDefaults["RemoteAddress"], UriKind.Absolute, out Uri? remoteAddress)) _ = healthChecks.AddUrlGroup(remoteAddress, name: "transponder-remote", tags: ["ready"]);
     }
 
     private static IHostApplicationBuilder ConfigureOpenTelemetry(this IHostApplicationBuilder builder)

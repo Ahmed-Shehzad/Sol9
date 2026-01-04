@@ -19,9 +19,9 @@ public partial class InitialCreate : Migration
             schema: schema,
             columns: table => new
             {
-                MessageId = table.Column<Guid>(type: "uuid", nullable: false),
-                CorrelationId = table.Column<Guid>(type: "uuid", nullable: true),
-                ConversationId = table.Column<Guid>(type: "uuid", nullable: true),
+                MessageId = table.Column<Ulid>(type: "character(26)", nullable: false),
+                CorrelationId = table.Column<Ulid>(type: "character(26)", nullable: true),
+                ConversationId = table.Column<Ulid>(type: "character(26)", nullable: true),
                 SourceAddress = table.Column<string>(type: "text", nullable: true),
                 DestinationAddress = table.Column<string>(type: "text", nullable: true),
                 MessageType = table.Column<string>(type: "text", nullable: true),
@@ -41,7 +41,7 @@ public partial class InitialCreate : Migration
             schema: schema,
             columns: table => new
             {
-                MessageId = table.Column<Guid>(type: "uuid", nullable: false),
+                MessageId = table.Column<Ulid>(type: "character(26)", nullable: false),
                 ConsumerId = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                 ReceivedTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                 ProcessedTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
@@ -56,7 +56,7 @@ public partial class InitialCreate : Migration
             schema: schema,
             columns: table => new
             {
-                TokenId = table.Column<Guid>(type: "uuid", nullable: false),
+                TokenId = table.Column<Ulid>(type: "character(26)", nullable: false),
                 MessageType = table.Column<string>(type: "text", maxLength: 500, nullable: false),
                 ContentType = table.Column<string>(type: "text", nullable: true),
                 Body = table.Column<byte[]>(type: "bytea", nullable: false),
@@ -75,10 +75,10 @@ public partial class InitialCreate : Migration
             schema: schema,
             columns: table => new
             {
-                CorrelationId = table.Column<Guid>(type: "uuid", nullable: false),
+                CorrelationId = table.Column<Ulid>(type: "character(26)", nullable: false),
                 StateType = table.Column<string>(type: "text", maxLength: 500, nullable: false),
                 StateData = table.Column<string>(type: "jsonb", nullable: false),
-                ConversationId = table.Column<Guid>(type: "uuid", nullable: true),
+                ConversationId = table.Column<Ulid>(type: "character(26)", nullable: true),
                 UpdatedTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
             },
             constraints: table =>

@@ -8,7 +8,7 @@ namespace Transponder.Persistence.EntityFramework;
 public sealed class InboxStateEntity : IInboxState
 {
     /// <inheritdoc />
-    public Guid MessageId { get; set; }
+    public Ulid MessageId { get; set; }
 
     /// <inheritdoc />
     public string ConsumerId { get; set; } = string.Empty;

@@ -4,7 +4,7 @@ using Verifier;
 
 namespace Orders.Domain.Events.Integration;
 
-public record OrderCancelledIntegrationEvent(Guid Id, string CustomerName) : IntegrationEvent(Id);
+public record OrderCancelledIntegrationEvent(Ulid Id, string CustomerName) : IntegrationEvent(Id);
 
 public class OrderCancelledIntegrationEventValidator : AbstractValidator<OrderCancelledIntegrationEvent>
 {

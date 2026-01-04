@@ -8,7 +8,7 @@ namespace Transponder.Persistence;
 public sealed class InMemoryOutboxStore : IOutboxStore
 {
     private readonly object _sync = new();
-    private readonly Dictionary<Guid, OutboxMessage> _messages = new();
+    private readonly Dictionary<Ulid, OutboxMessage> _messages = new();
 
     /// <inheritdoc />
     public Task AddAsync(IOutboxMessage message, CancellationToken cancellationToken = default)
@@ -46,7 +46,7 @@ public sealed class InMemoryOutboxStore : IOutboxStore
     }
 
     /// <inheritdoc />
-    public Task MarkSentAsync(Guid messageId, DateTimeOffset sentTime, CancellationToken cancellationToken = default)
+    public Task MarkSentAsync(Ulid messageId, DateTimeOffset sentTime, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 

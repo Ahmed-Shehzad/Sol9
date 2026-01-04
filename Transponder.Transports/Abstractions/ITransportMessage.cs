@@ -23,17 +23,17 @@ public interface ITransportMessage
     /// <summary>
     /// Gets the message identifier.
     /// </summary>
-    Guid? MessageId { get; }
+    Ulid? MessageId { get; }
 
     /// <summary>
     /// Gets the correlation identifier used to relate messages.
     /// </summary>
-    Guid? CorrelationId { get; }
+    Ulid? CorrelationId { get; }
 
     /// <summary>
     /// Gets the conversation identifier for a logical flow of messages.
     /// </summary>
-    Guid? ConversationId { get; }
+    Ulid? ConversationId { get; }
 
     /// <summary>
     /// Gets the message type name or identifier.

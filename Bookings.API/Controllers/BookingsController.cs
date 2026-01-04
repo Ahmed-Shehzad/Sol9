@@ -37,7 +37,7 @@ public class BookingsController : ControllerBase
     [HttpGet("order/{orderId:guid}")]
     [ProducesResponseType(typeof(BookingDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<BookingDto>> GetByOrderIdAsync(Guid orderId)
+    public async Task<ActionResult<BookingDto>> GetByOrderIdAsync(Ulid orderId)
     {
         BookingDto? booking = await _sender.SendAsync(new GetBookingByOrderIdQuery(orderId)).ConfigureAwait(false);
         return booking is null ? NotFound() : Ok(booking);

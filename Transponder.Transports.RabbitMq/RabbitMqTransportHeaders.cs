@@ -21,9 +21,9 @@ internal static class RabbitMqTransportHeaders
 
         if (!string.IsNullOrWhiteSpace(message.MessageType)) headers["MessageType"] = Encoding.UTF8.GetBytes(message.MessageType);
 
-        if (message.CorrelationId.HasValue && !headers.ContainsKey("CorrelationId")) headers["CorrelationId"] = Encoding.UTF8.GetBytes(message.CorrelationId.Value.ToString("D"));
+        if (message.CorrelationId.HasValue && !headers.ContainsKey("CorrelationId")) headers["CorrelationId"] = Encoding.UTF8.GetBytes(message.CorrelationId.Value.ToString());
 
-        if (message.ConversationId.HasValue && !headers.ContainsKey("ConversationId")) headers["ConversationId"] = Encoding.UTF8.GetBytes(message.ConversationId.Value.ToString("D"));
+        if (message.ConversationId.HasValue && !headers.ContainsKey("ConversationId")) headers["ConversationId"] = Encoding.UTF8.GetBytes(message.ConversationId.Value.ToString());
 
         return headers;
     }

@@ -17,7 +17,7 @@ public sealed class ScheduledMessageEntity : IScheduledMessage
     private IReadOnlyDictionary<string, object?>? _headersCache;
     private string? _headers;
 
-    public Guid TokenId { get; set; }
+    public Ulid TokenId { get; set; }
 
     public string MessageType { get; set; } = string.Empty;
 

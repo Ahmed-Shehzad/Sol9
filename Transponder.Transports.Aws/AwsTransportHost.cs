@@ -155,21 +155,21 @@ public sealed class AwsTransportHost : TransportHostBase
             attributes["MessageId"] = new Amazon.SimpleNotificationService.Model.MessageAttributeValue
             {
                 DataType = StringMessageAttributeDataType,
-                StringValue = message.MessageId.Value.ToString("D")
+                StringValue = message.MessageId.Value.ToString()
             };
 
         if (message.CorrelationId.HasValue)
             attributes["CorrelationId"] = new Amazon.SimpleNotificationService.Model.MessageAttributeValue
             {
                 DataType = StringMessageAttributeDataType,
-                StringValue = message.CorrelationId.Value.ToString("D")
+                StringValue = message.CorrelationId.Value.ToString()
             };
 
         if (message.ConversationId.HasValue)
             attributes["ConversationId"] = new Amazon.SimpleNotificationService.Model.MessageAttributeValue
             {
                 DataType = StringMessageAttributeDataType,
-                StringValue = message.ConversationId.Value.ToString("D")
+                StringValue = message.ConversationId.Value.ToString()
             };
 
         foreach (KeyValuePair<string, object?> header in message.Headers)

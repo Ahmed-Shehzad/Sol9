@@ -8,7 +8,7 @@ public interface IScheduledMessageHandle
     /// <summary>
     /// Gets the scheduling token identifier.
     /// </summary>
-    Guid TokenId { get; }
+    Ulid TokenId { get; }
 
     /// <summary>
     /// Cancels the scheduled message.

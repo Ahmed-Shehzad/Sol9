@@ -15,5 +15,5 @@ public interface ICorrelatedMessage : IMessage
     /// <summary>
     /// Gets the correlation identifier used to relate messages.
     /// </summary>
-    Guid CorrelationId { get; }
+    Ulid CorrelationId { get; }
 }

@@ -7,7 +7,7 @@ using Verifier;
 
 namespace Orders.Application.Commands.CreateOrder;
 
-public sealed record CreateOrderCommand(string CustomerName, decimal TotalAmount) : ICommand<Guid>;
+public sealed record CreateOrderCommand(string CustomerName, decimal TotalAmount) : ICommand<Ulid>;
 
 public sealed class CreateOrderCommandValidator : AbstractValidator<CreateOrderCommand>
 {
@@ -21,7 +21,7 @@ public sealed class CreateOrderCommandValidator : AbstractValidator<CreateOrderC
     }
 }
 
-public sealed class CreateOrderCommandHandler : ICommandHandler<CreateOrderCommand, Guid>
+public sealed class CreateOrderCommandHandler : ICommandHandler<CreateOrderCommand, Ulid>
 {
     private readonly IOrdersRepository _ordersRepository;
 
@@ -30,7 +30,7 @@ public sealed class CreateOrderCommandHandler : ICommandHandler<CreateOrderComma
         _ordersRepository = ordersRepository;
     }
 
-    public async Task<Guid> HandleAsync(CreateOrderCommand request, CancellationToken cancellationToken = default)
+    public async Task<Ulid> HandleAsync(CreateOrderCommand request, CancellationToken cancellationToken = default)
     {
         var order = Order.Create(request.CustomerName, request.TotalAmount);
         _ = _ordersRepository.AddAsync(order, cancellationToken);

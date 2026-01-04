@@ -29,7 +29,7 @@ internal sealed class AzureServiceBusSendTransport : ISendTransport
 
         if (!string.IsNullOrWhiteSpace(message.MessageType)) serviceBusMessage.ApplicationProperties["MessageType"] = message.MessageType;
 
-        if (message.ConversationId.HasValue) serviceBusMessage.ApplicationProperties["ConversationId"] = message.ConversationId.Value.ToString("D");
+        if (message.ConversationId.HasValue) serviceBusMessage.ApplicationProperties["ConversationId"] = message.ConversationId.Value.ToString();
 
         foreach (KeyValuePair<string, object?> header in message.Headers)
         {

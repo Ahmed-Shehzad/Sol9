@@ -120,7 +120,7 @@ internal sealed class SagaReceiveEndpointHandler
             destinationAddress);
         using IDisposable? scope = bus.BeginConsumeScope(messageContext);
 
-        Guid? correlationId = consumeContext.CorrelationId ?? consumeContext.ConversationId;
+        Ulid? correlationId = consumeContext.CorrelationId ?? consumeContext.ConversationId;
         if (!correlationId.HasValue)
         {
 #if DEBUG
@@ -147,7 +147,7 @@ internal sealed class SagaReceiveEndpointHandler
         }
         else
         {
-            if (state.CorrelationId == Guid.Empty) state.CorrelationId = correlationId.Value;
+            if (state.CorrelationId == Ulid.Empty) state.CorrelationId = correlationId.Value;
 
             if (state.ConversationId == null && consumeContext.ConversationId.HasValue) state.ConversationId = consumeContext.ConversationId;
         }

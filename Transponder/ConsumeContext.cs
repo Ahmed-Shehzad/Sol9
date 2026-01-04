@@ -39,11 +39,11 @@ public sealed class ConsumeContext<TMessage> : IConsumeContext<TMessage>
 
     public TMessage Message { get; }
 
-    public Guid? MessageId { get; }
+    public Ulid? MessageId { get; }
 
-    public Guid? CorrelationId { get; }
+    public Ulid? CorrelationId { get; }
 
-    public Guid? ConversationId { get; }
+    public Ulid? ConversationId { get; }
 
     public Uri? SourceAddress { get; }
 
@@ -80,7 +80,7 @@ public sealed class ConsumeContext<TMessage> : IConsumeContext<TMessage>
 
         var headers = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
-        if (MessageId.HasValue) headers[TransponderMessageHeaders.RequestId] = MessageId.Value.ToString("D");
+        if (MessageId.HasValue) headers[TransponderMessageHeaders.RequestId] = MessageId.Value.ToString();
 
         return _bus.SendInternalAsync(
             _responseAddress,

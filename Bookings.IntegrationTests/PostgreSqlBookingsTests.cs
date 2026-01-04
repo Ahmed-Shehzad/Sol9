@@ -44,7 +44,7 @@ public sealed class PostgreSqlBookingsTests : IAsyncLifetime
         if (pendingMigrations.Any())
             await context.Database.MigrateAsync();
 
-        var booking = Booking.Create(Guid.NewGuid(), "Test Customer");
+        var booking = Booking.Create(Ulid.NewUlid(), "Test Customer");
         _ = context.Bookings.Add(booking);
         _ = await context.SaveChangesAsync();
 
@@ -57,7 +57,7 @@ public sealed class PostgreSqlBookingsTests : IAsyncLifetime
     public async Task BookingsDbContext_can_persist_multiple_bookingsAsync()
     {
         List<Booking> bookings = new Faker<Booking>()
-            .CustomInstantiator(f => Booking.Create(Guid.NewGuid(), f.Name.FullName()))
+            .CustomInstantiator(f => Booking.Create(Ulid.NewUlid(), f.Name.FullName()))
             .Generate(3);
 
         DbContextOptions<BookingsDbContext> options = new DbContextOptionsBuilder<BookingsDbContext>()
@@ -87,7 +87,7 @@ public sealed class PostgreSqlBookingsTests : IAsyncLifetime
     public async Task CreateBookingCommandHandler_returns_existing_booking_without_savingAsync()
     {
         var faker = new Faker();
-        var orderId = Guid.NewGuid();
+        var orderId = Ulid.NewUlid();
         string existingCustomer = faker.Name.FullName();
         var existing = Booking.Create(orderId, existingCustomer);
         string ignoredCustomer = faker.Name.FullName();

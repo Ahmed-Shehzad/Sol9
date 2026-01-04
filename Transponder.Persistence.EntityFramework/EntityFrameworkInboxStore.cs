@@ -18,7 +18,7 @@ public sealed class EntityFrameworkInboxStore : IInboxStore
 
     /// <inheritdoc />
     public async Task<IInboxState?> GetAsync(
-        Guid messageId,
+        Ulid messageId,
         string consumerId,
         CancellationToken cancellationToken = default)
     {
@@ -57,7 +57,7 @@ public sealed class EntityFrameworkInboxStore : IInboxStore
 
     /// <inheritdoc />
     public async Task MarkProcessedAsync(
-        Guid messageId,
+        Ulid messageId,
         string consumerId,
         DateTimeOffset processedTime,
         CancellationToken cancellationToken = default)

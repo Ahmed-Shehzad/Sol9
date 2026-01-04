@@ -8,7 +8,7 @@ public sealed class InMemoryInboxStoreTests
     public async Task TryAddAsync_And_MarkProcessedAsync_Update_State()
     {
         var store = new InMemoryInboxStore();
-        var messageId = Guid.NewGuid();
+        var messageId = Ulid.NewUlid();
         var state = new InboxState(messageId, "consumer-A");
 
         bool added = await store.TryAddAsync(state);

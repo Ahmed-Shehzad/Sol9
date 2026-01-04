@@ -39,11 +39,11 @@ public sealed class SagaConsumeContext<TState, TMessage> : ISagaConsumeContext<T
 
     public void MarkCompleted() => IsCompleted = true;
 
-    public Guid? MessageId => _consumeContext.MessageId;
+    public Ulid? MessageId => _consumeContext.MessageId;
 
-    public Guid? CorrelationId => _consumeContext.CorrelationId;
+    public Ulid? CorrelationId => _consumeContext.CorrelationId;
 
-    public Guid? ConversationId => _consumeContext.ConversationId;
+    public Ulid? ConversationId => _consumeContext.ConversationId;
 
     public Uri? SourceAddress => _consumeContext.SourceAddress;
 

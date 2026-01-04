@@ -31,8 +31,8 @@ partial class InitialCreate
 
         modelBuilder.Entity("Transponder.Persistence.EntityFramework.InboxStateEntity", b =>
             {
-                b.Property<Guid>("MessageId")
-                    .HasColumnType("uuid");
+                b.Property<Ulid>("MessageId")
+                    .HasColumnType("character(26)");
 
                 b.Property<string>("ConsumerId")
                     .IsRequired()
@@ -52,14 +52,14 @@ partial class InitialCreate
 
         modelBuilder.Entity("Transponder.Persistence.EntityFramework.OutboxMessageEntity", b =>
             {
-                b.Property<Guid>("MessageId")
-                    .HasColumnType("uuid");
+                b.Property<Ulid>("MessageId")
+                    .HasColumnType("character(26)");
 
-                b.Property<Guid?>("CorrelationId")
-                    .HasColumnType("uuid");
+                b.Property<Ulid?>("CorrelationId")
+                    .HasColumnType("character(26)");
 
-                b.Property<Guid?>("ConversationId")
-                    .HasColumnType("uuid");
+                b.Property<Ulid?>("ConversationId")
+                    .HasColumnType("character(26)");
 
                 b.Property<string>("SourceAddress")
                     .HasMaxLength(2048)
@@ -95,8 +95,8 @@ partial class InitialCreate
 
         modelBuilder.Entity("Transponder.Persistence.EntityFramework.SagaStateEntity", b =>
             {
-                b.Property<Guid>("CorrelationId")
-                    .HasColumnType("uuid");
+                b.Property<Ulid>("CorrelationId")
+                    .HasColumnType("character(26)");
 
                 b.Property<string>("StateType")
                     .IsRequired()
@@ -107,8 +107,8 @@ partial class InitialCreate
                     .IsRequired()
                     .HasColumnType("jsonb");
 
-                b.Property<Guid?>("ConversationId")
-                    .HasColumnType("uuid");
+                b.Property<Ulid?>("ConversationId")
+                    .HasColumnType("character(26)");
 
                 b.Property<DateTimeOffset>("UpdatedTime")
                     .HasColumnType("timestamp with time zone");
@@ -122,8 +122,8 @@ partial class InitialCreate
 
         modelBuilder.Entity("Transponder.Persistence.EntityFramework.ScheduledMessageEntity", b =>
             {
-                b.Property<Guid>("TokenId")
-                    .HasColumnType("uuid");
+                b.Property<Ulid>("TokenId")
+                    .HasColumnType("character(26)");
 
                 b.Property<string>("MessageType")
                     .IsRequired()

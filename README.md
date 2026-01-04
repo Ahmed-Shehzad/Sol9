@@ -133,7 +133,7 @@ Consistent validation ensures uniform error handling.
 #### What to use?
 Use shared message records for cross-module calls.
 ```csharp
-public sealed record CreateBookingRequest(Guid OrderId, string CustomerName) : ICorrelatedMessage;
+public sealed record CreateBookingRequest(Ulid OrderId, string CustomerName) : ICorrelatedMessage;
 ```
 
 #### How to use?

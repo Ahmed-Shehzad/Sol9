@@ -155,9 +155,9 @@ public sealed class TransponderBus : IBusControl
     internal async Task SendInternalAsync<TMessage>(
         Uri address,
         TMessage message,
-        Guid? messageId,
-        Guid? correlationId,
-        Guid? conversationId,
+        Ulid? messageId,
+        Ulid? correlationId,
+        Ulid? conversationId,
         IReadOnlyDictionary<string, object?>? headers,
         CancellationToken cancellationToken)
         where TMessage : class, IMessage
@@ -220,7 +220,7 @@ public sealed class TransponderBus : IBusControl
 
         ITransportHost host = _hostProvider.GetHost(address);
         ISendTransport transport = await host.GetSendTransportAsync(address, cancellationToken).ConfigureAwait(false);
-        Guid? correlationId = message is ICorrelatedMessage correlatedMessage ? correlatedMessage.CorrelationId : null;
+        Ulid? correlationId = message is ICorrelatedMessage correlatedMessage ? correlatedMessage.CorrelationId : null;
         TransportMessage transportMessage = TransportMessageFactory.Create(
             message,
             _serializer,
@@ -245,8 +245,8 @@ public sealed class TransponderBus : IBusControl
 
     internal async Task PublishInternalAsync<TMessage>(
         TMessage message,
-        Guid? correlationId,
-        Guid? conversationId,
+        Ulid? correlationId,
+        Ulid? conversationId,
         IReadOnlyDictionary<string, object?>? headers,
         CancellationToken cancellationToken)
         where TMessage : class, IMessage
@@ -314,7 +314,7 @@ public sealed class TransponderBus : IBusControl
     {
         Type messageType = message.GetType();
         IPublishTransport transport = await host.GetPublishTransportAsync(messageType, cancellationToken).ConfigureAwait(false);
-        Guid? correlationId = message is ICorrelatedMessage correlatedMessage ? correlatedMessage.CorrelationId : null;
+        Ulid? correlationId = message is ICorrelatedMessage correlatedMessage ? correlatedMessage.CorrelationId : null;
         TransportMessage transportMessage = TransportMessageFactory.Create(
             message,
             _serializer,
@@ -334,7 +334,7 @@ public sealed class TransponderBus : IBusControl
     {
         var builder = new UriBuilder(Address);
         string basePath = builder.Path?.TrimEnd('/') ?? string.Empty;
-        builder.Path = $"{basePath}/responses/{Guid.NewGuid():N}";
+        builder.Path = $"{basePath}/responses/{Ulid.NewUlid()}";
         return builder.Uri;
     }
 

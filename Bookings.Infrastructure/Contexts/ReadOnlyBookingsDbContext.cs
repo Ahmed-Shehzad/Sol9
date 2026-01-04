@@ -15,6 +15,14 @@ public class ReadOnlyBookingsDbContext : DbContext, IReadOnlyBookingsDbContext
     {
     }
 
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        configurationBuilder
+            .Properties<Ulid>()
+            .HaveConversion<UlidToStringConverter>()
+            .HaveConversion<UlidToBytesConverter>();
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
