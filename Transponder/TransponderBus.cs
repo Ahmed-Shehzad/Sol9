@@ -147,7 +147,7 @@ public sealed class TransponderBus : IBusControl
         if (_outboxDispatcher is not null) await _outboxDispatcher.DisposeAsync().ConfigureAwait(false);
     }
 
-    internal async Task DisposeHostsAsync()
+    private async Task DisposeHostsAsync()
     {
         foreach (ITransportHost host in _hosts) await host.DisposeAsync().ConfigureAwait(false);
     }

@@ -71,10 +71,7 @@ public class IntercessorBuilder
     /// Registers a pipeline behavior type to be added explicitly to the container.
     /// </summary>
     /// <typeparam name="TBehavior">The pipeline behavior type.</typeparam>
-    public void AddBehavior<TBehavior>() where TBehavior : class
-    {
-        AddBehavior(typeof(TBehavior));
-    }
+    public void AddBehavior<TBehavior>() where TBehavior : class => AddBehavior(typeof(TBehavior));
 
     /// <summary>
     /// Finalizes the Intercessor registration by adding core services and scanning the configured assemblies

@@ -10,8 +10,8 @@ public abstract class AggregateRoot : BaseEntity
     public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
     public IReadOnlyCollection<IIntegrationEvent> IntegrationEvents => _integrationEvents.AsReadOnly();
 
-    public void AddDomainEvent(IDomainEvent domainEvent) => _domainEvents.Add(domainEvent);
-    public void AddIntegrationEvent(IIntegrationEvent integrationEvent) => _integrationEvents.Add(integrationEvent);
+    protected void AddDomainEvent(IDomainEvent domainEvent) => _domainEvents.Add(domainEvent);
+    protected void AddIntegrationEvent(IIntegrationEvent integrationEvent) => _integrationEvents.Add(integrationEvent);
 
     public void ClearDomainEvents() => _domainEvents.Clear();
     public void ClearIntegrationEvents() => _integrationEvents.Clear();

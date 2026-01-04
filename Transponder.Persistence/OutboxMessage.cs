@@ -67,10 +67,7 @@ public sealed class OutboxMessage : IOutboxMessage
     /// <inheritdoc />
     public DateTimeOffset? SentTime { get; private set; }
 
-    internal void MarkSent(DateTimeOffset sentTime)
-    {
-        SentTime = sentTime;
-    }
+    internal void MarkSent(DateTimeOffset sentTime) => SentTime = sentTime;
 
     public static OutboxMessage FromMessage(IOutboxMessage message)
     {

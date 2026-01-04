@@ -31,10 +31,7 @@ public class CircuitBreakerBehavior<TRequest, TResponse> : IPipelineBehavior<TRe
     }
 
     /// <inheritdoc />
-    public async Task<TResponse> HandleAsync(TRequest request, Func<Task<TResponse>> next, CancellationToken cancellationToken = default)
-    {
-        return await _circuitBreakerPolicy.ExecuteAsync(next);
-    }
+    public async Task<TResponse> HandleAsync(TRequest request, Func<Task<TResponse>> next, CancellationToken cancellationToken = default) => await _circuitBreakerPolicy.ExecuteAsync(next);
 }
 
 /// <inheritdoc />
@@ -62,8 +59,5 @@ public class CircuitBreakerBehavior<TRequest> : IPipelineBehavior<TRequest> wher
     }
 
     /// <inheritdoc />
-    public async Task HandleAsync(TRequest request, Func<Task> next, CancellationToken cancellationToken = default)
-    {
-        await _circuitBreakerPolicy.ExecuteAsync(next);
-    }
+    public async Task HandleAsync(TRequest request, Func<Task> next, CancellationToken cancellationToken = default) => await _circuitBreakerPolicy.ExecuteAsync(next);
 }

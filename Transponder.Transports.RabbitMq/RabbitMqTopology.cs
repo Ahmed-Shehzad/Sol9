@@ -15,18 +15,14 @@ public sealed class RabbitMqTopology : IRabbitMqTopology
         return messageType.Name;
     }
 
-    public string GetRoutingKey(Type messageType)
-    {
-        ArgumentNullException.ThrowIfNull(messageType);
-        return messageType.Name;
-    }
+    public string GetRoutingKey(Type messageType) => GetExchangeName(messageType);
 
     public string GetQueueName(Uri address)
     {
         ArgumentNullException.ThrowIfNull(address);
 
-        if (!string.IsNullOrWhiteSpace(address.AbsolutePath) && address.AbsolutePath != "/") return address.AbsolutePath.Trim('/');
-
-        return address.Host;
+        return !string.IsNullOrWhiteSpace(address.AbsolutePath) && address.AbsolutePath != "/"
+            ? address.AbsolutePath.Trim('/')
+            : address.Host;
     }
 }

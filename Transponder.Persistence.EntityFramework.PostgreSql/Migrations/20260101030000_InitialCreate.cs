@@ -2,29 +2,17 @@ using System;
 
 using Microsoft.EntityFrameworkCore.Migrations;
 
-using Transponder.Persistence.EntityFramework.PostgreSql;
-using Transponder.Persistence.EntityFramework.PostgreSql.Abstractions;
-
 namespace Transponder.Persistence.EntityFramework.PostgreSql.Migrations;
 
 public partial class InitialCreate : Migration
 {
-    private readonly IPostgreSqlStorageOptions _storageOptions;
-
-    public InitialCreate(IPostgreSqlStorageOptions storageOptions)
-    {
-        _storageOptions = storageOptions ?? throw new ArgumentNullException(nameof(storageOptions));
-    }
-
     protected override void Up(MigrationBuilder migrationBuilder)
     {
-        string schema = _storageOptions.Schema ?? "public";
-        string outboxTable = _storageOptions.OutboxTableName;
-        string inboxTable = _storageOptions.InboxTableName;
-        string scheduledTable = _storageOptions.ScheduledMessagesTableName;
-        string sagaTable = _storageOptions.SagaStatesTableName;
-
-        _ = migrationBuilder.EnsureSchema(name: schema);
+        string? schema = null;
+        const string outboxTable = "OutboxMessages";
+        const string inboxTable = "InboxStates";
+        const string scheduledTable = "ScheduledMessages";
+        const string sagaTable = "SagaStates";
 
         _ = migrationBuilder.CreateTable(
             name: outboxTable,
@@ -113,22 +101,22 @@ public partial class InitialCreate : Migration
 
     protected override void Down(MigrationBuilder migrationBuilder)
     {
-        string schema = _storageOptions.Schema ?? "public";
+        string? schema = null;
 
         _ = migrationBuilder.DropTable(
-            name: _storageOptions.ScheduledMessagesTableName,
+            name: "ScheduledMessages",
             schema: schema);
 
         _ = migrationBuilder.DropTable(
-            name: _storageOptions.SagaStatesTableName,
+            name: "SagaStates",
             schema: schema);
 
         _ = migrationBuilder.DropTable(
-            name: _storageOptions.InboxTableName,
+            name: "InboxStates",
             schema: schema);
 
         _ = migrationBuilder.DropTable(
-            name: _storageOptions.OutboxTableName,
+            name: "OutboxMessages",
             schema: schema);
     }
 }

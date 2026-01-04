@@ -35,10 +35,7 @@ public sealed class InboxState : IInboxState
     /// <inheritdoc />
     public DateTimeOffset? ProcessedTime { get; private set; }
 
-    internal void MarkProcessed(DateTimeOffset processedTime)
-    {
-        ProcessedTime = processedTime;
-    }
+    internal void MarkProcessed(DateTimeOffset processedTime) => ProcessedTime = processedTime;
 
     public static InboxState FromState(IInboxState state)
     {

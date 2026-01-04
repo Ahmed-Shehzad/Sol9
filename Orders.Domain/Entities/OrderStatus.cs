@@ -4,6 +4,7 @@ public enum OrderStatus
 {
     Created,
     Booked,
+    Confirmed,
     Cancelled,
     Expired,
     Completed

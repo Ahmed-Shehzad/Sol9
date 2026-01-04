@@ -107,7 +107,7 @@ public sealed class OutboxMessageEntity : IOutboxMessage
         return _headersCache;
     }
 
-    private static string? SerializeHeaders(IReadOnlyDictionary<string, object?> headers)
+    private static string? SerializeHeaders(IReadOnlyDictionary<string, object?>? headers)
     {
         if (headers == null || headers.Count == 0) return null;
 

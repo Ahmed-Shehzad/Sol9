@@ -18,8 +18,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Commands\" />
-      <Folder Include="Events\" />
+      <Folder Include="EventHandlers\Domain\" />
     </ItemGroup>
 
 </Project>

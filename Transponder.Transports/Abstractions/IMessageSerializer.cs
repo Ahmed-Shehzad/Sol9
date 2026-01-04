@@ -18,9 +18,23 @@ public interface IMessageSerializer
     ReadOnlyMemory<byte> Serialize(object message, Type messageType);
 
     /// <summary>
+    /// Asynchronously serializes a message to a byte payload.
+    /// </summary>
+    /// <param name="message">The message instance to serialize.</param>
+    /// <param name="messageType">The message type.</param>
+    Task<ReadOnlyMemory<byte>> SerializeAsync(object message, Type messageType);
+
+    /// <summary>
     /// Deserializes a byte payload into a message instance.
     /// </summary>
     /// <param name="body">The message payload bytes.</param>
     /// <param name="messageType">The message type.</param>
     object Deserialize(ReadOnlySpan<byte> body, Type messageType);
+
+    /// <summary>
+    /// Asynchronously deserializes a byte payload into a message instance.
+    /// </summary>
+    /// <param name="body">The message payload bytes.</param>
+    /// <param name="messageType">The message type.</param>
+    Task<object?> DeserializeAsync(ReadOnlyMemory<byte> body, Type messageType);
 }

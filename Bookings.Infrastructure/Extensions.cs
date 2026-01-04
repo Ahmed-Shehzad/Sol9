@@ -25,10 +25,16 @@ public static class Extensions
         {
             _ = options.UseNpgsql(connectionString);
             IPublisher publisher = serviceProvider.GetRequiredService<IPublisher>();
+            Transponder.Abstractions.IBus bus = serviceProvider.GetRequiredService<Transponder.Abstractions.IBus>();
+            Transponder.Transports.Abstractions.IMessageSerializer serializer = serviceProvider
+                .GetRequiredService<Transponder.Transports.Abstractions.IMessageSerializer>();
+            Transponder.Persistence.EntityFramework.PostgreSql.Abstractions.IPostgreSqlStorageOptions storageOptions =
+                serviceProvider.GetRequiredService<
+                    Transponder.Persistence.EntityFramework.PostgreSql.Abstractions.IPostgreSqlStorageOptions>();
             _ = options.AddInterceptors(
                 new AuditableInterceptor(),
                 new DomainEventDispatchInterceptor(publisher),
-                new IntegrationEventDispatcherInterceptor(publisher));
+                new IntegrationEventDispatchInterceptor(publisher, bus, serializer, storageOptions));
         });
         _ = services.AddDbContext<ReadOnlyBookingsDbContext>(options =>
         {

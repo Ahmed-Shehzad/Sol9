@@ -34,8 +34,5 @@ public sealed class InMemoryStorageSession : IStorageSession
     }
 
     /// <inheritdoc />
-    public ValueTask DisposeAsync()
-    {
-        return ValueTask.CompletedTask;
-    }
+    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 }

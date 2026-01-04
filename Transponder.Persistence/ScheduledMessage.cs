@@ -60,10 +60,7 @@ public sealed class ScheduledMessage : IScheduledMessage
     /// <inheritdoc />
     public DateTimeOffset? DispatchedTime { get; private set; }
 
-    internal void MarkDispatched(DateTimeOffset dispatchedTime)
-    {
-        DispatchedTime = dispatchedTime;
-    }
+    internal void MarkDispatched(DateTimeOffset dispatchedTime) => DispatchedTime = dispatchedTime;
 
     public static ScheduledMessage FromMessage(IScheduledMessage message)
     {

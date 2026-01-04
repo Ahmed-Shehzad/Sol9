@@ -9,8 +9,5 @@ public sealed class ValidationException : Exception
         Errors = failures.AsReadOnly();
     }
 
-    private static string BuildMessage(List<ValidationFailure> failures)
-    {
-        return failures.Count == 0 ? string.Empty : "Validation failed: " + string.Join("; ", failures);
-    }
+    private static string BuildMessage(List<ValidationFailure> failures) => failures.Count == 0 ? string.Empty : "Validation failed: " + string.Join("; ", failures);
 }

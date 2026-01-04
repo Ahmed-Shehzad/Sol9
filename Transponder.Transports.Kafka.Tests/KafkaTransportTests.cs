@@ -35,10 +35,7 @@ public sealed class KafkaTransportTests
     }
 
     [Fact]
-    public void KafkaHostSettings_Requires_Bootstrap_Servers()
-    {
-        _ = Assert.Throws<ArgumentException>(() => new KafkaHostSettings(new Uri("kafka://broker"), new List<string>()));
-    }
+    public void KafkaHostSettings_Requires_Bootstrap_Servers() => _ = Assert.Throws<ArgumentException>(() => new KafkaHostSettings(new Uri("kafka://broker"), new List<string>()));
 
     [Fact]
     public void KafkaTransportFactory_Throws_For_Wrong_Settings()

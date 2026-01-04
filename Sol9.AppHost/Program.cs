@@ -14,7 +14,6 @@ IResourceBuilder<ParameterResource> redisPassword = builder.AddParameter("redis-
 IResourceBuilder<PostgresServerResource> postgres = builder.AddPostgres("postgres", pgUser, pgPassword, 5432);
 IResourceBuilder<PostgresDatabaseResource> bookingsDb = postgres.AddDatabase("bookings");
 IResourceBuilder<PostgresDatabaseResource> ordersDb = postgres.AddDatabase("orders");
-IResourceBuilder<PostgresDatabaseResource> transponderDb = postgres.AddDatabase("transponder");
 
 IResourceBuilder<ContainerResource> redis = builder.AddContainer("redis", "redis:8.2")
     .WithEnvironment("REDIS_PASSWORD", redisPassword)
@@ -29,14 +28,14 @@ var redisConnection = ReferenceExpression.Create(
 
 IResourceBuilder<ProjectResource> bookingsApi = builder.AddProject<Projects.Bookings_API>("bookings-api")
     .WithReference(bookingsDb)
-    .WithReference(transponderDb)
+    .WithReference(bookingsDb, "Transponder")
     .WithHttpsEndpoint()
     .WithEnvironment("ConnectionStrings__Redis", redisConnection)
     .WaitForStart(redis);
 
 IResourceBuilder<ProjectResource> ordersApi = builder.AddProject<Projects.Orders_API>("orders-api")
     .WithReference(ordersDb)
-    .WithReference(transponderDb)
+    .WithReference(ordersDb, "Transponder")
     .WithHttpsEndpoint()
     .WithEnvironment("ConnectionStrings__Redis", redisConnection)
     .WaitForStart(redis);

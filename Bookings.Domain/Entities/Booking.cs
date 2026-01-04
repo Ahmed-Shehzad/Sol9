@@ -6,6 +6,7 @@ public enum BookingStatus
 {
     Created,
     Confirmed,
+    Cancelled
 }
 
 public class Booking : AggregateRoot
@@ -28,4 +29,5 @@ public class Booking : AggregateRoot
     public static Booking Create(Guid orderId, string customerName) => new(orderId, customerName, BookingStatus.Created);
 
     public void MarkConfirmed() => Status = BookingStatus.Confirmed;
+    public void MarkCancelled() => Status = BookingStatus.Cancelled;
 }

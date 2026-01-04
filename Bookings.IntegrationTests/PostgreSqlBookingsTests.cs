@@ -40,7 +40,9 @@ public sealed class PostgreSqlBookingsTests : IAsyncLifetime
             .Options;
 
         await using var context = new BookingsDbContext(options);
-        await context.Database.MigrateAsync();
+        IEnumerable<string> pendingMigrations = await context.Database.GetPendingMigrationsAsync();
+        if (pendingMigrations.Any())
+            await context.Database.MigrateAsync();
 
         var booking = Booking.Create(Guid.NewGuid(), "Test Customer");
         _ = context.Bookings.Add(booking);
@@ -63,7 +65,9 @@ public sealed class PostgreSqlBookingsTests : IAsyncLifetime
             .Options;
 
         await using var context = new BookingsDbContext(options);
-        await context.Database.MigrateAsync();
+        IEnumerable<string> pendingMigrations = await context.Database.GetPendingMigrationsAsync();
+        if (pendingMigrations.Any())
+            await context.Database.MigrateAsync();
 
         await context.Bookings.AddRangeAsync(bookings);
         _ = await context.SaveChangesAsync();

@@ -36,10 +36,7 @@ public class RetryBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TR
     }
 
     /// <inheritdoc />
-    public async Task<TResponse> HandleAsync(TRequest request, Func<Task<TResponse>> next, CancellationToken cancellationToken = default)
-    {
-        return await _retryPolicy.ExecuteAsync(_ => next(), cancellationToken);
-    }
+    public async Task<TResponse> HandleAsync(TRequest request, Func<Task<TResponse>> next, CancellationToken cancellationToken = default) => await _retryPolicy.ExecuteAsync(_ => next(), cancellationToken);
 }
 
 /// <inheritdoc />
@@ -71,8 +68,5 @@ public class RetryBehavior<TRequest> : IPipelineBehavior<TRequest> where TReques
     }
 
     /// <inheritdoc />
-    public async Task HandleAsync(TRequest request, Func<Task> next, CancellationToken cancellationToken = default)
-    {
-        await _retryPolicy.ExecuteAsync(_ => next(), cancellationToken);
-    }
+    public async Task HandleAsync(TRequest request, Func<Task> next, CancellationToken cancellationToken = default) => await _retryPolicy.ExecuteAsync(_ => next(), cancellationToken);
 }

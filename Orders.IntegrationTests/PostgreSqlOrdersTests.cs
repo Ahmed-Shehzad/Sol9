@@ -2,22 +2,15 @@ using Bogus;
 
 using Microsoft.EntityFrameworkCore;
 
-using NSubstitute;
-
 using Orders.Application.Commands.CreateOrder;
 using Orders.Application.Contexts;
-using Orders.Application.Dtos.Orders;
 using Orders.Domain.Entities;
 using Orders.Infrastructure.Contexts;
 using Orders.Infrastructure.Repositories;
 
 using Shouldly;
 
-using Sol9.Contracts.Bookings;
-
 using Testcontainers.PostgreSql;
-
-using Transponder.Abstractions;
 
 using Xunit;
 
@@ -43,7 +36,9 @@ public sealed class PostgreSqlOrdersTests : IAsyncLifetime
             .Options;
 
         await using var context = new OrdersDbContext(options);
-        await context.Database.MigrateAsync();
+        IEnumerable<string> pendingMigrations = await context.Database.GetPendingMigrationsAsync();
+        if (pendingMigrations.Any())
+            await context.Database.MigrateAsync();
 
         var order = Order.Create("Test Customer", 42.5m);
         _ = context.Orders.Add(order);
@@ -66,7 +61,9 @@ public sealed class PostgreSqlOrdersTests : IAsyncLifetime
             .Options;
 
         await using var context = new OrdersDbContext(options);
-        await context.Database.MigrateAsync();
+        IEnumerable<string> pendingMigrations = await context.Database.GetPendingMigrationsAsync();
+        if (pendingMigrations.Any())
+            await context.Database.MigrateAsync();
 
         await context.Orders.AddRangeAsync(orders);
         _ = await context.SaveChangesAsync();
@@ -82,7 +79,7 @@ public sealed class PostgreSqlOrdersTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task CreateOrderCommandHandler_marks_order_booked_when_booking_createdAsync()
+    public async Task CreateOrderCommandHandler_creates_orderAsync()
     {
         var faker = new Faker();
         string customerName = faker.Name.FullName();
@@ -93,39 +90,19 @@ public sealed class PostgreSqlOrdersTests : IAsyncLifetime
             .Options;
 
         await using var context = new OrdersDbContext(options);
-        await context.Database.MigrateAsync();
-
-        IRequestClient<CreateBookingRequest> requestClient = Substitute.For<IRequestClient<CreateBookingRequest>>();
-        _ = requestClient.GetResponseAsync<CreateBookingResponse>(Arg.Any<CreateBookingRequest>(), Arg.Any<CancellationToken>())
-            .Returns(callInfo =>
-            {
-                CreateBookingRequest request = callInfo.ArgAt<CreateBookingRequest>(0);
-                return Task.FromResult(new CreateBookingResponse(
-                    Guid.NewGuid(),
-                    request.OrderId,
-                    (int)BookingStatus.Created));
-            });
-
-        IClientFactory clientFactory = Substitute.For<IClientFactory>();
-        _ = clientFactory.CreateRequestClient<CreateBookingRequest>(Arg.Any<TimeSpan?>())
-            .Returns(requestClient);
+        IEnumerable<string> pendingMigrations = await context.Database.GetPendingMigrationsAsync();
+        if (pendingMigrations.Any())
+            await context.Database.MigrateAsync();
 
         IOrdersRepository repository = new OrdersRepository(context);
-        var handler = new CreateOrderCommandHandler(repository, clientFactory);
+        var handler = new CreateOrderCommandHandler(repository);
 
-        OrderDto result = await handler.HandleAsync(new CreateOrderCommand(customerName, totalAmount), CancellationToken.None);
+        Guid orderId = await handler.HandleAsync(new CreateOrderCommand(customerName, totalAmount), CancellationToken.None);
 
-        result.CustomerName.ShouldBe(customerName);
-        result.TotalAmount.ShouldBe(totalAmount);
-        result.Status.ShouldBe(OrderStatus.Booked);
-
-        Order? stored = await context.Orders.SingleOrDefaultAsync(o => o.Id == result.Id);
+        Order? stored = await context.Orders.SingleOrDefaultAsync(o => o.Id == orderId);
         _ = stored.ShouldNotBeNull();
-        stored.Status.ShouldBe(OrderStatus.Booked);
-
-        _ = clientFactory.Received(1).CreateRequestClient<CreateBookingRequest>(null);
-        _ = await requestClient.Received(1).GetResponseAsync<CreateBookingResponse>(
-            Arg.Is<CreateBookingRequest>(request => request.CustomerName == customerName),
-            Arg.Any<CancellationToken>());
+        stored.CustomerName.ShouldBe(customerName);
+        stored.TotalAmount.ShouldBe(totalAmount);
+        stored.Status.ShouldBe(OrderStatus.Created);
     }
 }

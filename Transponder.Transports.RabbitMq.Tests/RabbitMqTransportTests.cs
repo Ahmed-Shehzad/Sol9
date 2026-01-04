@@ -32,10 +32,7 @@ public sealed class RabbitMqTransportTests
     }
 
     [Fact]
-    public void RabbitMqHostSettings_Requires_Host()
-    {
-        _ = Assert.Throws<ArgumentException>(() => new RabbitMqHostSettings(new Uri("rabbitmq://broker"), " "));
-    }
+    public void RabbitMqHostSettings_Requires_Host() => _ = Assert.Throws<ArgumentException>(() => new RabbitMqHostSettings(new Uri("rabbitmq://broker"), " "));
 
     [Fact]
     public void RabbitMqTransportFactory_Throws_For_Wrong_Settings()

@@ -41,10 +41,7 @@ public sealed class AwsTransportTests
     }
 
     [Fact]
-    public void AwsTransportHostSettings_Requires_Region()
-    {
-        _ = Assert.Throws<ArgumentException>(() => new AwsTransportHostSettings(new Uri("aws://example"), " "));
-    }
+    public void AwsTransportHostSettings_Requires_Region() => _ = Assert.Throws<ArgumentException>(() => new AwsTransportHostSettings(new Uri("aws://example"), " "));
 
     [Fact]
     public void AwsTransportFactory_Throws_For_Wrong_Settings()

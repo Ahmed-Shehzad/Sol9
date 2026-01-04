@@ -1,4 +1,6 @@
-﻿using Sol9.Core;
+﻿using Orders.Domain.Events.Integration;
+
+using Sol9.Core;
 
 namespace Orders.Domain.Entities;
 
@@ -17,12 +19,19 @@ public class Order : AggregateRoot
         CustomerName = customerName;
         TotalAmount = totalAmount;
         Status = OrderStatus.Created;
+
+        AddIntegrationEvent(new OrderCreatedIntegrationEvent(Id));
     }
 
     public static Order Create(string customerName, decimal totalAmount) => new(customerName, totalAmount);
 
     public void MarkBooked() => Status = OrderStatus.Booked;
-    public void MarkCancelled() => Status = OrderStatus.Cancelled;
+    public void MarkConfirmed() => Status = OrderStatus.Confirmed;
+    public void MarkCancelled()
+    {
+        Status = OrderStatus.Cancelled;
+        AddIntegrationEvent(new OrderCancelledIntegrationEvent(Id, CustomerName));
+    }
     public void MarkCompleted() => Status = OrderStatus.Completed;
     public void MarkExpired() => Status = OrderStatus.Expired;
 }

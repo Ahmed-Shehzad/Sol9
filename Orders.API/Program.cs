@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Linq;
 
 using Asp.Versioning;
 
@@ -79,7 +80,10 @@ if (app.Environment.IsDevelopment())
 {
     using IServiceScope scope = app.Services.CreateScope();
     OrdersDbContext dbContext = scope.ServiceProvider.GetRequiredService<OrdersDbContext>();
-    await dbContext.Database.MigrateAsync().ConfigureAwait(false);
+    IEnumerable<string> pendingDomainMigrations =
+        await dbContext.Database.GetPendingMigrationsAsync().ConfigureAwait(false);
+    if (pendingDomainMigrations.Any())
+        await dbContext.Database.MigrateAsync().ConfigureAwait(false);
 
     IDbContextFactory<PostgreSqlTransponderDbContext>? transponderFactory =
         scope.ServiceProvider.GetService<IDbContextFactory<PostgreSqlTransponderDbContext>>();
@@ -87,7 +91,10 @@ if (app.Environment.IsDevelopment())
     {
         await using PostgreSqlTransponderDbContext transponderDb =
             await transponderFactory.CreateDbContextAsync().ConfigureAwait(false);
-        await transponderDb.Database.MigrateAsync().ConfigureAwait(false);
+        IEnumerable<string> pendingMigrations =
+            await transponderDb.Database.GetPendingMigrationsAsync().ConfigureAwait(false);
+        if (pendingMigrations.Any())
+            await transponderDb.Database.MigrateAsync().ConfigureAwait(false);
     }
 }
 
@@ -115,7 +122,8 @@ app.UseExceptionHandler(handler =>
             _ => BuildUnexpectedProblemDetails(exception, context, includeDetails)
         };
 
-        logger.LogError("Error result: {@Result}", result);
+        if (logger.IsEnabled(LogLevel.Error))
+            logger.LogError("Error result: {@Result}", result);
 
         context.Response.StatusCode = statusCode;
         context.Response.ContentType = "application/json";
@@ -201,27 +209,44 @@ static void ConfigureTransponder(WebApplicationBuilder builder)
     _ = builder.Services.UseSerilog();
     _ = builder.Services.UseOpenTelemetry();
 
+    ConfigureTransponderRedis(builder);
+    ConfigureTransponderPersistence(builder);
+    ConfigureTransponderBus(builder, localAddress, remoteResolution);
+}
+
+static void ConfigureTransponderRedis(WebApplicationBuilder builder)
+{
     string? redisConnection = builder.Configuration.GetConnectionString("Redis");
-    if (!string.IsNullOrWhiteSpace(redisConnection))
-        _ = builder.Services.AddTransponderRedisCache(options =>
-        {
-            options.ConnectionString = redisConnection;
-            options.AllowUntrustedCertificates = builder.Environment.IsDevelopment();
-        });
+    if (string.IsNullOrWhiteSpace(redisConnection)) return;
 
-    string? transponderConnection = builder.Configuration.GetConnectionString("Transponder");
-    if (!string.IsNullOrWhiteSpace(transponderConnection))
+    _ = builder.Services.AddTransponderRedisCache(options =>
     {
-        string schema = builder.Configuration["TransponderPersistence:Schema"] ?? "orders_transponder";
-        _ = builder.Services.AddSingleton<IPostgreSqlStorageOptions>(_ => new PostgreSqlStorageOptions(schema: schema));
-        string migrationsAssembly = typeof(Program).Assembly.GetName().Name ?? "Orders.API";
-        _ = builder.Services.AddDbContextFactory<PostgreSqlTransponderDbContext>(options =>
-            _ = options.UseNpgsql(transponderConnection, npgsql =>
-                _ = npgsql.MigrationsHistoryTable("__EFMigrationsHistory", schema)
-                    .MigrationsAssembly(migrationsAssembly)));
-        _ = builder.Services.AddTransponderPostgreSqlPersistence();
-    }
+        options.ConnectionString = redisConnection;
+        options.AllowUntrustedCertificates = builder.Environment.IsDevelopment();
+    });
+}
 
+static void ConfigureTransponderPersistence(WebApplicationBuilder builder)
+{
+    string? transponderConnection = builder.Configuration.GetConnectionString("Transponder");
+    if (string.IsNullOrWhiteSpace(transponderConnection)) return;
+
+    string? schema = GetTransponderSchema(builder.Configuration);
+    _ = builder.Services.AddSingleton<IPostgreSqlStorageOptions>(_ => new PostgreSqlStorageOptions(schema: schema));
+    string migrationsAssembly = typeof(PostgreSqlTransponderDbContext).Assembly.GetName().Name
+                                ?? "Transponder.Persistence.EntityFramework.PostgreSql";
+    _ = builder.Services.AddDbContextFactory<PostgreSqlTransponderDbContext>(options =>
+        _ = options.UseNpgsql(transponderConnection, npgsql =>
+            _ = npgsql.MigrationsHistoryTable("__EFMigrationsHistory", schema)
+                .MigrationsAssembly(migrationsAssembly)));
+    _ = builder.Services.AddTransponderPostgreSqlPersistence();
+}
+
+static void ConfigureTransponderBus(
+    WebApplicationBuilder builder,
+    Uri localAddress,
+    RemoteAddressResolution remoteResolution)
+{
     _ = builder.Services.AddTransponder(localAddress, options =>
     {
         _ = options.TransportBuilder.UseGrpc(localAddress, remoteResolution.Addresses);
@@ -235,6 +260,15 @@ static void ConfigureTransponder(WebApplicationBuilder builder)
     });
 
     _ = builder.Services.AddHostedService<TransponderBusHostedService>();
+}
+
+static string? GetTransponderSchema(IConfiguration configuration)
+{
+    string? schema = configuration["TransponderPersistence:Schema"];
+    if (string.IsNullOrWhiteSpace(schema) ||
+        string.Equals(schema, "public", StringComparison.OrdinalIgnoreCase))
+        return null;
+    return schema;
 }
 
 static TransponderSettings LoadTransponderSettings(IServiceCollection services, IConfiguration configuration)

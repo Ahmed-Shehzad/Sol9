@@ -7,6 +7,14 @@ namespace Sol9.Core;
 /// </summary>
 public abstract record IntegrationEvent : IIntegrationEvent
 {
-    public Guid EventId { get; init; } = Guid.NewGuid();
-    public DateTimeOffset OccurredOn { get; init; } = DateTimeOffset.UtcNow;
+    protected IntegrationEvent(Guid correlationId)
+    {
+        CorrelationId = correlationId;
+        EventId = Guid.NewGuid();
+        OccurredOn= DateTime.UtcNow;
+    }
+
+    public Guid EventId { get; init; }
+    public DateTimeOffset OccurredOn { get; init; }
+    public Guid CorrelationId { get; }
 }
