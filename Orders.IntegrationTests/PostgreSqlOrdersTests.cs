@@ -10,6 +10,8 @@ using Orders.Infrastructure.Repositories;
 
 using Shouldly;
 
+using Sol9.Core;
+
 using Testcontainers.PostgreSql;
 
 using Xunit;
@@ -97,9 +99,9 @@ public sealed class PostgreSqlOrdersTests : IAsyncLifetime
         IOrdersRepository repository = new OrdersRepository(context);
         var handler = new CreateOrderCommandHandler(repository);
 
-        Ulid orderId = await handler.HandleAsync(new CreateOrderCommand(customerName, totalAmount), CancellationToken.None);
+        Guid orderId = await handler.HandleAsync(new CreateOrderCommand(customerName, totalAmount), CancellationToken.None);
 
-        Order? stored = await context.Orders.SingleOrDefaultAsync(o => o.Id == orderId);
+        Order? stored = await context.Orders.SingleOrDefaultAsync(o => o.Id == orderId.ToUlid());
         _ = stored.ShouldNotBeNull();
         stored.CustomerName.ShouldBe(customerName);
         stored.TotalAmount.ShouldBe(totalAmount);

@@ -7,7 +7,7 @@ using Verifier;
 
 namespace Orders.Application.Commands.CancelOrder;
 
-public sealed record CancelOrderCommand(Ulid OrderId) : ICommand<Ulid>;
+public sealed record CancelOrderCommand(Ulid OrderId) : ICommand;
 
 public sealed class CancelOrderCommandValidator : AbstractValidator<CancelOrderCommand>
 {
@@ -19,7 +19,7 @@ public sealed class CancelOrderCommandValidator : AbstractValidator<CancelOrderC
     }
 }
 
-public class CancelOrderCommandHandler : ICommandHandler<CancelOrderCommand, Ulid>
+public class CancelOrderCommandHandler : ICommandHandler<CancelOrderCommand>
 {
     private readonly IOrdersRepository _ordersRepository;
 
@@ -27,13 +27,12 @@ public class CancelOrderCommandHandler : ICommandHandler<CancelOrderCommand, Uli
     {
         _ordersRepository = ordersRepository;
     }
-    public async Task<Ulid> HandleAsync(CancelOrderCommand request, CancellationToken cancellationToken = default)
+    public async Task HandleAsync(CancelOrderCommand request, CancellationToken cancellationToken = default)
     {
         Order? order = await _ordersRepository.GetAsync(o => o.Id == request.OrderId, cancellationToken).ConfigureAwait(false);
         ArgumentNullException.ThrowIfNull(order);
 
         order.MarkCancelled();
         await _ordersRepository.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-        return order.Id;
     }
 }

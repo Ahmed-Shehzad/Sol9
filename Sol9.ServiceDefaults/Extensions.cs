@@ -1,13 +1,18 @@
 using Cysharp.Serialization.MessagePack;
+
 using MessagePack;
 using MessagePack.Resolvers;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+
+using Npgsql;
 
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
@@ -51,6 +56,62 @@ public static class Extensions
         _ = app.MapGrpcHealthChecksService();
 
         return app;
+    }
+
+    public static async Task EnsureDatabaseCreatedAndMigratedAsync<TContext>(
+        this IServiceProvider serviceProvider,
+        CancellationToken cancellationToken = default)
+        where TContext : DbContext
+    {
+        await using AsyncServiceScope scope = serviceProvider.CreateAsyncScope();
+        TContext dbContext = scope.ServiceProvider.GetRequiredService<TContext>();
+        await EnsureDatabaseCreatedAndMigratedAsync(dbContext, cancellationToken).ConfigureAwait(false);
+    }
+
+    public static async Task EnsureDatabaseCreatedAndMigratedAsync<TContext>(
+        this IDbContextFactory<TContext> factory,
+        CancellationToken cancellationToken = default)
+        where TContext : DbContext
+    {
+        await using TContext dbContext = await factory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await EnsureDatabaseCreatedAndMigratedAsync(dbContext, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async static Task EnsureDatabaseCreatedAndMigratedAsync(
+        DbContext dbContext,
+        CancellationToken cancellationToken)
+    {
+        string? connectionString = dbContext.Database.GetConnectionString();
+        await EnsureDatabaseExistsAsync(connectionString, cancellationToken).ConfigureAwait(false);
+
+        IEnumerable<string> pendingMigrations =
+            await dbContext.Database.GetPendingMigrationsAsync(cancellationToken).ConfigureAwait(false);
+        if (pendingMigrations.Any())
+            await dbContext.Database.MigrateAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    private static async Task EnsureDatabaseExistsAsync(string? connectionString, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(connectionString)) return;
+
+        var builder = new NpgsqlConnectionStringBuilder(connectionString);
+        string? database = builder.Database;
+        if (string.IsNullOrWhiteSpace(database)) return;
+
+        builder.Database = "postgres";
+        await using var connection = new NpgsqlConnection(builder.ConnectionString);
+        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+
+        await using var existsCommand =
+            new NpgsqlCommand("SELECT 1 FROM pg_database WHERE datname = @name", connection);
+        _ = existsCommand.Parameters.AddWithValue("name", database);
+
+        bool exists = await existsCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) is not null;
+        if (exists) return;
+
+        string safeDatabase = database.Replace("\"", "\"\"");
+        await using var createCommand = new NpgsqlCommand($"CREATE DATABASE \"{safeDatabase}\"", connection);
+        _ = await createCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
     private static void ConfigureMessagePack()

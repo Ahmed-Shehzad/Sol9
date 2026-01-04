@@ -146,7 +146,7 @@ public sealed class PersistedMessageScheduler : IMessageScheduler, IAsyncDisposa
         where TMessage : class, IMessage
     {
         Type messageType = message.GetType();
-        ReadOnlyMemory<byte> body = _serializer.Serialize(message, messageType);
+        ReadOnlyMemory<byte> body = await _serializer.SerializeAsync(message, messageType, cancellationToken);
         var tokenId = Ulid.NewUlid();
 
         var stored = new ScheduledMessage(
@@ -233,16 +233,11 @@ public sealed class PersistedMessageScheduler : IMessageScheduler, IAsyncDisposa
         }
     }
 
-    private static Type? ResolveMessageType(string messageType)
-    {
-        if (string.IsNullOrWhiteSpace(messageType)) return null;
-
-        return Type.GetType(messageType, throwOnError: false);
-    }
+    private static Type? ResolveMessageType(string messageType) => string.IsNullOrWhiteSpace(messageType) ? null : Type.GetType(messageType, throwOnError: false);
 
     private static bool TryParseDestinationAddress(object? value, out Uri? destinationAddress)
     {
-        destinationAddress = null!;
+        destinationAddress = null;
 
         string? address = value switch
         {

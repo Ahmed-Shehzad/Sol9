@@ -33,8 +33,8 @@ public sealed class GetBookingsQueryHandler : IQueryHandler<GetBookingsQuery, IR
 
         return bookings
             .Select(booking => new BookingDto(
-                booking.Id,
-                booking.OrderId,
+                booking.Id.ToGuid(),
+                booking.OrderId.ToGuid(),
                 booking.CustomerName,
                 booking.Status,
                 booking.CreatedAtUtc))

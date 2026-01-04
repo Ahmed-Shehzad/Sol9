@@ -31,12 +31,12 @@ public sealed class JsonMessageSerializer : IMessageSerializer
     }
 
     /// <inheritdoc />
-    public async Task<ReadOnlyMemory<byte>> SerializeAsync(object message, Type messageType)
+    public async Task<ReadOnlyMemory<byte>> SerializeAsync(object message, Type messageType, CancellationToken cancellationToken = default)
     {
         // Create a MemoryStream to hold the serialized data
         using var memoryStream = new MemoryStream();
         // Serialize the object asynchronously into the MemoryStream
-        await JsonSerializer.SerializeAsync(memoryStream, message, messageType, _options);
+        await JsonSerializer.SerializeAsync(memoryStream, message, messageType, _options, cancellationToken);
 
         // Return the MemoryStream content as a ReadOnlyMemory<byte>
         return memoryStream.ToArray();
@@ -52,9 +52,9 @@ public sealed class JsonMessageSerializer : IMessageSerializer
     }
 
     /// <inheritdoc />
-    public async Task<object?> DeserializeAsync(ReadOnlyMemory<byte> body, Type messageType)
+    public async Task<object?> DeserializeAsync(ReadOnlyMemory<byte> body, Type messageType, CancellationToken cancellationToken = default)
     {
         using var memoryStream = new MemoryStream(body.ToArray());
-        return await JsonSerializer.DeserializeAsync(memoryStream, messageType, _options);
+        return await JsonSerializer.DeserializeAsync(memoryStream, messageType, _options, cancellationToken);
     }
 }

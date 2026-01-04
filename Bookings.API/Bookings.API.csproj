@@ -4,6 +4,8 @@
         <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <OpenApiGenerateDocuments>true</OpenApiGenerateDocuments>
+        <OpenApiGenerateDocumentsOnBuild>true</OpenApiGenerateDocumentsOnBuild>
     </PropertyGroup>
 
     <ItemGroup>
@@ -13,16 +15,10 @@
         <PackageReference Include="Asp.Versioning.Mvc" />
         <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" />
         <PackageReference Include="FluentResults" />
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" ExcludeAssets="analyzers" />
-        <PackageReference Include="Microsoft.OpenApi" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
         <PackageReference Include="Serilog.AspNetCore" />
         <PackageReference Include="Serilog.Settings.Configuration" />
         <PackageReference Include="Serilog.Sinks.Console" />
-        <PackageReference Include="Microsoft.OpenApi.Readers" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Analyzer Remove="$(NuGetPackageRoot)microsoft.aspnetcore.openapi/**/analyzers/dotnet/cs/Microsoft.AspNetCore.OpenApi.SourceGenerators.dll" />
     </ItemGroup>
 
     <ItemGroup>

@@ -85,24 +85,12 @@ WebApplication app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    using IServiceScope scope = app.Services.CreateScope();
-    BookingsDbContext dbContext = scope.ServiceProvider.GetRequiredService<BookingsDbContext>();
-    IEnumerable<string> pendingDomainMigrations =
-        await dbContext.Database.GetPendingMigrationsAsync().ConfigureAwait(false);
-    if (pendingDomainMigrations.Any())
-        await dbContext.Database.MigrateAsync().ConfigureAwait(false);
+    await app.Services.EnsureDatabaseCreatedAndMigratedAsync<BookingsDbContext>().ConfigureAwait(false);
 
     IDbContextFactory<PostgreSqlTransponderDbContext>? transponderFactory =
-        scope.ServiceProvider.GetService<IDbContextFactory<PostgreSqlTransponderDbContext>>();
+        app.Services.GetService<IDbContextFactory<PostgreSqlTransponderDbContext>>();
     if (transponderFactory is not null)
-    {
-        await using PostgreSqlTransponderDbContext transponderDb =
-            await transponderFactory.CreateDbContextAsync().ConfigureAwait(false);
-        IEnumerable<string> pendingMigrations =
-            await transponderDb.Database.GetPendingMigrationsAsync().ConfigureAwait(false);
-        if (pendingMigrations.Any())
-            await transponderDb.Database.MigrateAsync().ConfigureAwait(false);
-    }
+        await transponderFactory.EnsureDatabaseCreatedAndMigratedAsync().ConfigureAwait(false);
 }
 
 app.UseExceptionHandler(handler =>
@@ -140,13 +128,8 @@ app.UseExceptionHandler(handler =>
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
-{
-    // Map standard JSON endpoints: /openapi/v1.json, /openapi/v2.json
-    _ = app.MapOpenApi();
-
-    // Map custom YAML endpoints: /openapi/v1.yaml, /openapi/v2.yaml
+    // Map standard YAML endpoints: /openapi/v1.yaml, /openapi/v2.yaml
     _ = app.MapOpenApi("/openapi/{documentName}.yaml");
-}
 
 bool allowUnsecuredTransport = string.Equals(
     Environment.GetEnvironmentVariable("ASPIRE_ALLOW_UNSECURED_TRANSPORT"),

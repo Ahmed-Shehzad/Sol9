@@ -10,6 +10,8 @@ using Intercessor.Abstractions;
 
 using Microsoft.AspNetCore.Mvc;
 
+using Sol9.Core;
+
 namespace Bookings.API.Controllers;
 
 [ApiController]
@@ -34,12 +36,12 @@ public class BookingsController : ControllerBase
         return Ok(bookings);
     }
 
-    [HttpGet("order/{orderId}")]
+    [HttpGet("order/{orderId:guid}")]
     [ProducesResponseType(typeof(BookingDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<BookingDto>> GetByOrderIdAsync(Ulid orderId)
+    public async Task<ActionResult<BookingDto>> GetByOrderIdAsync(Guid orderId)
     {
-        BookingDto? booking = await _sender.SendAsync(new GetBookingByOrderIdQuery(orderId)).ConfigureAwait(false);
+        BookingDto? booking = await _sender.SendAsync(new GetBookingByOrderIdQuery(orderId.ToUlid())).ConfigureAwait(false);
         return booking is null ? NotFound() : Ok(booking);
     }
 
@@ -47,7 +49,7 @@ public class BookingsController : ControllerBase
     [ProducesResponseType(typeof(BookingDto), StatusCodes.Status201Created)]
     public async Task<ActionResult<BookingDto>> CreateAsync([FromBody] CreateBookingRequest request)
     {
-        BookingDto booking = await _sender.SendAsync(new CreateBookingCommand(request.OrderId, request.CustomerName)).ConfigureAwait(false);
+        BookingDto booking = await _sender.SendAsync(new CreateBookingCommand(request.OrderId.ToUlid(), request.CustomerName)).ConfigureAwait(false);
         const string action = nameof(GetByOrderIdAsync);
         return CreatedAtAction(action, new { orderId = booking.OrderId }, booking);
     }

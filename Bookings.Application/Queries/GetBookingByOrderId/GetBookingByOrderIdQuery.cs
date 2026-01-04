@@ -38,8 +38,8 @@ public sealed class GetBookingByOrderIdQueryHandler : IQueryHandler<GetBookingBy
         return booking is null
             ? null
             : new BookingDto(
-                booking.Id,
-                booking.OrderId,
+                booking.Id.ToGuid(),
+                booking.OrderId.ToGuid(),
                 booking.CustomerName,
                 booking.Status,
                 booking.CreatedAtUtc);

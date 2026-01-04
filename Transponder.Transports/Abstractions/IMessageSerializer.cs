@@ -22,7 +22,8 @@ public interface IMessageSerializer
     /// </summary>
     /// <param name="message">The message instance to serialize.</param>
     /// <param name="messageType">The message type.</param>
-    Task<ReadOnlyMemory<byte>> SerializeAsync(object message, Type messageType);
+    /// <param name="cancellationToken">cancellationToken</param>
+    Task<ReadOnlyMemory<byte>> SerializeAsync(object message, Type messageType, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Deserializes a byte payload into a message instance.
@@ -36,5 +37,6 @@ public interface IMessageSerializer
     /// </summary>
     /// <param name="body">The message payload bytes.</param>
     /// <param name="messageType">The message type.</param>
-    Task<object?> DeserializeAsync(ReadOnlyMemory<byte> body, Type messageType);
+    /// <param name="cancellationToken">cancellationToken</param>
+    Task<object?> DeserializeAsync(ReadOnlyMemory<byte> body, Type messageType, CancellationToken cancellationToken = default);
 }

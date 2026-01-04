@@ -34,7 +34,7 @@ public sealed class GetOrderByIdQueryHandler : IQueryHandler<GetOrderByIdQuery, 
         return await _dbContext.Orders
             .Where(order => order.Id == request.Id)
             .Select(order => new OrderDto(
-                order.Id,
+                order.Id.ToGuid(),
                 order.CustomerName,
                 order.TotalAmount,
                 order.Status,

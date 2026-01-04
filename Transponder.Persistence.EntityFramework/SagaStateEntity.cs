@@ -1,5 +1,7 @@
 using System.Text.Json;
 
+using Cysharp.Serialization.Json;
+
 using Transponder.Persistence.Abstractions;
 
 namespace Transponder.Persistence.EntityFramework;
@@ -9,7 +11,7 @@ namespace Transponder.Persistence.EntityFramework;
 /// </summary>
 public sealed class SagaStateEntity
 {
-    private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
+    private static readonly JsonSerializerOptions SerializerOptions = CreateSerializerOptions();
 
     public Ulid CorrelationId { get; set; }
 
@@ -41,5 +43,12 @@ public sealed class SagaStateEntity
     {
         return JsonSerializer.Deserialize<TState>(StateData, SerializerOptions)
             ?? throw new InvalidOperationException("Failed to deserialize saga state.");
+    }
+
+    private static JsonSerializerOptions CreateSerializerOptions()
+    {
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        options.Converters.Add(new UlidJsonConverter());
+        return options;
     }
 }

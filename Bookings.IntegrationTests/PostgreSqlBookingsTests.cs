@@ -101,8 +101,8 @@ public sealed class PostgreSqlBookingsTests : IAsyncLifetime
 
         BookingDto result = await handler.HandleAsync(new CreateBookingCommand(orderId, ignoredCustomer), CancellationToken.None);
 
-        result.Id.ShouldBe(existing.Id);
-        result.OrderId.ShouldBe(existing.OrderId);
+        result.Id.ShouldBe(existing.Id.ToGuid());
+        result.OrderId.ShouldBe(existing.OrderId.ToGuid());
         result.CustomerName.ShouldBe(existing.CustomerName);
         result.Status.ShouldBe(existing.Status);
 

@@ -57,8 +57,6 @@
     <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageVersion Include="Shouldly" Version="4.3.0" />
     <PackageVersion Include="StackExchange.Redis" Version="2.10.1" />
-    <PackageVersion Include="Microsoft.OpenApi" Version="2.0.0" />
-    <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.28" />
     <PackageVersion Include="Testcontainers.PostgreSql" Version="4.10.0" />
     <PackageVersion Include="Ulid" Version="1.4.1" />
     <PackageVersion Include="Ulid.MessagePack" Version="1.4.1" />

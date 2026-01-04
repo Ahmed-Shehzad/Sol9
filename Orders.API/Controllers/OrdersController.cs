@@ -11,6 +11,8 @@ using Orders.Application.Dtos.Orders;
 using Orders.Application.Queries.GetOrderById;
 using Orders.Application.Queries.GetOrders;
 
+using Sol9.Core;
+
 namespace Orders.API.Controllers;
 
 [ApiController]
@@ -35,32 +37,32 @@ public class OrdersController : ControllerBase
         return Ok(orders);
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(OrderDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<OrderDto>> GetByIdAsync([FromRoute] Ulid id, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<OrderDto>> GetByIdAsync([FromRoute] Guid id, CancellationToken cancellationToken = default)
     {
-        OrderDto? order = await _sender.SendAsync(new GetOrderByIdQuery(id), cancellationToken).ConfigureAwait(false);
+        OrderDto? order = await _sender.SendAsync(new GetOrderByIdQuery(id.ToUlid()), cancellationToken).ConfigureAwait(false);
         return order is null ? NotFound() : Ok(order);
     }
 
     [HttpPost]
-    [ProducesResponseType(typeof(Ulid), StatusCodes.Status201Created)]
-    public async Task<ActionResult<Ulid>> CreateAsync([FromBody] CreateOrderRequest request, CancellationToken cancellationToken = default)
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
+    public async Task<ActionResult<Guid>> CreateAsync([FromBody] CreateOrderRequest request, CancellationToken cancellationToken = default)
     {
-        Ulid order = await _sender
+        Guid order = await _sender
             .SendAsync(new CreateOrderCommand(request.CustomerName, request.TotalAmount), cancellationToken)
             .ConfigureAwait(false);
 
         return Ok(order);
     }
 
-    [HttpPost("{id}")]
-    [ProducesResponseType(typeof(Ulid), StatusCodes.Status200OK)]
-    public async Task<ActionResult<Ulid>> CancelOrderAsync([FromRoute] Ulid id, CancellationToken cancellationToken = default)
+    [HttpPost("{id:guid}/cancel")]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
+    public async Task<ActionResult<Guid>> CancelOrderAsync([FromRoute] Guid id, CancellationToken cancellationToken = default)
     {
-        _ = await _sender
-            .SendAsync(new CancelOrderCommand(id), cancellationToken)
+        await _sender
+            .SendAsync(new CancelOrderCommand(id.ToUlid()), cancellationToken)
             .ConfigureAwait(false);
 
         return Ok();

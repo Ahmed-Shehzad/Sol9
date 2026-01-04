@@ -32,7 +32,7 @@ public sealed class GetOrdersQueryHandler : IQueryHandler<GetOrdersQuery, IReadO
         return await _dbContext.Orders
             .OrderByDescending(order => order.CreatedAtUtc)
             .Select(order => new OrderDto(
-                order.Id,
+                order.Id.ToGuid(),
                 order.CustomerName,
                 order.TotalAmount,
                 order.Status,

@@ -36,8 +36,8 @@ public sealed class CreateBookingCommandHandler : ICommandHandler<CreateBookingC
         Booking? existing = await _repository.GetAsync(b => b.OrderId == request.OrderId, cancellationToken).ConfigureAwait(false);
         if (existing is not null)
             return new BookingDto(
-                existing.Id,
-                existing.OrderId,
+                existing.Id.ToGuid(),
+                existing.OrderId.ToGuid(),
                 existing.CustomerName,
                 existing.Status,
                 existing.CreatedAtUtc);
@@ -47,8 +47,8 @@ public sealed class CreateBookingCommandHandler : ICommandHandler<CreateBookingC
         await _repository.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         return new BookingDto(
-            booking.Id,
-            booking.OrderId,
+            booking.Id.ToGuid(),
+            booking.OrderId.ToGuid(),
             booking.CustomerName,
             booking.Status,
             booking.CreatedAtUtc);
