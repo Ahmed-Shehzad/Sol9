@@ -50,11 +50,13 @@ public class OrdersController : ControllerBase
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     public async Task<ActionResult<Guid>> CreateAsync([FromBody] CreateOrderRequest request, CancellationToken cancellationToken = default)
     {
-        Guid order = await _sender
+        Guid orderId = await _sender
             .SendAsync(new CreateOrderCommand(request.CustomerName, request.TotalAmount), cancellationToken)
             .ConfigureAwait(false);
 
-        return Ok(order);
+        const string action = "GetById";
+        string? version = HttpContext.GetRequestedApiVersion()?.ToString();
+        return CreatedAtAction(action, new { id = orderId, version }, orderId);
     }
 
     [HttpPost("{id:guid}/cancel")]

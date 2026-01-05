@@ -8,7 +8,7 @@ using Verifier;
 
 namespace Bookings.Application.Commands.CreateBooking;
 
-public sealed record CreateBookingCommand(Ulid OrderId, string CustomerName) : ICommand<BookingDto>;
+public sealed record CreateBookingCommand(Ulid OrderId, string CustomerName) : ICommand<Guid>;
 
 public sealed class CreateBookingCommandValidator : AbstractValidator<CreateBookingCommand>
 {
@@ -22,7 +22,7 @@ public sealed class CreateBookingCommandValidator : AbstractValidator<CreateBook
     }
 }
 
-public sealed class CreateBookingCommandHandler : ICommandHandler<CreateBookingCommand, BookingDto>
+public sealed class CreateBookingCommandHandler : ICommandHandler<CreateBookingCommand, Guid>
 {
     private readonly IBookingsRepository _repository;
 
@@ -31,26 +31,16 @@ public sealed class CreateBookingCommandHandler : ICommandHandler<CreateBookingC
         _repository = repository;
     }
 
-    public async Task<BookingDto> HandleAsync(CreateBookingCommand request, CancellationToken cancellationToken = default)
+    public async Task<Guid> HandleAsync(CreateBookingCommand request, CancellationToken cancellationToken = default)
     {
         Booking? existing = await _repository.GetAsync(b => b.OrderId == request.OrderId, cancellationToken).ConfigureAwait(false);
         if (existing is not null)
-            return new BookingDto(
-                existing.Id.ToGuid(),
-                existing.OrderId.ToGuid(),
-                existing.CustomerName,
-                existing.Status,
-                existing.CreatedAtUtc);
+            return existing.Id.ToGuid();
 
         var booking = Booking.Create(request.OrderId, request.CustomerName);
         await _repository.AddAsync(booking, cancellationToken).ConfigureAwait(false);
         await _repository.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
-        return new BookingDto(
-            booking.Id.ToGuid(),
-            booking.OrderId.ToGuid(),
-            booking.CustomerName,
-            booking.Status,
-            booking.CreatedAtUtc);
+        return booking.Id.ToGuid();
     }
 }
