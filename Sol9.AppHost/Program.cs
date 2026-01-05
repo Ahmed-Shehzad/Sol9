@@ -33,14 +33,12 @@ var redisConnection = ReferenceExpression.Create(
 IResourceBuilder<ProjectResource> bookingsApi = builder.AddProject<Projects.Bookings_API>("bookings-api")
     .WithReference(bookingsDb)
     .WithReference(bookingsDb, "Transponder")
-    .WithHttpsEndpoint()
     .WithEnvironment("ConnectionStrings__Redis", redisConnection)
     .WaitForStart(redis);
 
 IResourceBuilder<ProjectResource> ordersApi = builder.AddProject<Projects.Orders_API>("orders-api")
     .WithReference(ordersDb)
     .WithReference(ordersDb, "Transponder")
-    .WithHttpsEndpoint()
     .WithEnvironment("ConnectionStrings__Redis", redisConnection)
     .WaitForStart(redis);
 

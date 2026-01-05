@@ -29,9 +29,11 @@ public class AuditableInterceptor : SaveChangesInterceptor
                     entry.State = EntityState.Modified;
                     entry.Entity.ApplySoftDelete();
                     break;
+                case EntityState.Added:
+                    entry.Entity.ApplyCreatedDateTime();
+                    break;
                 case EntityState.Detached:
                 case EntityState.Unchanged:
-                case EntityState.Added:
                 default:
                     break;
             }

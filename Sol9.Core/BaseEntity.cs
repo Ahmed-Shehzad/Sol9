@@ -8,6 +8,7 @@ public abstract class BaseEntity
     public DateTime? DeletedAtUtc { get; private set; } = null;
     public bool IsDeleted { get; private set; } = false;
 
+    public void ApplyCreatedDateTime() => CreatedAtUtc = DateTime.UtcNow;
     public void ApplyUpdateDateTime() => UpdatedAtUtc = DateTime.UtcNow;
 
     public void ApplySoftDelete()
