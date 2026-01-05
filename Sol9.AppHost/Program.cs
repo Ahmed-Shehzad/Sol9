@@ -7,6 +7,7 @@ if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ASPIRE_DASHBOA
 }
 
 IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
+_ = builder.AddKubernetesEnvironment("k8s");
 
 IResourceBuilder<ParameterResource> pgUser = builder.AddParameter("postgres-user", "postgres");
 IResourceBuilder<ParameterResource> pgPassword = builder.AddParameter("postgres-password", "postgres", secret: true);
@@ -33,12 +34,14 @@ var redisConnection = ReferenceExpression.Create(
 IResourceBuilder<ProjectResource> bookingsApi = builder.AddProject<Projects.Bookings_API>("bookings-api")
     .WithReference(bookingsDb)
     .WithReference(bookingsDb, "Transponder")
+        .WithHttpsEndpoint()
     .WithEnvironment("ConnectionStrings__Redis", redisConnection)
     .WaitForStart(redis);
 
 IResourceBuilder<ProjectResource> ordersApi = builder.AddProject<Projects.Orders_API>("orders-api")
     .WithReference(ordersDb)
     .WithReference(ordersDb, "Transponder")
+        .WithHttpsEndpoint()
     .WithEnvironment("ConnectionStrings__Redis", redisConnection)
     .WaitForStart(redis);
 
