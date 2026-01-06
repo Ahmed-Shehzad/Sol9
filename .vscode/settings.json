@@ -9,5 +9,8 @@
   "sonarlint.connectedMode.project": {
     "connectionId": "ahmed-shehzad",
     "projectKey": "Ahmed-Shehzad_Sol9"
+  },
+  "yaml.schemas": {
+    "K8S/kind/kind-config.schema.json": "K8S/kind/cluster.yaml"
   }
 }
