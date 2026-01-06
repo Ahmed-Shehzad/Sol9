@@ -65,7 +65,7 @@ resources:
       ephemeral-storage: 1Gi
 
 hpa:
-  enabled: false
+  enabled: true
   bookings:
     minReplicas: 1
     maxReplicas: 3
@@ -84,6 +84,6 @@ pdb:
   minAvailable: 1
 
 rollouts:
-  enabled: false
+  enabled: true
   autoPromotionEnabled: false
   previewReplicaCount: 1
