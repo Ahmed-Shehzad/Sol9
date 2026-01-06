@@ -1,0 +1,15 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: sol9
+  namespace: argocd
+spec:
+  description: Sol9 local Kubernetes project
+  destinations:
+    - namespace: sol9
+      server: https://kubernetes.default.svc
+  sourceRepos:
+    - https://github.com/Ahmed-Shehzad/Sol9
+  clusterResourceWhitelist:
+    - group: "*"
+      kind: "*"

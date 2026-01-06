@@ -1,0 +1,58 @@
+{{- $bookingsService := include "sol9.fullname" (dict "root" . "component" "bookings-api") -}}
+{{- $ordersService := include "sol9.fullname" (dict "root" . "component" "orders-api") -}}
+{{- $localAddress := .Values.transponder.orders.localAddress | default (printf "http://%s:%v" $ordersService .Values.global.service.port) -}}
+{{- $remoteAddress := .Values.transponder.orders.remoteAddress | default (printf "http://%s:%v" $bookingsService .Values.global.service.port) -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sol9.fullname" (dict "root" . "component" "orders-api") }}
+  labels:
+    {{- include "sol9.labels" (dict "root" . "component" "orders-api") | nindent 4 }}
+spec:
+  replicas: {{ .Values.orders.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "sol9.selectorLabels" (dict "root" . "component" "orders-api") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "sol9.selectorLabels" (dict "root" . "component" "orders-api") | nindent 8 }}
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: orders-api
+          image: "{{ .Values.images.orders.repository }}:{{ .Values.images.orders.tag }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          envFrom:
+            - secretRef:
+                name: {{ include "sol9.secretsName" . }}
+          env:
+            - name: ASPNETCORE_URLS
+              value: "http://0.0.0.0:{{ .Values.global.service.port }}"
+            - name: ASPNETCORE_ENVIRONMENT
+              value: "{{ .Values.global.env.aspnetcoreEnvironment }}"
+            - name: TransponderDefaults__LocalAddress
+              value: "{{ $localAddress }}"
+            - name: TransponderDefaults__RemoteAddress
+              value: "{{ $remoteAddress }}"
+          ports:
+            - name: http
+              containerPort: {{ .Values.global.service.port }}
+          livenessProbe:
+            tcpSocket:
+              port: {{ .Values.global.service.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: {{ .Values.global.service.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.resources.default | nindent 12 }}
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10001
+            runAsGroup: 10001
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false

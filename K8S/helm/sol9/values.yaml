@@ -1,0 +1,65 @@
+global:
+  imagePullPolicy: IfNotPresent
+  service:
+    port: 8080
+  env:
+    aspnetcoreEnvironment: Development
+
+images:
+  bookings:
+    repository: sol9/bookings-api
+    tag: dev
+  orders:
+    repository: sol9/orders-api
+    tag: dev
+  gateway:
+    repository: sol9/gateway-api
+    tag: dev
+
+bookings:
+  replicaCount: 1
+
+orders:
+  replicaCount: 1
+
+gateway:
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    port: 80
+
+postgres:
+  enabled: true
+  host: postgres
+  port: 5432
+  database: sol9
+  username: postgres
+  password: postgres
+  storage: 5Gi
+  image: postgres:16
+
+redis:
+  enabled: true
+  host: redis
+  port: 6379
+  image: redis:7
+  connectionString: ""
+
+transponder:
+  bookings:
+    localAddress: ""
+    remoteAddress: ""
+  orders:
+    localAddress: ""
+    remoteAddress: ""
+
+resources:
+  default:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+      ephemeral-storage: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+      ephemeral-storage: 1Gi

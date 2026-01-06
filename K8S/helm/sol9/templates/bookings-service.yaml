@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "sol9.fullname" (dict "root" . "component" "bookings-api") }}
+  labels:
+    {{- include "sol9.labels" (dict "root" . "component" "bookings-api") | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: {{ .Values.global.service.port }}
+      targetPort: {{ .Values.global.service.port }}
+  selector:
+    {{- include "sol9.selectorLabels" (dict "root" . "component" "bookings-api") | nindent 4 }}
