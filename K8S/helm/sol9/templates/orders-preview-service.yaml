@@ -11,6 +11,9 @@ spec:
     - name: http
       port: {{ .Values.global.service.port }}
       targetPort: {{ .Values.global.service.port }}
+    - name: grpc
+      port: {{ .Values.global.service.grpcPort }}
+      targetPort: {{ .Values.global.service.grpcPort }}
   selector:
     {{- include "sol9.selectorLabels" (dict "root" . "component" "orders-api") | nindent 4 }}
 {{- end }}

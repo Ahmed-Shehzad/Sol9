@@ -2,6 +2,8 @@ global:
   imagePullPolicy: IfNotPresent
   service:
     port: 8080
+    grpcPort: 8081
+    grpcPortOffset: 1
   env:
     aspnetcoreEnvironment: Development
 
