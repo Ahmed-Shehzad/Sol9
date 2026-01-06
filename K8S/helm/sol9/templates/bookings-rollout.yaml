@@ -38,6 +38,8 @@ spec:
               value: "http://0.0.0.0:{{ .Values.global.service.port }}"
             - name: ASPNETCORE_ENVIRONMENT
               value: "{{ .Values.global.env.aspnetcoreEnvironment }}"
+            - name: ASPIRE_ALLOW_UNSECURED_TRANSPORT
+              value: "true"
             - name: TransponderDefaults__LocalAddress
               value: "{{ $localAddress }}"
             - name: TransponderDefaults__RemoteAddress
