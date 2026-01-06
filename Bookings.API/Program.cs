@@ -83,7 +83,11 @@ ConfigureTransponder(builder);
 
 WebApplication app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+bool? migrateOnStartupSetting = app.Configuration.GetValue<bool?>("Database:MigrateOnStartup");
+bool migrateOnStartup = migrateOnStartupSetting ?? app.Environment.IsDevelopment();
+bool migrateOnly = app.Configuration.GetValue("Database:MigrateOnly", false);
+
+if (migrateOnStartup || migrateOnly)
 {
     await app.Services.EnsureDatabaseCreatedAndMigratedAsync<BookingsDbContext>().ConfigureAwait(false);
 
@@ -92,6 +96,8 @@ if (app.Environment.IsDevelopment())
     if (transponderFactory is not null)
         await transponderFactory.EnsureDatabaseCreatedAndMigratedAsync().ConfigureAwait(false);
 }
+
+if (migrateOnly) return;
 
 app.UseExceptionHandler(handler =>
 {
