@@ -79,11 +79,7 @@ builder.Services.AddOutputCache();
 
 WebApplication app = builder.Build();
 
-bool? migrateOnStartupSetting = app.Configuration.GetValue<bool?>("Database:MigrateOnStartup");
-bool migrateOnStartup = migrateOnStartupSetting ?? app.Environment.IsDevelopment();
-bool migrateOnly = app.Configuration.GetValue("Database:MigrateOnly", false);
-
-if (migrateOnStartup || migrateOnly)
+if (app.Environment.IsDevelopment())
 {
     await app.Services.EnsureDatabaseCreatedAndMigratedAsync<OrdersDbContext>().ConfigureAwait(false);
 
@@ -92,8 +88,6 @@ if (migrateOnStartup || migrateOnly)
     if (transponderFactory is not null)
         await transponderFactory.EnsureDatabaseCreatedAndMigratedAsync().ConfigureAwait(false);
 }
-
-if (migrateOnly) return;
 
 app.UseExceptionHandler(handler =>
 {
