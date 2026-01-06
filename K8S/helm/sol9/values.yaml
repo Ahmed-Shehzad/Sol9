@@ -85,5 +85,5 @@ pdb:
 
 rollouts:
   enabled: true
-  autoPromotionEnabled: false
+  autoPromotionEnabled: true
   previewReplicaCount: 1
