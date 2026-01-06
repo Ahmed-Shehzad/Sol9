@@ -15,7 +15,7 @@ using Transponder.Abstractions;
 
 using Xunit;
 
-namespace Orders.IntegrationTests;
+namespace Orders.Integration.Tests;
 
 public sealed class OrderCreatedIntegrationEventHandlerTests
 {

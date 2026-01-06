@@ -18,7 +18,7 @@ using Testcontainers.PostgreSql;
 
 using Xunit;
 
-namespace Bookings.IntegrationTests;
+namespace Bookings.Integration.Tests;
 
 public sealed class PostgreSqlBookingsTests : IAsyncLifetime
 {

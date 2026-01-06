@@ -16,7 +16,7 @@ using Testcontainers.PostgreSql;
 
 using Xunit;
 
-namespace Orders.IntegrationTests;
+namespace Orders.Integration.Tests;
 
 public sealed class PostgreSqlOrdersTests : IAsyncLifetime
 {

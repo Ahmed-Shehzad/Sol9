@@ -12,6 +12,14 @@
   <Folder Name="/Intercessor/">
     <Project Path="Intercessor/Intercessor.csproj" />
   </Folder>
+  <Folder Name="/Services.Tests/E2E.Tests/">
+    <Project Path="Bookings.E2E.Tests/Bookings.E2E.Tests.csproj" />
+    <Project Path="Orders.E2E.Tests/Orders.E2E.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Services.Tests/Integration.Tests/">
+    <Project Path="Bookings.Integration.Tests\Bookings.Integration.Tests.csproj" />
+    <Project Path="Orders.Integration.Tests\Orders.Integration.Tests.csproj" />
+  </Folder>
   <Folder Name="/Services/" />
   <Folder Name="/Services/Bookings/">
     <Project Path="Bookings.API/Bookings.API.csproj" />
@@ -59,10 +67,7 @@
     <Project Path="Transponder.Transports.Kafka.Tests\Transponder.Transports.Kafka.Tests.csproj" />
     <Project Path="Transponder.Transports.RabbitMq.Tests\Transponder.Transports.RabbitMq.Tests.csproj" />
   </Folder>
-  <Folder Name="/Services.Tests/">
-    <Project Path="Bookings.IntegrationTests/Bookings.IntegrationTests.csproj" />
-    <Project Path="Orders.IntegrationTests/Orders.IntegrationTests.csproj" />
-  </Folder>
+  <Folder Name="/Services.Tests/" />
   <Folder Name="/Verifier/">
     <Project Path="Verifier/Verifier.csproj" />
   </Folder>

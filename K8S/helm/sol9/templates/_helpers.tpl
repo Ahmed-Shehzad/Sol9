@@ -36,6 +36,6 @@ app.kubernetes.io/component: {{ .component }}
 {{- if .Values.redis.connectionString -}}
 {{- .Values.redis.connectionString -}}
 {{- else -}}
-{{- printf "redis://%s:%v" .Values.redis.host .Values.redis.port -}}
+{{- printf "%s:%v,abortConnect=false" .Values.redis.host .Values.redis.port -}}
 {{- end -}}
 {{- end -}}
