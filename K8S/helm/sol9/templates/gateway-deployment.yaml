@@ -1,3 +1,4 @@
+{{- if not .Values.rollouts.enabled }}
 {{- $bookingsService := include "sol9.fullname" (dict "root" . "component" "bookings-api") -}}
 {{- $ordersService := include "sol9.fullname" (dict "root" . "component" "orders-api") -}}
 apiVersion: apps/v1
@@ -51,3 +52,4 @@ spec:
             runAsGroup: 10001
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: false
+{{- end }}

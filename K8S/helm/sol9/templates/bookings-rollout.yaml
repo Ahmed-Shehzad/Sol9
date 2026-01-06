@@ -1,10 +1,10 @@
-{{- if not .Values.rollouts.enabled }}
+{{- if .Values.rollouts.enabled }}
 {{- $bookingsService := include "sol9.fullname" (dict "root" . "component" "bookings-api") -}}
 {{- $ordersService := include "sol9.fullname" (dict "root" . "component" "orders-api") -}}
 {{- $localAddress := .Values.transponder.bookings.localAddress | default (printf "http://%s:%v" $bookingsService .Values.global.service.port) -}}
 {{- $remoteAddress := .Values.transponder.bookings.remoteAddress | default (printf "http://%s:%v" $ordersService .Values.global.service.port) -}}
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
   name: {{ include "sol9.fullname" (dict "root" . "component" "bookings-api") }}
   labels:
@@ -14,6 +14,12 @@ spec:
   selector:
     matchLabels:
       {{- include "sol9.selectorLabels" (dict "root" . "component" "bookings-api") | nindent 6 }}
+  strategy:
+    blueGreen:
+      activeService: {{ include "sol9.fullname" (dict "root" . "component" "bookings-api") }}
+      previewService: {{ include "sol9.fullname" (dict "root" . "component" "bookings-api-preview") }}
+      autoPromotionEnabled: {{ .Values.rollouts.autoPromotionEnabled }}
+      previewReplicaCount: {{ .Values.rollouts.previewReplicaCount }}
   template:
     metadata:
       labels:

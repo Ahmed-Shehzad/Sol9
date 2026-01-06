@@ -1,0 +1,37 @@
+{{- if .Values.pdb.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "sol9.fullname" (dict "root" . "component" "bookings-pdb") }}
+  labels:
+    {{- include "sol9.labels" (dict "root" . "component" "bookings-api") | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "sol9.selectorLabels" (dict "root" . "component" "bookings-api") | nindent 6 }}
+  minAvailable: {{ .Values.pdb.minAvailable }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "sol9.fullname" (dict "root" . "component" "orders-pdb") }}
+  labels:
+    {{- include "sol9.labels" (dict "root" . "component" "orders-api") | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "sol9.selectorLabels" (dict "root" . "component" "orders-api") | nindent 6 }}
+  minAvailable: {{ .Values.pdb.minAvailable }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "sol9.fullname" (dict "root" . "component" "gateway-pdb") }}
+  labels:
+    {{- include "sol9.labels" (dict "root" . "component" "gateway") | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "sol9.selectorLabels" (dict "root" . "component" "gateway") | nindent 6 }}
+  minAvailable: {{ .Values.pdb.minAvailable }}
+{{- end }}

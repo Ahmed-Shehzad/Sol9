@@ -1,28 +1,34 @@
-{{- if not .Values.rollouts.enabled }}
+{{- if .Values.rollouts.enabled }}
 {{- $bookingsService := include "sol9.fullname" (dict "root" . "component" "bookings-api") -}}
 {{- $ordersService := include "sol9.fullname" (dict "root" . "component" "orders-api") -}}
-{{- $localAddress := .Values.transponder.bookings.localAddress | default (printf "http://%s:%v" $bookingsService .Values.global.service.port) -}}
-{{- $remoteAddress := .Values.transponder.bookings.remoteAddress | default (printf "http://%s:%v" $ordersService .Values.global.service.port) -}}
-apiVersion: apps/v1
-kind: Deployment
+{{- $localAddress := .Values.transponder.orders.localAddress | default (printf "http://%s:%v" $ordersService .Values.global.service.port) -}}
+{{- $remoteAddress := .Values.transponder.orders.remoteAddress | default (printf "http://%s:%v" $bookingsService .Values.global.service.port) -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
-  name: {{ include "sol9.fullname" (dict "root" . "component" "bookings-api") }}
+  name: {{ include "sol9.fullname" (dict "root" . "component" "orders-api") }}
   labels:
-    {{- include "sol9.labels" (dict "root" . "component" "bookings-api") | nindent 4 }}
+    {{- include "sol9.labels" (dict "root" . "component" "orders-api") | nindent 4 }}
 spec:
-  replicas: {{ .Values.bookings.replicaCount }}
+  replicas: {{ .Values.orders.replicaCount }}
   selector:
     matchLabels:
-      {{- include "sol9.selectorLabels" (dict "root" . "component" "bookings-api") | nindent 6 }}
+      {{- include "sol9.selectorLabels" (dict "root" . "component" "orders-api") | nindent 6 }}
+  strategy:
+    blueGreen:
+      activeService: {{ include "sol9.fullname" (dict "root" . "component" "orders-api") }}
+      previewService: {{ include "sol9.fullname" (dict "root" . "component" "orders-api-preview") }}
+      autoPromotionEnabled: {{ .Values.rollouts.autoPromotionEnabled }}
+      previewReplicaCount: {{ .Values.rollouts.previewReplicaCount }}
   template:
     metadata:
       labels:
-        {{- include "sol9.selectorLabels" (dict "root" . "component" "bookings-api") | nindent 8 }}
+        {{- include "sol9.selectorLabels" (dict "root" . "component" "orders-api") | nindent 8 }}
     spec:
       automountServiceAccountToken: false
       containers:
-        - name: bookings-api
-          image: "{{ .Values.images.bookings.repository }}:{{ .Values.images.bookings.tag }}"
+        - name: orders-api
+          image: "{{ .Values.images.orders.repository }}:{{ .Values.images.orders.tag }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           envFrom:
             - secretRef:

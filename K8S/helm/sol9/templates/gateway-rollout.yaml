@@ -1,41 +1,42 @@
-{{- if not .Values.rollouts.enabled }}
+{{- if .Values.rollouts.enabled }}
 {{- $bookingsService := include "sol9.fullname" (dict "root" . "component" "bookings-api") -}}
 {{- $ordersService := include "sol9.fullname" (dict "root" . "component" "orders-api") -}}
-{{- $localAddress := .Values.transponder.bookings.localAddress | default (printf "http://%s:%v" $bookingsService .Values.global.service.port) -}}
-{{- $remoteAddress := .Values.transponder.bookings.remoteAddress | default (printf "http://%s:%v" $ordersService .Values.global.service.port) -}}
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
-  name: {{ include "sol9.fullname" (dict "root" . "component" "bookings-api") }}
+  name: {{ include "sol9.fullname" (dict "root" . "component" "gateway") }}
   labels:
-    {{- include "sol9.labels" (dict "root" . "component" "bookings-api") | nindent 4 }}
+    {{- include "sol9.labels" (dict "root" . "component" "gateway") | nindent 4 }}
 spec:
-  replicas: {{ .Values.bookings.replicaCount }}
+  replicas: {{ .Values.gateway.replicaCount }}
   selector:
     matchLabels:
-      {{- include "sol9.selectorLabels" (dict "root" . "component" "bookings-api") | nindent 6 }}
+      {{- include "sol9.selectorLabels" (dict "root" . "component" "gateway") | nindent 6 }}
+  strategy:
+    blueGreen:
+      activeService: {{ include "sol9.fullname" (dict "root" . "component" "gateway") }}
+      previewService: {{ include "sol9.fullname" (dict "root" . "component" "gateway-preview") }}
+      autoPromotionEnabled: {{ .Values.rollouts.autoPromotionEnabled }}
+      previewReplicaCount: {{ .Values.rollouts.previewReplicaCount }}
   template:
     metadata:
       labels:
-        {{- include "sol9.selectorLabels" (dict "root" . "component" "bookings-api") | nindent 8 }}
+        {{- include "sol9.selectorLabels" (dict "root" . "component" "gateway") | nindent 8 }}
     spec:
       automountServiceAccountToken: false
       containers:
-        - name: bookings-api
-          image: "{{ .Values.images.bookings.repository }}:{{ .Values.images.bookings.tag }}"
+        - name: gateway
+          image: "{{ .Values.images.gateway.repository }}:{{ .Values.images.gateway.tag }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
-          envFrom:
-            - secretRef:
-                name: {{ include "sol9.secretsName" . }}
           env:
             - name: ASPNETCORE_URLS
               value: "http://0.0.0.0:{{ .Values.global.service.port }}"
             - name: ASPNETCORE_ENVIRONMENT
               value: "{{ .Values.global.env.aspnetcoreEnvironment }}"
-            - name: TransponderDefaults__LocalAddress
-              value: "{{ $localAddress }}"
-            - name: TransponderDefaults__RemoteAddress
-              value: "{{ $remoteAddress }}"
+            - name: ReverseProxy__Clusters__bookings-cluster__Destinations__bookings-1__Address
+              value: "http://{{ $bookingsService }}:{{ .Values.global.service.port }}"
+            - name: ReverseProxy__Clusters__orders-cluster__Destinations__orders-1__Address
+              value: "http://{{ $ordersService }}:{{ .Values.global.service.port }}"
           ports:
             - name: http
               containerPort: {{ .Values.global.service.port }}
