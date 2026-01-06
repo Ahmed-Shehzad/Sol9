@@ -31,13 +31,12 @@ public sealed class GetBookingsQueryHandler : IQueryHandler<GetBookingsQuery, IR
     {
         IReadOnlyList<Domain.Entities.Booking> bookings = await _context.Bookings.ToListAsync(cancellationToken).ConfigureAwait(false);
 
-        return bookings
+        return [.. bookings
             .Select(booking => new BookingDto(
                 booking.Id.ToGuid(),
                 booking.OrderId.ToGuid(),
                 booking.CustomerName,
                 booking.Status,
-                booking.CreatedAtUtc))
-            .ToList();
+                booking.CreatedAtUtc))];
     }
 }

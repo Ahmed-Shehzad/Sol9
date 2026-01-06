@@ -4,7 +4,6 @@ using Bogus;
 
 using Bookings.Application.Commands.CreateBooking;
 using Bookings.Application.Contexts;
-using Bookings.Application.Dtos;
 using Bookings.Domain.Entities;
 using Bookings.Infrastructure.Contexts;
 

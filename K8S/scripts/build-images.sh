@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SERVER_DIR="${ROOT_DIR}/../Server"
+SERVER_DIR="${ROOT_DIR}/.."
 IMAGE_TAG="${IMAGE_TAG:-dev}"
 REGISTRY_PREFIX="${REGISTRY_PREFIX:-}"
 DOTNET_VERSION="${DOTNET_VERSION:-10.0}"

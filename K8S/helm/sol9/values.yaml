@@ -3,7 +3,7 @@ global:
   service:
     port: 8080
     grpcPort: 8081
-    grpcPortOffset: 1
+    grpcPortOffset: 0
   env:
     aspnetcoreEnvironment: Development
 

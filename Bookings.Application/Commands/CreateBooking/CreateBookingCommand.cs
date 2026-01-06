@@ -1,5 +1,4 @@
 using Bookings.Application.Contexts;
-using Bookings.Application.Dtos;
 using Bookings.Domain.Entities;
 
 using Intercessor.Abstractions;

@@ -35,12 +35,11 @@ public sealed class InMemoryOutboxStore : IOutboxStore
         List<IOutboxMessage> results;
 
         lock (_sync)
-            results = _messages.Values
+            results = [.. _messages.Values
                 .Where(message => message.SentTime is null)
                 .OrderBy(message => message.EnqueuedTime)
                 .Take(maxCount)
-                .Cast<IOutboxMessage>()
-                .ToList();
+                .Cast<IOutboxMessage>()];
 
         return Task.FromResult<IReadOnlyList<IOutboxMessage>>(results);
     }

@@ -26,9 +26,18 @@ public static class RemoteAddressStrategySettingsResolver
         bool hasRoundRobin = entries.Any(entry => entry.RemoteAddressStrategy == RemoteAddressStrategy.RoundRobin);
 
         RemoteAddressStrategy strategy = hasEntries
-            ? (hasRoundRobin ? RemoteAddressStrategy.RoundRobin : RemoteAddressStrategy.PerDestinationHost)
+            ? StrategyFromEntries(hasRoundRobin)
             : fallbackStrategy ?? RemoteAddressStrategy.PerDestinationHost;
 
+
+
         return new RemoteAddressResolution(addresses, strategy);
+    }
+
+    private static RemoteAddressStrategy StrategyFromEntries(bool hasRoundRobin)
+    {
+        return hasRoundRobin
+            ? RemoteAddressStrategy.RoundRobin
+            : RemoteAddressStrategy.PerDestinationHost;
     }
 }

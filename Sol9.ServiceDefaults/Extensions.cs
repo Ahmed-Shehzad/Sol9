@@ -92,7 +92,7 @@ public static class Extensions
             await dbContext.Database.MigrateAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    private static async Task EnsureDatabaseExistsAsync(string? connectionString, CancellationToken cancellationToken)
+    private async static Task EnsureDatabaseExistsAsync(string? connectionString, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(connectionString)) return;
 

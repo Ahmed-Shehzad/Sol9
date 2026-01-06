@@ -44,9 +44,7 @@ public sealed class TransponderSettings
             RemoteAddressStrategy,
             remoteFallback);
 
-        IReadOnlyList<Uri> remoteAddresses = baseResolution.Addresses
-            .Select(MapToGrpcAddress)
-            .ToArray();
+        IReadOnlyList<Uri> remoteAddresses = [.. baseResolution.Addresses.Select(MapToGrpcAddress)];
 
         var remoteResolution = new RemoteAddressResolution(remoteAddresses, baseResolution.Strategy);
 

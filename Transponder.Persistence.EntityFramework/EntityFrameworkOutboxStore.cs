@@ -42,7 +42,7 @@ public sealed class EntityFrameworkOutboxStore : IOutboxStore
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        return messages.Select(static message => (IOutboxMessage)message).ToList();
+        return [.. messages.Select(static message => (IOutboxMessage)message)];
     }
 
     /// <inheritdoc />

@@ -261,6 +261,9 @@ static TransponderSettings LoadTransponderSettings(IServiceCollection services, 
 {
     TransponderSettings settings = configuration.GetSection("TransponderSettings").Get<TransponderSettings>()
                                   ?? new TransponderSettings();
+    string? grpcPortOffset = Environment.GetEnvironmentVariable("TransponderSettings__GrpcPortOffset");
+    if (int.TryParse(grpcPortOffset, out int parsedOffset))
+        settings.GrpcPortOffset = parsedOffset;
     _ = services.AddSingleton(settings);
     return settings;
 }

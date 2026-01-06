@@ -102,9 +102,7 @@ public sealed class IntegrationEventDispatchInterceptor : SaveChangesInterceptor
 
         if (aggregates.Count == 0) return;
 
-        List<IIntegrationEvent> integrationEvents = aggregates
-            .SelectMany(aggregate => aggregate.IntegrationEvents)
-            .ToList();
+        List<IIntegrationEvent> integrationEvents = [.. aggregates.SelectMany(aggregate => aggregate.IntegrationEvents)];
 
         var messageIds = new HashSet<Ulid>();
         var outboxMessages = new List<OutboxMessage>(integrationEvents.Count);
@@ -128,18 +126,17 @@ public sealed class IntegrationEventDispatchInterceptor : SaveChangesInterceptor
 
         await CommitOwnedTransactionAsync(cancellationToken).ConfigureAwait(false);
 
-        List<IIntegrationEvent> eventsToPublish = _pendingEvents.ToList();
+        List<IIntegrationEvent> eventsToPublish = [.. _pendingEvents];
         _pendingAggregates.ForEach(aggregate => aggregate.ClearIntegrationEvents());
         _pendingAggregates = null;
         _pendingEvents = null;
 
-        Task[] publishTasks = eventsToPublish
+        Task[] publishTasks = [.. eventsToPublish
             .Select(integrationEvent =>
             {
                 Task task = _publisher.PublishAsync((dynamic)integrationEvent, cancellationToken);
                 return task;
-            })
-            .ToArray();
+            })];
 
         await Task.WhenAll(publishTasks).ConfigureAwait(false);
     }
@@ -166,7 +163,7 @@ public sealed class IntegrationEventDispatchInterceptor : SaveChangesInterceptor
 
         await using PostgreSqlTransponderDbContext transponderDb = CreateTransponderDbContext(context);
         if (_currentTransaction is not null)
-            _ = transponderDb.Database.UseTransaction(_currentTransaction.GetDbTransaction());
+            _ = await transponderDb.Database.UseTransactionAsync(_currentTransaction.GetDbTransaction(), cancellationToken: cancellationToken);
 
         var outboxStore = new EntityFrameworkOutboxStore(transponderDb);
         foreach (OutboxMessage message in messages)
@@ -208,9 +205,7 @@ public sealed class IntegrationEventDispatchInterceptor : SaveChangesInterceptor
         Ulid messageId = integrationEvent is IntegrationEvent integration
             ? integration.EventId
             : Ulid.NewUlid();
-        Ulid? correlationId = integrationEvent is ICorrelatedMessage correlatedMessage
-            ? correlatedMessage.CorrelationId
-            : null;
+        Ulid? correlationId = integrationEvent.CorrelationId;
 
         ReadOnlyMemory<byte> body = _serializer.Serialize(integrationEvent, messageType);
         return new OutboxMessage(

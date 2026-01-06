@@ -1,8 +1,8 @@
 {{- if .Values.rollouts.enabled }}
 {{- $bookingsService := include "sol9.fullname" (dict "root" . "component" "bookings-api") -}}
 {{- $ordersService := include "sol9.fullname" (dict "root" . "component" "orders-api") -}}
-{{- $localAddress := .Values.transponder.bookings.localAddress | default (printf "http://%s:%v" $bookingsService .Values.global.service.port) -}}
-{{- $remoteAddress := .Values.transponder.bookings.remoteAddress | default (printf "http://%s:%v" $ordersService .Values.global.service.port) -}}
+{{- $localAddress := .Values.transponder.bookings.localAddress | default (printf "http://%s:%v" $bookingsService .Values.global.service.grpcPort) -}}
+{{- $remoteAddress := .Values.transponder.bookings.remoteAddress | default (printf "http://%s:%v" $ordersService .Values.global.service.grpcPort) -}}
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:

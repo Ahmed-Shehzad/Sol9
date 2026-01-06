@@ -47,7 +47,7 @@ public sealed class EntityFrameworkScheduledMessageStore<TContext> : IScheduledM
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        return messages.Select(static message => (IScheduledMessage)message).ToList();
+        return [.. messages.Select(static message => (IScheduledMessage)message)];
     }
 
     public async Task MarkDispatchedAsync(

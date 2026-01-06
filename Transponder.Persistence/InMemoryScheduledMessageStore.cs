@@ -34,12 +34,11 @@ public sealed class InMemoryScheduledMessageStore : IScheduledMessageStore
         List<IScheduledMessage> results;
 
         lock (_sync)
-            results = _messages.Values
+            results = [.. _messages.Values
                 .Where(message => message.DispatchedTime is null && message.ScheduledTime <= now)
                 .OrderBy(message => message.ScheduledTime)
                 .Take(maxCount)
-                .Cast<IScheduledMessage>()
-                .ToList();
+                .Cast<IScheduledMessage>()];
 
         return Task.FromResult<IReadOnlyList<IScheduledMessage>>(results);
     }

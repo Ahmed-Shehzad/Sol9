@@ -28,7 +28,7 @@ public static class TransponderRequestAddressResolver
     {
         ArgumentNullException.ThrowIfNull(busAddresses);
 
-        Uri[] addresses = busAddresses.Where(address => address is not null).ToArray();
+        Uri[] addresses = [.. busAddresses.Where(address => address is not null)];
         if (addresses.Length == 0) throw new ArgumentException("At least one bus address is required.", nameof(busAddresses));
 
         var options = new RemoteAddressSelectionOptions();
@@ -39,9 +39,7 @@ public static class TransponderRequestAddressResolver
             : requestPathPrefix.Trim('/');
         Func<Type, string> formatter = pathFormatter ?? DefaultPathFormatter;
 
-        Func<Type, Uri?>[] resolvers = addresses
-            .Select(address => Create(address, prefix, formatter))
-            .ToArray();
+        Func<Type, Uri?>[] resolvers = [.. addresses.Select(address => Create(address, prefix, formatter))];
 
         return options.Strategy == RemoteAddressStrategy.RoundRobin
             ? CreateRoundRobinResolver(resolvers)

@@ -30,7 +30,7 @@ internal sealed class SagaEndpointRegistry
     }
 
     public IReadOnlyCollection<Uri> GetInputAddresses()
-        => _registrations.Keys.Select(static key => new Uri(key, UriKind.RelativeOrAbsolute)).ToList();
+        => [.. _registrations.Keys.Select(static key => new Uri(key, UriKind.RelativeOrAbsolute))];
 
     public bool TryGetHandlers(
         Uri inputAddress,
