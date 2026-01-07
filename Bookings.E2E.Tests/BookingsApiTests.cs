@@ -13,10 +13,13 @@ public sealed class BookingsApiTests : IAsyncLifetime
     private const string BaseUrlEnv = "E2E_BASE_URL";
     private IPlaywright? _playwright;
     private IAPIRequestContext? _api;
+    private string? _skipReason;
 
     public async Task InitializeAsync()
     {
-        string baseUrl = GetBaseUrl();
+        string? baseUrl = GetBaseUrl();
+        if (baseUrl is null)
+            return;
         _playwright = await Playwright.CreateAsync().ConfigureAwait(false);
         _api = await _playwright.APIRequest.NewContextAsync(new APIRequestNewContextOptions
         {
@@ -34,6 +37,7 @@ public sealed class BookingsApiTests : IAsyncLifetime
     [Fact]
     public async Task GetBookings_ReturnsCollectionWithLinksAsync()
     {
+        SkipIfNotConfigured();
         IAPIResponse response = await _api!.GetAsync("/bookings/api/v1/bookings").ConfigureAwait(false);
         Assert.Equal(HttpStatusCode.OK, (HttpStatusCode)response.Status);
 
@@ -52,6 +56,7 @@ public sealed class BookingsApiTests : IAsyncLifetime
     [Fact]
     public async Task CreateBooking_ReturnsResourceWithLinksAsync()
     {
+        SkipIfNotConfigured();
         var payload = new
         {
             orderId = Guid.NewGuid(),
@@ -67,7 +72,7 @@ public sealed class BookingsApiTests : IAsyncLifetime
 
         JsonElement root = await ReadJsonAsync(response).ConfigureAwait(false);
         Assert.True(root.TryGetProperty("data", out JsonElement data));
-        Guid id = Guid.Parse(data.GetString() ?? string.Empty);
+        var id = Guid.Parse(data.GetString() ?? string.Empty);
         Assert.NotEqual(Guid.Empty, id);
         Assert.True(root.TryGetProperty("_links", out JsonElement links));
         Assert.True(links.TryGetProperty("self", out _));
@@ -81,19 +86,26 @@ public sealed class BookingsApiTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.OK, (HttpStatusCode)getByOrder.Status);
     }
 
-    private static string GetBaseUrl()
+    private string? GetBaseUrl()
     {
         string? baseUrl = Environment.GetEnvironmentVariable(BaseUrlEnv);
-        return string.IsNullOrWhiteSpace(baseUrl)
-            ? throw SkipException.ForSkip(
-                $"Set {BaseUrlEnv} to the API gateway base URL (e.g. http://localhost:18080) to run E2E tests.")
-            : baseUrl.TrimEnd('/');
+        if (!string.IsNullOrWhiteSpace(baseUrl)) return baseUrl.TrimEnd('/');
+
+        _skipReason = $"Set {BaseUrlEnv} to the API gateway base URL (e.g. http://localhost:18080) to run E2E tests.";
+        return null;
+
     }
 
-    private static async Task<JsonElement> ReadJsonAsync(IAPIResponse response)
+    private void SkipIfNotConfigured()
+    {
+        if (_skipReason is not null)
+            throw SkipException.ForSkip(_skipReason);
+    }
+
+    private async static Task<JsonElement> ReadJsonAsync(IAPIResponse response)
     {
         string body = await response.TextAsync().ConfigureAwait(false);
-        using JsonDocument doc = JsonDocument.Parse(body);
+        using var doc = JsonDocument.Parse(body);
         return doc.RootElement.Clone();
     }
 }

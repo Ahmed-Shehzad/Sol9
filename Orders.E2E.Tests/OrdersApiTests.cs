@@ -13,10 +13,13 @@ public sealed class OrdersApiTests : IAsyncLifetime
     private const string BaseUrlEnv = "E2E_BASE_URL";
     private IPlaywright? _playwright;
     private IAPIRequestContext? _api;
+    private string? _skipReason;
 
     public async Task InitializeAsync()
     {
-        string baseUrl = GetBaseUrl();
+        string? baseUrl = GetBaseUrl();
+        if (baseUrl is null)
+            return;
         _playwright = await Playwright.CreateAsync().ConfigureAwait(false);
         _api = await _playwright.APIRequest.NewContextAsync(new APIRequestNewContextOptions
         {
@@ -34,6 +37,7 @@ public sealed class OrdersApiTests : IAsyncLifetime
     [Fact]
     public async Task GetOrders_ReturnsCollectionWithLinksAsync()
     {
+        SkipIfNotConfigured();
         IAPIResponse response = await _api!.GetAsync("/orders/api/v1/orders").ConfigureAwait(true);
         Assert.Equal(HttpStatusCode.OK, (HttpStatusCode)response.Status);
 
@@ -52,6 +56,7 @@ public sealed class OrdersApiTests : IAsyncLifetime
     [Fact]
     public async Task CreateOrder_ReturnsResourceWithLinksAsync()
     {
+        SkipIfNotConfigured();
         var payload = new
         {
             customerName = "Ada Lovelace",
@@ -78,14 +83,22 @@ public sealed class OrdersApiTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.OK, (HttpStatusCode)getResponse.Status);
     }
 
-    private static string GetBaseUrl()
+    private string? GetBaseUrl()
     {
         string? baseUrl = Environment.GetEnvironmentVariable(BaseUrlEnv);
         if (string.IsNullOrWhiteSpace(baseUrl))
-            throw SkipException.ForSkip(
-                $"Set {BaseUrlEnv} to the API gateway base URL (e.g. http://localhost:18080) to run E2E tests.");
+        {
+            _skipReason = $"Set {BaseUrlEnv} to the API gateway base URL (e.g. http://localhost:18080) to run E2E tests.";
+            return null;
+        }
 
         return baseUrl.TrimEnd('/');
+    }
+
+    private void SkipIfNotConfigured()
+    {
+        if (_skipReason is not null)
+            throw SkipException.ForSkip(_skipReason);
     }
 
     private async static Task<JsonElement> ReadJsonAsync(IAPIResponse response)

@@ -68,7 +68,7 @@ pdb:
 
 probes:
   liveness:
-    path: /health
+    path: /alive
     initialDelaySeconds: 15
     periodSeconds: 10
     timeoutSeconds: 3
