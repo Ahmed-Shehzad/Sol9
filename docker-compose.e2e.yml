@@ -4,6 +4,8 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+    volumes:
+      - ./scripts/e2e-postgres-init.sql:/docker-entrypoint-initdb.d/e2e-postgres-init.sql:ro
     ports:
       - "5432:5432"
     healthcheck:
