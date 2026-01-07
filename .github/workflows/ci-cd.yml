@@ -70,6 +70,13 @@ jobs:
       - name: Run E2E tests
         run: ./scripts/e2e.sh
 
+      - name: Upload E2E logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-logs
+          path: artifacts/e2e-logs
+
   publish:
     if: github.ref == 'refs/heads/main'
     needs: build_test

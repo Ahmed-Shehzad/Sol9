@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 COMPOSE_FILE="$ROOT_DIR/docker-compose.e2e.yml"
+LOG_DIR="$ROOT_DIR/artifacts/e2e-logs"
 
 PIDS=()
 
@@ -17,6 +18,19 @@ cleanup() {
 }
 trap cleanup EXIT
 
+dump_logs() {
+  if [ ! -d "$LOG_DIR" ]; then
+    return 0
+  fi
+
+  for log_file in "$LOG_DIR"/*.log; do
+    if [ -f "$log_file" ]; then
+      echo "----- $log_file -----" >&2
+      tail -n 200 "$log_file" >&2 || true
+    fi
+  done
+}
+
 wait_for_url() {
   local url=$1
   local attempts=${2:-60}
@@ -30,6 +44,7 @@ wait_for_url() {
   done
 
   echo "Timed out waiting for $url" >&2
+  dump_logs
   return 1
 }
 
@@ -51,6 +66,7 @@ docker compose -f "$COMPOSE_FILE" up -d
 
 export ASPNETCORE_ENVIRONMENT=Development
 export DOTNET_ENVIRONMENT=Development
+mkdir -p "$LOG_DIR"
 
 ASPNETCORE_URLS=http://localhost:5296 \
 ConnectionStrings__Orders="Host=localhost;Database=orders;Username=postgres;Password=postgres" \
@@ -58,7 +74,7 @@ ConnectionStrings__Transponder="Host=localhost;Database=orders;Username=postgres
 ConnectionStrings__Redis="redis://localhost:6379" \
 TransponderDefaults__LocalAddress=http://localhost:5296 \
 TransponderDefaults__RemoteAddress=http://localhost:5187 \
-  dotnet run --project "$ROOT_DIR/Orders.API" -c Release --no-build >/dev/null 2>&1 &
+  dotnet run --project "$ROOT_DIR/Orders.API" -c Release --no-build >"$LOG_DIR/orders-api.log" 2>&1 &
 PIDS+=("$!")
 
 ASPNETCORE_URLS=http://localhost:5187 \
@@ -67,11 +83,11 @@ ConnectionStrings__Transponder="Host=localhost;Database=bookings;Username=postgr
 ConnectionStrings__Redis="redis://localhost:6379" \
 TransponderDefaults__LocalAddress=http://localhost:5187 \
 TransponderDefaults__RemoteAddress=http://localhost:5296 \
-  dotnet run --project "$ROOT_DIR/Bookings.API" -c Release --no-build >/dev/null 2>&1 &
+  dotnet run --project "$ROOT_DIR/Bookings.API" -c Release --no-build >"$LOG_DIR/bookings-api.log" 2>&1 &
 PIDS+=("$!")
 
 ASPNETCORE_URLS=http://localhost:18080 \
-  dotnet run --project "$ROOT_DIR/Gateway.API" -c Release --no-build >/dev/null 2>&1 &
+  dotnet run --project "$ROOT_DIR/Gateway.API" -c Release --no-build >"$LOG_DIR/gateway-api.log" 2>&1 &
 PIDS+=("$!")
 
 wait_for_url "http://localhost:18080/alive" 60 2
