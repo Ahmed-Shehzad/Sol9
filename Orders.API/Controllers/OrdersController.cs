@@ -40,7 +40,7 @@ public class OrdersController : ControllerBase
         [FromQuery] int? pageSize,
         CancellationToken cancellationToken = default)
     {
-        PaginationRequest paging = PaginationRequest.Normalize(page, pageSize);
+        var paging = PaginationRequest.Normalize(page, pageSize);
         string key = $"{nameof(GetOrdersQuery)}:{paging.Page}:{paging.PageSize}";
         PagedResult<OrderDto> result = await _sender
             .SendAsync(new GetOrdersQuery(key, paging.Page, paging.PageSize), cancellationToken)

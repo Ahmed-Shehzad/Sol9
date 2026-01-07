@@ -40,7 +40,7 @@ public class BookingsController : ControllerBase
         [FromQuery] int? pageSize,
         CancellationToken cancellationToken = default)
     {
-        PaginationRequest paging = PaginationRequest.Normalize(page, pageSize);
+        var paging = PaginationRequest.Normalize(page, pageSize);
         string key = $"{nameof(GetBookingsQuery)}:{paging.Page}:{paging.PageSize}";
         PagedResult<BookingDto> result = await _sender
             .SendAsync(new GetBookingsQuery(key, paging.Page, paging.PageSize), cancellationToken)
