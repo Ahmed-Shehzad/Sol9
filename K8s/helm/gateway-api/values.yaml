@@ -6,6 +6,9 @@ image:
   tag: "dev"
   pullPolicy: Always
 
+imagePullSecrets:
+  - name: ghcr-auth
+
 serviceAccount:
   create: true
   name: ""
