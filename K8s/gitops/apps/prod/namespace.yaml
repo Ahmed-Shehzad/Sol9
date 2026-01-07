@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: sol9-prod
-  labels:
-    app.kubernetes.io/part-of: sol9
-    environment: prod
