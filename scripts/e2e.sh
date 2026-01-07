@@ -48,20 +48,26 @@ wait_for_url() {
   return 1
 }
 
-wait_for_service() {
+wait_for_health() {
   local service=$1
-  local cmd=$2
-  local attempts=${3:-30}
-  local delay=${4:-2}
+  local attempts=${2:-30}
+  local delay=${3:-2}
 
   for _ in $(seq 1 "$attempts"); do
-    if docker compose -f "$COMPOSE_FILE" exec -T "$service" sh -c "$cmd" >/dev/null 2>&1; then
-      return 0
+    local cid
+    cid=$(docker compose -f "$COMPOSE_FILE" ps -q "$service" 2>/dev/null || true)
+    if [ -n "$cid" ]; then
+      local status
+      status=$(docker inspect -f '{{.State.Health.Status}}' "$cid" 2>/dev/null || true)
+      if [ "$status" = "healthy" ]; then
+        return 0
+      fi
     fi
     sleep "$delay"
   done
 
   echo "Timed out waiting for $service to become ready" >&2
+  docker compose -f "$COMPOSE_FILE" ps >&2 || true
   dump_logs
   return 1
 }
@@ -82,8 +88,8 @@ fi
 
 docker compose -f "$COMPOSE_FILE" up -d
 
-wait_for_service postgres "pg_isready -U postgres"
-wait_for_service redis "redis-cli ping | grep -q PONG"
+wait_for_health postgres
+wait_for_health redis
 
 export ASPNETCORE_ENVIRONMENT=Development
 export DOTNET_ENVIRONMENT=Development
