@@ -2,9 +2,9 @@ replicaCount: 1
 resourcesPreset: ""
 
 image:
-  repository: sol9/gateway-api
+  repository: ghcr.io/ahmed-shehzad/sol9-gateway-api
   tag: "dev"
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 serviceAccount:
   create: true

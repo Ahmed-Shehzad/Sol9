@@ -2,9 +2,9 @@ replicaCount: 1
 resourcesPreset: ""
 
 image:
-  repository: sol9/bookings-api
+  repository: ghcr.io/ahmed-shehzad/sol9-bookings-api
   tag: "dev"
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 serviceAccount:
   create: true
