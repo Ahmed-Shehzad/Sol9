@@ -52,6 +52,10 @@ spec:
               value: "{{ $localAddress }}"
             - name: TransponderDefaults__RemoteAddress
               value: "{{ $remoteAddress }}"
+            - name: TransponderSettings__LocalBaseAddress
+              value: "{{ $localAddress }}"
+            - name: TransponderSettings__RemoteBaseAddress
+              value: "{{ $remoteAddress }}"
             - name: TransponderSettings__GrpcPortOffset
               value: "{{ .Values.global.service.grpcPortOffset }}"
           ports:
