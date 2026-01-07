@@ -4,7 +4,6 @@ using System.Text.Json;
 using Microsoft.Playwright;
 
 using Xunit;
-using Xunit.Sdk;
 
 namespace Bookings.E2E.Tests;
 
@@ -13,13 +12,10 @@ public sealed class BookingsApiTests : IAsyncLifetime
     private const string BaseUrlEnv = "E2E_BASE_URL";
     private IPlaywright? _playwright;
     private IAPIRequestContext? _api;
-    private string? _skipReason;
 
     public async Task InitializeAsync()
     {
-        string? baseUrl = GetBaseUrl();
-        if (baseUrl is null)
-            return;
+        string baseUrl = GetBaseUrl();
         _playwright = await Playwright.CreateAsync().ConfigureAwait(false);
         _api = await _playwright.APIRequest.NewContextAsync(new APIRequestNewContextOptions
         {
@@ -34,10 +30,9 @@ public sealed class BookingsApiTests : IAsyncLifetime
         _playwright?.Dispose();
     }
 
-    [Fact]
+    [E2EFact]
     public async Task GetBookings_ReturnsCollectionWithLinksAsync()
     {
-        SkipIfNotConfigured();
         IAPIResponse response = await _api!.GetAsync("/bookings/api/v1/bookings").ConfigureAwait(false);
         Assert.Equal(HttpStatusCode.OK, (HttpStatusCode)response.Status);
 
@@ -53,10 +48,9 @@ public sealed class BookingsApiTests : IAsyncLifetime
         Assert.True(meta.TryGetProperty("totalPages", out _));
     }
 
-    [Fact]
+    [E2EFact]
     public async Task CreateBooking_ReturnsResourceWithLinksAsync()
     {
-        SkipIfNotConfigured();
         var payload = new
         {
             orderId = Guid.NewGuid(),
@@ -86,20 +80,14 @@ public sealed class BookingsApiTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.OK, (HttpStatusCode)getByOrder.Status);
     }
 
-    private string? GetBaseUrl()
+    private static string GetBaseUrl()
     {
         string? baseUrl = Environment.GetEnvironmentVariable(BaseUrlEnv);
-        if (!string.IsNullOrWhiteSpace(baseUrl)) return baseUrl.TrimEnd('/');
+        if (string.IsNullOrWhiteSpace(baseUrl))
+            throw new InvalidOperationException(
+                $"Set {BaseUrlEnv} to the API gateway base URL (e.g. http://localhost:18080) to run E2E tests.");
 
-        _skipReason = $"Set {BaseUrlEnv} to the API gateway base URL (e.g. http://localhost:18080) to run E2E tests.";
-        return null;
-
-    }
-
-    private void SkipIfNotConfigured()
-    {
-        if (_skipReason is not null)
-            throw SkipException.ForSkip(_skipReason);
+        return baseUrl.TrimEnd('/');
     }
 
     private async static Task<JsonElement> ReadJsonAsync(IAPIResponse response)
