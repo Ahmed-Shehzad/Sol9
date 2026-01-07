@@ -18,8 +18,4 @@
       <ProjectReference Include="..\Transponder.Persistence\Transponder.Persistence.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Events\" />
-    </ItemGroup>
-
 </Project>

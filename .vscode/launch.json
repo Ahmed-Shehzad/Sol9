@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/muhammadahmedshehzad/Personal/RiderProjects/Sol9",
+      "program": "/Users/muhammadahmedshehzad/Personal/RiderProjects/Sol9/build/Debug/outDebug"
+    }
+  ]
+}

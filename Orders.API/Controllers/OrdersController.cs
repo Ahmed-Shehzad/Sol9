@@ -12,7 +12,8 @@ using Orders.Application.Queries.GetOrderById;
 using Orders.Application.Queries.GetOrders;
 
 using Sol9.Core;
-using Orders.API.Responses;
+using Sol9.Core.Hypermedia;
+using Sol9.Core.Pagination;
 
 namespace Orders.API.Controllers;
 
@@ -34,14 +35,23 @@ public class OrdersController : ControllerBase
 
     [HttpGet]
     [ProducesResponseType(typeof(CollectionDto<ResourceDto<OrderDto>>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<CollectionDto<ResourceDto<OrderDto>>>> GetAsync(CancellationToken cancellationToken = default)
+    public async Task<ActionResult<CollectionDto<ResourceDto<OrderDto>>>> GetAsync(
+        [FromQuery] int? page,
+        [FromQuery] int? pageSize,
+        CancellationToken cancellationToken = default)
     {
-        const string key = nameof(GetOrdersQuery);
-        IReadOnlyList<OrderDto> orders = await _sender.SendAsync(new GetOrdersQuery(key), cancellationToken).ConfigureAwait(false);
+        PaginationRequest paging = PaginationRequest.Normalize(page, pageSize);
+        string key = $"{nameof(GetOrdersQuery)}:{paging.Page}:{paging.PageSize}";
+        PagedResult<OrderDto> result = await _sender
+            .SendAsync(new GetOrdersQuery(key, paging.Page, paging.PageSize), cancellationToken)
+            .ConfigureAwait(false);
         string? version = HttpContext.GetRequestedApiVersion()?.ToString();
-        IReadOnlyList<ResourceDto<OrderDto>> items = [.. orders.Select(order => new ResourceDto<OrderDto>(order, BuildOrderLinks(order.Id, version)))];
-
-        return Ok(new CollectionDto<ResourceDto<OrderDto>>(items, BuildCollectionLinks(version)));
+        var meta = new PaginationMeta(result.Page, result.PageSize, result.TotalCount, result.TotalPages);
+        return Ok(Hateoas.Collection(
+            result.Items,
+            order => BuildOrderLinks(order.Id, version),
+            BuildCollectionLinks(version, result),
+            meta));
     }
 
     [HttpGet("{id:guid}")]
@@ -52,7 +62,7 @@ public class OrdersController : ControllerBase
         OrderDto? order = await _sender.SendAsync(new GetOrderByIdQuery(id.ToUlid()), cancellationToken).ConfigureAwait(false);
         if (order is null) return NotFound();
         string? version = HttpContext.GetRequestedApiVersion()?.ToString();
-        return Ok(new ResourceDto<OrderDto>(order, BuildOrderLinks(order.Id, version)));
+        return Ok(Hateoas.Resource(order, BuildOrderLinks(order.Id, version)));
     }
 
     [HttpPost]
@@ -64,7 +74,7 @@ public class OrdersController : ControllerBase
             .ConfigureAwait(false);
 
         string? version = HttpContext.GetRequestedApiVersion()?.ToString();
-        var resource = new ResourceDto<Guid>(orderId, BuildOrderLinks(orderId, version));
+        ResourceDto<Guid> resource = Hateoas.Resource(orderId, BuildOrderLinks(orderId, version));
         return CreatedAtAction(GetByIdAction, new { id = orderId, version }, resource);
     }
 
@@ -77,21 +87,33 @@ public class OrdersController : ControllerBase
             .ConfigureAwait(false);
 
         string? version = HttpContext.GetRequestedApiVersion()?.ToString();
-        return Ok(new ResourceDto<Guid>(id, BuildOrderLinks(id, version)));
+        return Ok(Hateoas.Resource(id, BuildOrderLinks(id, version)));
     }
 
     private IReadOnlyDictionary<string, LinkDto> BuildOrderLinks(Guid id, string? version)
-        => new Dictionary<string, LinkDto>(StringComparer.OrdinalIgnoreCase)
+        => Hateoas.Links(
+            ("self", Url.Action(GetByIdAction, new { id, version }) ?? string.Empty, "GET"),
+            ("cancel", Url.Action(CancelAction, new { id, version }) ?? string.Empty, "POST"),
+            ("collection", Url.Action(GetAction, new { version, page = PaginationRequest.DefaultPage, pageSize = PaginationRequest.DefaultPageSize }) ?? string.Empty, "GET"));
+
+    private IReadOnlyDictionary<string, LinkDto> BuildCollectionLinks(string? version, PagedResult<OrderDto> result)
+    {
+        var links = new Dictionary<string, LinkDto>(StringComparer.OrdinalIgnoreCase)
         {
-            ["self"] = new LinkDto(Url.Action(GetByIdAction, new { id, version }) ?? string.Empty, "GET"),
-            ["cancel"] = new LinkDto(Url.Action(CancelAction, new { id, version }) ?? string.Empty, "POST"),
-            ["collection"] = new LinkDto(Url.Action(GetAction, new { version }) ?? string.Empty, "GET")
+            ["self"] = Hateoas.Link(Url.Action(GetAction, new { version, page = result.Page, pageSize = result.PageSize }) ?? string.Empty, "GET"),
+            ["create"] = Hateoas.Link(Url.Action(GetAction, new { version }) ?? string.Empty, "POST")
         };
 
-    private IReadOnlyDictionary<string, LinkDto> BuildCollectionLinks(string? version)
-        => new Dictionary<string, LinkDto>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["self"] = new LinkDto(Url.Action(GetAction, new { version }) ?? string.Empty, "GET"),
-            ["create"] = new LinkDto(Url.Action(GetAction, new { version }) ?? string.Empty, "POST")
-        };
+        if (result.HasPrevious)
+            links["prev"] = Hateoas.Link(
+                Url.Action(GetAction, new { version, page = result.Page - 1, pageSize = result.PageSize }) ?? string.Empty,
+                "GET");
+
+        if (result.HasNext)
+            links["next"] = Hateoas.Link(
+                Url.Action(GetAction, new { version, page = result.Page + 1, pageSize = result.PageSize }) ?? string.Empty,
+                "GET");
+
+        return links;
+    }
 }

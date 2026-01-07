@@ -18,7 +18,7 @@ public sealed class BookingsRepository : Repository<Booking>, IBookingsRepositor
         _context = context;
     }
 
-    public async override Task<IReadOnlyList<Booking>> GetListAsync(
+    public async override Task<IReadOnlyList<Booking>> GetManyAsync(
         Expression<Func<Booking, bool>> expression,
         Expression<Func<Booking, object>>? orderByExpression = null,
         bool orderByDescending = false,
@@ -48,7 +48,7 @@ public sealed class BookingsRepository : Repository<Booking>, IBookingsRepositor
                 booking,
                 cancellationToken)
             .ConfigureAwait(false);
-
+    public override async Task AddAsync(IEnumerable<Booking> entities, CancellationToken cancellationToken = default) => await _context.Bookings.AddRangeAsync(entities, cancellationToken).ConfigureAwait(false);
     public override void Update(Booking entity) => _context.Bookings.Update(entity);
     public override void Update(IEnumerable<Booking> entities) => _context.Bookings.UpdateRange(entities);
     public override void Delete(Booking entity) => _context.Bookings.Remove(entity);

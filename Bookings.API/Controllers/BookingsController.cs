@@ -12,7 +12,8 @@ using Intercessor.Abstractions;
 using Microsoft.AspNetCore.Mvc;
 
 using Sol9.Core;
-using Bookings.API.Responses;
+using Sol9.Core.Hypermedia;
+using Sol9.Core.Pagination;
 
 namespace Bookings.API.Controllers;
 
@@ -34,14 +35,23 @@ public class BookingsController : ControllerBase
 
     [HttpGet]
     [ProducesResponseType(typeof(CollectionDto<ResourceDto<BookingDto>>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<CollectionDto<ResourceDto<BookingDto>>>> GetAsync(CancellationToken cancellationToken = default)
+    public async Task<ActionResult<CollectionDto<ResourceDto<BookingDto>>>> GetAsync(
+        [FromQuery] int? page,
+        [FromQuery] int? pageSize,
+        CancellationToken cancellationToken = default)
     {
-        const string key = nameof(GetBookingsQuery);
-        IReadOnlyList<BookingDto> bookings = await _sender.SendAsync(new GetBookingsQuery(key), cancellationToken).ConfigureAwait(false);
+        PaginationRequest paging = PaginationRequest.Normalize(page, pageSize);
+        string key = $"{nameof(GetBookingsQuery)}:{paging.Page}:{paging.PageSize}";
+        PagedResult<BookingDto> result = await _sender
+            .SendAsync(new GetBookingsQuery(key, paging.Page, paging.PageSize), cancellationToken)
+            .ConfigureAwait(false);
         string? version = HttpContext.GetRequestedApiVersion()?.ToString();
-        IReadOnlyList<ResourceDto<BookingDto>> items = [.. bookings.Select(booking => new ResourceDto<BookingDto>(booking, BuildBookingLinks(booking.Id, booking.OrderId, version)))];
-
-        return Ok(new CollectionDto<ResourceDto<BookingDto>>(items, BuildCollectionLinks(version)));
+        var meta = new PaginationMeta(result.Page, result.PageSize, result.TotalCount, result.TotalPages);
+        return Ok(Hateoas.Collection(
+            result.Items,
+            booking => BuildBookingLinks(booking.Id, booking.OrderId, version),
+            BuildCollectionLinks(version, result),
+            meta));
     }
 
     [HttpGet("{id:guid}")]
@@ -52,7 +62,7 @@ public class BookingsController : ControllerBase
         BookingDto? order = await _sender.SendAsync(new GetBookingByIdQuery(id.ToUlid()), cancellationToken).ConfigureAwait(false);
         if (order is null) return NotFound();
         string? version = HttpContext.GetRequestedApiVersion()?.ToString();
-        return Ok(new ResourceDto<BookingDto>(order, BuildBookingLinks(order.Id, order.OrderId, version)));
+        return Ok(Hateoas.Resource(order, BuildBookingLinks(order.Id, order.OrderId, version)));
     }
 
     [HttpGet("order/{orderId:guid}")]
@@ -63,7 +73,7 @@ public class BookingsController : ControllerBase
         BookingDto? booking = await _sender.SendAsync(new GetBookingByOrderIdQuery(orderId.ToUlid()), cancellationToken).ConfigureAwait(false);
         if (booking is null) return NotFound();
         string? version = HttpContext.GetRequestedApiVersion()?.ToString();
-        return Ok(new ResourceDto<BookingDto>(booking, BuildBookingLinks(booking.Id, booking.OrderId, version)));
+        return Ok(Hateoas.Resource(booking, BuildBookingLinks(booking.Id, booking.OrderId, version)));
     }
 
     [HttpPost]
@@ -72,22 +82,34 @@ public class BookingsController : ControllerBase
     {
         Guid bookingId = await _sender.SendAsync(new CreateBookingCommand(request.OrderId.ToUlid(), request.CustomerName), cancellationToken).ConfigureAwait(false);
         string? version = HttpContext.GetRequestedApiVersion()?.ToString();
-        var resource = new ResourceDto<Guid>(bookingId, BuildBookingLinks(bookingId, request.OrderId, version));
+        ResourceDto<Guid> resource = Hateoas.Resource(bookingId, BuildBookingLinks(bookingId, request.OrderId, version));
         return CreatedAtAction(GetByIdAction, new { id = bookingId, version }, resource);
     }
 
     private IReadOnlyDictionary<string, LinkDto> BuildBookingLinks(Guid id, Guid orderId, string? version)
-        => new Dictionary<string, LinkDto>(StringComparer.OrdinalIgnoreCase)
+        => Hateoas.Links(
+            ("self", Url.Action(GetByIdAction, new { id, version }) ?? string.Empty, "GET"),
+            ("byOrder", Url.Action(GetByOrderAction, new { orderId, version }) ?? string.Empty, "GET"),
+            ("collection", Url.Action(GetAction, new { version, page = PaginationRequest.DefaultPage, pageSize = PaginationRequest.DefaultPageSize }) ?? string.Empty, "GET"));
+
+    private IReadOnlyDictionary<string, LinkDto> BuildCollectionLinks(string? version, PagedResult<BookingDto> result)
+    {
+        var links = new Dictionary<string, LinkDto>(StringComparer.OrdinalIgnoreCase)
         {
-            ["self"] = new LinkDto(Url.Action(GetByIdAction, new { id, version }) ?? string.Empty, "GET"),
-            ["byOrder"] = new LinkDto(Url.Action(GetByOrderAction, new { orderId, version }) ?? string.Empty, "GET"),
-            ["collection"] = new LinkDto(Url.Action(GetAction, new { version }) ?? string.Empty, "GET")
+            ["self"] = Hateoas.Link(Url.Action(GetAction, new { version, page = result.Page, pageSize = result.PageSize }) ?? string.Empty, "GET"),
+            ["create"] = Hateoas.Link(Url.Action(GetAction, new { version }) ?? string.Empty, "POST")
         };
 
-    private IReadOnlyDictionary<string, LinkDto> BuildCollectionLinks(string? version)
-        => new Dictionary<string, LinkDto>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["self"] = new LinkDto(Url.Action(GetAction, new { version }) ?? string.Empty, "GET"),
-            ["create"] = new LinkDto(Url.Action(GetAction, new { version }) ?? string.Empty, "POST")
-        };
+        if (result.HasPrevious)
+            links["prev"] = Hateoas.Link(
+                Url.Action(GetAction, new { version, page = result.Page - 1, pageSize = result.PageSize }) ?? string.Empty,
+                "GET");
+
+        if (result.HasNext)
+            links["next"] = Hateoas.Link(
+                Url.Action(GetAction, new { version, page = result.Page + 1, pageSize = result.PageSize }) ?? string.Empty,
+                "GET");
+
+        return links;
+    }
 }

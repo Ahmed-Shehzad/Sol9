@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Bookings.API.Responses;
+namespace Sol9.Core.Hypermedia;
 
 public sealed record LinkDto(
     [property: JsonPropertyName("href")] string Href,

@@ -13,7 +13,7 @@ public abstract class Repository<TEntity> : IRepository<TEntity> where TEntity :
         _context = context;
     }
 
-    public abstract Task<IReadOnlyList<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> expression,
+    public abstract Task<IReadOnlyList<TEntity>> GetManyAsync(Expression<Func<TEntity, bool>> expression,
         Expression<Func<TEntity, object>>? orderByExpression = null,
         bool orderByDescending = false,
         CancellationToken cancellationToken = default);
@@ -23,7 +23,8 @@ public abstract class Repository<TEntity> : IRepository<TEntity> where TEntity :
 
     public abstract Task AddAsync(TEntity entity,
         CancellationToken cancellationToken = default);
-
+    public abstract Task AddAsync(IEnumerable<TEntity> entities,
+        CancellationToken cancellationToken = default);
     public abstract void Update(TEntity entity);
     public abstract void Update(IEnumerable<TEntity> entities);
     public abstract void Delete(TEntity entity);

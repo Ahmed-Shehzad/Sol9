@@ -1,6 +1,0 @@
-apiVersion: v2
-name: sol9
-description: Sol9 platform (Bookings, Orders, Gateway) with Postgres and Redis
-type: application
-version: 0.1.0
-appVersion: "1.0.0"

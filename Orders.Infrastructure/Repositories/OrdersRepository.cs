@@ -18,7 +18,7 @@ public class OrdersRepository : Repository<Order>, IOrdersRepository
         _context = context;
     }
 
-    public async override Task<IReadOnlyList<Order>> GetListAsync(Expression<Func<Order, bool>> expression,
+    public async override Task<IReadOnlyList<Order>> GetManyAsync(Expression<Func<Order, bool>> expression,
         Expression<Func<Order, object>>? orderByExpression = null,
         bool orderByDescending = false,
         CancellationToken cancellationToken = default)
@@ -47,7 +47,7 @@ public class OrdersRepository : Repository<Order>, IOrdersRepository
                 order,
                 cancellationToken)
             .ConfigureAwait(false);
-
+    public override async Task AddAsync(IEnumerable<Order> entities, CancellationToken cancellationToken = default) => await _context.Orders.AddRangeAsync(entities, cancellationToken).ConfigureAwait(false);
     public override void Update(Order entity) => _context.Orders.Update(entity);
     public override void Update(IEnumerable<Order> entities) => _context.Orders.UpdateRange(entities);
     public override void Delete(Order entity) => _context.Orders.Remove(entity);
