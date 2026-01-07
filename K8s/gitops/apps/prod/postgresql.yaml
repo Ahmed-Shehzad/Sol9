@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sol9-postgresql-prod
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: sol9
+    environment: prod
+spec:
+  project: sol9
+  source:
+    repoURL: https://github.com/Ahmed-Shehzad/Sol9
+    targetRevision: HEAD
+    path: K8s/helm/postgresql
+    helm:
+      releaseName: sol9
+      values: |
+        auth:
+          database: app
+        persistence:
+          storage: 20Gi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sol9-prod
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

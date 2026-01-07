@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sol9-bookings-api-prod
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: sol9
+    environment: prod
+spec:
+  project: sol9
+  source:
+    repoURL: https://github.com/Ahmed-Shehzad/Sol9
+    targetRevision: HEAD
+    path: K8s/helm/bookings-api
+    helm:
+      releaseName: sol9
+      values: |
+        replicaCount: 2
+        image:
+          tag: "prod"
+        postgres:
+          database: app
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sol9-prod
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

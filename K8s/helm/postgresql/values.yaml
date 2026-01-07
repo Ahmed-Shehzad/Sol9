@@ -1,0 +1,34 @@
+replicaCount: 1
+fullnameOverride: postgresql
+
+image:
+  repository: postgres
+  tag: "16"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 5432
+
+ingress:
+  enabled: false
+  className: nginx
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  hosts:
+    - host: postgres.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+auth:
+  database: app
+  username: postgres
+  password: postgres
+
+persistence:
+  enabled: true
+  storage: 5Gi
+
+resources: {}

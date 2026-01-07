@@ -1,0 +1,75 @@
+replicaCount: 1
+resourcesPreset: ""
+
+image:
+  repository: sol9/grpc
+  tag: "dev"
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  create: true
+  name: ""
+  automount: false
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+  grpcPort: 8081
+  grpcTargetPort: 8081
+
+ingress:
+  enabled: false
+  className: nginx
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  hosts:
+    - host: grpc.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+env:
+  aspnetcoreEnvironment: Development
+  urls: http://0.0.0.0:8080
+  grpcUrl: http://0.0.0.0:8081
+  extra: {}
+
+secret:
+  data: {}
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+    ephemeral-storage: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+    ephemeral-storage: 1Gi
+
+hpa:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 75
+
+pdb:
+  enabled: false
+  minAvailable: 1
+  maxUnavailable: ""
+
+probes:
+  liveness:
+    path: /health
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+  readiness:
+    path: /health
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3

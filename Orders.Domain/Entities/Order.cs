@@ -20,7 +20,7 @@ public class Order : AggregateRoot
         TotalAmount = totalAmount;
         Status = OrderStatus.Created;
 
-        AddIntegrationEvent(new OrderCreatedIntegrationEvent(Id));
+        ApplyEvent(new OrderCreatedIntegrationEvent(Id));
     }
 
     public static Order Create(string customerName, decimal totalAmount) => new(customerName, totalAmount);
@@ -30,7 +30,7 @@ public class Order : AggregateRoot
     public void MarkCancelled()
     {
         Status = OrderStatus.Cancelled;
-        AddIntegrationEvent(new OrderCancelledIntegrationEvent(Id, CustomerName));
+        ApplyEvent(new OrderCancelledIntegrationEvent(Id, CustomerName));
     }
     public void MarkCompleted() => Status = OrderStatus.Completed;
     public void MarkExpired() => Status = OrderStatus.Expired;

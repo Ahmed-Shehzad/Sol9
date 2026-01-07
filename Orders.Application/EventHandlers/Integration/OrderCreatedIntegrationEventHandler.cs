@@ -24,8 +24,7 @@ public class OrderCreatedIntegrationEventHandler : IIntegrationEventHandler<Orde
     {
         Order? order = await _ordersRepository.GetAsync(o => o.Id == notification.Id, cancellationToken).ConfigureAwait(false);
 
-        if (order is null)
-            ArgumentNullException.ThrowIfNull(order);
+        ArgumentNullException.ThrowIfNull(order);
 
         IRequestClient<CreateBookingRequest> bookingClient = _clientFactory.CreateRequestClient<CreateBookingRequest>();
         CreateBookingResponse response = await bookingClient

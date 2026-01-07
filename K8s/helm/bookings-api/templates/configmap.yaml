@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "bookings-api.fullname" . }}
+  labels:
+    {{- include "bookings-api.labels" . | nindent 4 }}
+data:
+  ASPNETCORE_ENVIRONMENT: {{ .Values.env.aspnetcoreEnvironment | quote }}
+  ASPNETCORE_URLS: {{ .Values.env.urls | quote }}
+  {{- if .Values.env.transponderDefaults.localAddress }}
+  TransponderDefaults__LocalAddress: {{ .Values.env.transponderDefaults.localAddress | quote }}
+  {{- end }}
+  {{- if .Values.env.transponderDefaults.remoteAddress }}
+  TransponderDefaults__RemoteAddress: {{ .Values.env.transponderDefaults.remoteAddress | quote }}
+  {{- end }}
+  {{- range $key, $value := .Values.env.extra }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}

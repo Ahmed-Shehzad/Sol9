@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "gateway-api.fullname" . }}
+  labels:
+    {{- include "gateway-api.labels" . | nindent 4 }}
+data:
+  ASPNETCORE_ENVIRONMENT: {{ .Values.env.aspnetcoreEnvironment | quote }}
+  ASPNETCORE_URLS: {{ .Values.env.urls | quote }}
+  ReverseProxy__Clusters__bookings-cluster__Destinations__bookings-1__Address: {{ include "gateway-api.bookingsAddress" . | quote }}
+  ReverseProxy__Clusters__orders-cluster__Destinations__orders-1__Address: {{ include "gateway-api.ordersAddress" . | quote }}
+  {{- range $key, $value := .Values.env.extra }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}

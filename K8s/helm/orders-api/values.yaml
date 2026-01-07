@@ -1,0 +1,96 @@
+replicaCount: 1
+resourcesPreset: ""
+
+image:
+  repository: sol9/orders-api
+  tag: "dev"
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  create: true
+  name: ""
+  automount: false
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+ingress:
+  enabled: false
+  className: nginx
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  hosts:
+    - host: orders.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+env:
+  aspnetcoreEnvironment: Development
+  urls: http://0.0.0.0:8080
+  transponderDefaults:
+    localAddress: ""
+    remoteAddress: ""
+  extra: {}
+
+secret:
+  connectionStrings:
+    orders: ""
+    transponder: ""
+    redis: ""
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+    ephemeral-storage: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+    ephemeral-storage: 1Gi
+
+hpa:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 75
+
+pdb:
+  enabled: false
+  minAvailable: 1
+  maxUnavailable: ""
+
+probes:
+  liveness:
+    path: /health
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+  readiness:
+    path: /health
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+postgres:
+  enabled: false
+  host: "postgresql"
+  port: 5432
+  database: orders
+  username: postgres
+  password: postgres
+  storage: 5Gi
+  image: postgres:16
+  resources: {}
+
+redis:
+  enabled: false
+  host: "redis"
+  port: 6379
+  image: redis:7
+  resources: {}
