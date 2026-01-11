@@ -12,7 +12,7 @@ data:
       "title": "Sol9 Overview",
       "tags": ["sol9", "kubernetes"],
       "schemaVersion": 38,
-      "version": 1,
+      "version": 2,
       "refresh": "30s",
       "timezone": "browser",
       "time": { "from": "now-1h", "to": "now" },
@@ -42,7 +42,7 @@ data:
           "id": 1,
           "type": "stat",
           "title": "Pods Ready",
-          "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+          "gridPos": { "x": 0, "y": 0, "w": 4, "h": 4 },
           "datasource": "$datasource",
           "targets": [
             {
@@ -55,7 +55,7 @@ data:
           "id": 2,
           "type": "stat",
           "title": "Pods Not Ready",
-          "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+          "gridPos": { "x": 4, "y": 0, "w": 4, "h": 4 },
           "datasource": "$datasource",
           "targets": [
             {
@@ -65,14 +65,40 @@ data:
           ]
         },
         {
-          "id": 3,
+          "id": 8,
           "type": "stat",
-          "title": "Restarts (15m)",
-          "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+          "title": "Desired Replicas",
+          "gridPos": { "x": 8, "y": 0, "w": 4, "h": 4 },
           "datasource": "$datasource",
           "targets": [
             {
-              "expr": "sum(increase(kube_pod_container_status_restarts_total{namespace=\"$namespace\"}[15m]))",
+              "expr": "sum(argo_rollouts_rollout_spec_replicas{namespace=\"$namespace\"}) or sum(kube_deployment_spec_replicas{namespace=\"$namespace\"}) or vector(0)",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "id": 9,
+          "type": "stat",
+          "title": "Available Replicas",
+          "gridPos": { "x": 12, "y": 0, "w": 4, "h": 4 },
+          "datasource": "$datasource",
+          "targets": [
+            {
+              "expr": "sum(argo_rollouts_rollout_status_replicas_available{namespace=\"$namespace\"}) or sum(kube_deployment_status_replicas_available{namespace=\"$namespace\"}) or vector(0)",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "id": 10,
+          "type": "stat",
+          "title": "Rollouts Healthy",
+          "gridPos": { "x": 16, "y": 0, "w": 4, "h": 4 },
+          "datasource": "$datasource",
+          "targets": [
+            {
+              "expr": "sum(argo_rollouts_rollout_status{namespace=\"$namespace\",phase=\"Healthy\"}) or vector(0)",
               "refId": "A"
             }
           ]
@@ -81,7 +107,7 @@ data:
           "id": 4,
           "type": "stat",
           "title": "HTTP 5xx Rate (req/s)",
-          "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+          "gridPos": { "x": 20, "y": 0, "w": 4, "h": 4 },
           "datasource": "$datasource",
           "targets": [
             {
@@ -128,6 +154,24 @@ data:
               "refId": "A"
             }
           ]
+        },
+        {
+          "id": 11,
+          "type": "table",
+          "title": "Rollouts",
+          "gridPos": { "x": 0, "y": 10, "w": 24, "h": 8 },
+          "datasource": "$datasource",
+          "targets": [
+            {
+              "expr": "argo_rollouts_rollout_status{namespace=\"$namespace\"}",
+              "format": "table",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "showHeader": true
+          }
         }
       ],
       "annotations": {
