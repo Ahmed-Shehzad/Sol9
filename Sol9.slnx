@@ -50,6 +50,9 @@
     <Project Path="Transponder.Transports.Grpc\Transponder.Transports.Grpc.csproj" />
     <Project Path="Transponder.Transports.Kafka\Transponder.Transports.Kafka.csproj" />
     <Project Path="Transponder.Transports.RabbitMq\Transponder.Transports.RabbitMq.csproj" />
+    <Project Path="Transponder.Transports.SignalR\Transponder.Transports.SignalR.csproj" />
+    <Project Path="Transponder.Transports.SSE\Transponder.Transports.SSE.csproj" />
+    <Project Path="Transponder.Transports.Webhooks\Transponder.Transports.Webhooks.csproj" />
     <Project Path="Transponder.Transports\Transponder.Transports.csproj" />
     <Project Path="Transponder/Transponder.csproj" />
     <Project Path="Transponder.Persistence.EntityFramework.PostgreSql\Transponder.Persistence.EntityFramework.PostgreSql.csproj" />
