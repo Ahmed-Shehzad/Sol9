@@ -1,0 +1,146 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sol9-overview-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  sol9-overview.json: |
+    {
+      "uid": "sol9-overview",
+      "title": "Sol9 Overview",
+      "tags": ["sol9", "kubernetes"],
+      "schemaVersion": 38,
+      "version": 1,
+      "refresh": "30s",
+      "timezone": "browser",
+      "time": { "from": "now-1h", "to": "now" },
+      "timepicker": {
+        "refresh_intervals": ["10s", "30s", "1m", "5m", "15m"]
+      },
+      "templating": {
+        "list": [
+          {
+            "name": "datasource",
+            "type": "datasource",
+            "query": "prometheus",
+            "current": { "text": "Prometheus", "value": "Prometheus" }
+          },
+          {
+            "name": "namespace",
+            "type": "query",
+            "datasource": "$datasource",
+            "refresh": 1,
+            "query": "label_values(kube_pod_info, namespace)",
+            "current": { "text": "sol9", "value": "sol9" }
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": 1,
+          "type": "stat",
+          "title": "Pods Ready",
+          "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+          "datasource": "$datasource",
+          "targets": [
+            {
+              "expr": "sum(kube_pod_status_ready{namespace=\"$namespace\",condition=\"true\"})",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "type": "stat",
+          "title": "Pods Not Ready",
+          "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+          "datasource": "$datasource",
+          "targets": [
+            {
+              "expr": "sum(kube_pod_status_ready{namespace=\"$namespace\",condition=\"false\"})",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "type": "stat",
+          "title": "Restarts (15m)",
+          "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+          "datasource": "$datasource",
+          "targets": [
+            {
+              "expr": "sum(increase(kube_pod_container_status_restarts_total{namespace=\"$namespace\"}[15m]))",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "type": "stat",
+          "title": "HTTP 5xx Rate (req/s)",
+          "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+          "datasource": "$datasource",
+          "targets": [
+            {
+              "expr": "sum(rate(http_server_request_duration_count{service_name=~\"sol9-.*\",http_response_status_code=~\"5..\"}[5m]))",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "type": "timeseries",
+          "title": "CPU Usage (cores)",
+          "gridPos": { "x": 0, "y": 4, "w": 8, "h": 6 },
+          "datasource": "$datasource",
+          "targets": [
+            {
+              "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"$namespace\",container!=\"\",image!=\"\"}[5m]))",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "id": 6,
+          "type": "timeseries",
+          "title": "Memory Working Set (MiB)",
+          "gridPos": { "x": 8, "y": 4, "w": 8, "h": 6 },
+          "datasource": "$datasource",
+          "targets": [
+            {
+              "expr": "sum(container_memory_working_set_bytes{namespace=\"$namespace\",container!=\"\",image!=\"\"}) / 1024 / 1024",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "id": 7,
+          "type": "timeseries",
+          "title": "HTTP Request Rate (req/s)",
+          "gridPos": { "x": 16, "y": 4, "w": 8, "h": 6 },
+          "datasource": "$datasource",
+          "targets": [
+            {
+              "expr": "sum(rate(http_server_request_duration_count{service_name=~\"sol9-.*\"}[5m]))",
+              "refId": "A"
+            }
+          ]
+        }
+      ],
+      "annotations": {
+        "list": [
+          {
+            "builtIn": 1,
+            "datasource": "-- Grafana --",
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "type": "dashboard"
+          }
+        ]
+      }
+    }
