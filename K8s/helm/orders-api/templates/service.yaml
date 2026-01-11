@@ -11,5 +11,11 @@ spec:
       port: {{ .Values.service.port }}
       targetPort: http
       protocol: TCP
+    {{- if .Values.service.grpcPort }}
+    - name: grpc
+      port: {{ .Values.service.grpcPort }}
+      targetPort: grpc
+      protocol: TCP
+    {{- end }}
   selector:
     {{- include "orders-api.selectorLabels" . | nindent 4 }}

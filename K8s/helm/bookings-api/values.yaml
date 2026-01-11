@@ -18,6 +18,8 @@ service:
   type: ClusterIP
   port: 80
   targetPort: 8080
+  grpcPort: 8081
+  grpcTargetPort: 8081
 
 ingress:
   enabled: false
@@ -34,6 +36,9 @@ ingress:
 env:
   aspnetcoreEnvironment: Development
   urls: http://0.0.0.0:8080
+  grpc:
+    url: http://0.0.0.0:8081
+    protocols: Http2
   transponderDefaults:
     localAddress: ""
     remoteAddress: ""
