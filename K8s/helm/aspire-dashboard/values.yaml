@@ -2,8 +2,8 @@ replicaCount: 1
 resourcesPreset: ""
 
 image:
-  repository: sol9/aspire-dashboard
-  tag: "dev"
+  repository: mcr.microsoft.com/dotnet/aspire-dashboard
+  tag: "13.1.0"
   pullPolicy: IfNotPresent
 
 serviceAccount:
