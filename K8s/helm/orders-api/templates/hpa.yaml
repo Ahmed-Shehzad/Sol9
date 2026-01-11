@@ -7,8 +7,8 @@ metadata:
     {{- include "orders-api.labels" . | nindent 4 }}
 spec:
   scaleTargetRef:
-    apiVersion: {{- if .Values.rollout.enabled }}argoproj.io/v1alpha1{{- else }}apps/v1{{- end }}
-    kind: {{- if .Values.rollout.enabled }}Rollout{{- else }}Deployment{{- end }}
+    apiVersion: {{ ternary "argoproj.io/v1alpha1" "apps/v1" .Values.rollout.enabled }}
+    kind: {{ ternary "Rollout" "Deployment" .Values.rollout.enabled }}
     name: {{ include "orders-api.fullname" . }}
   minReplicas: {{ .Values.hpa.minReplicas }}
   maxReplicas: {{ .Values.hpa.maxReplicas }}
