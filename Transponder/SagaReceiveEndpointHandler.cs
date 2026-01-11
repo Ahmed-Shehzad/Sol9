@@ -91,7 +91,7 @@ internal sealed class SagaReceiveEndpointHandler
         }
     }
 
-    public static async Task InvokeInternalAsync<TSaga, TState, TMessage>(
+    public async static Task InvokeInternalAsync<TSaga, TState, TMessage>(
         IServiceProvider serviceProvider,
         SagaMessageRegistration registration,
         object message,

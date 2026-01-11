@@ -81,7 +81,7 @@ public sealed class IntegrationEventDispatchInterceptor : SaveChangesInterceptor
         base.SaveChangesFailed(eventData);
     }
 
-    public override async Task SaveChangesFailedAsync(
+    public async override Task SaveChangesFailedAsync(
         DbContextErrorEventData eventData,
         CancellationToken cancellationToken = default)
     {
