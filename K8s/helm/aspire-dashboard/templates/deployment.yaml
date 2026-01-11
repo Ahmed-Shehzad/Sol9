@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "aspire-dashboard.fullname" . }}
+  labels:
+    {{- include "aspire-dashboard.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "aspire-dashboard.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "aspire-dashboard.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "aspire-dashboard.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automount | default false }}
+      containers:
+        - name: aspire-dashboard
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.targetPort }}
+              protocol: TCP
+            - name: otlp-grpc
+              containerPort: {{ .Values.service.otlpGrpcPort }}
+              protocol: TCP
+            - name: otlp-http
+              containerPort: {{ .Values.service.otlpHttpPort }}
+              protocol: TCP
+          env:
+            - name: ASPNETCORE_URLS
+              value: {{ .Values.env.aspnetcoreUrls | quote }}
+            - name: ASPIRE_ALLOW_UNSECURED_TRANSPORT
+              value: {{ .Values.env.allowUnsecuredTransport | quote }}
+            - name: ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL
+              value: {{ .Values.env.otlpGrpcEndpoint | quote }}
+            - name: ASPIRE_DASHBOARD_OTLP_HTTP_ENDPOINT_URL
+              value: {{ .Values.env.otlpHttpEndpoint | quote }}
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            {{- include "aspire-dashboard.resources" . | nindent 12 }}
