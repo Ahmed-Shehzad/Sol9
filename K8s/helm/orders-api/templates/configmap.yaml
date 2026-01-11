@@ -6,9 +6,18 @@ metadata:
     {{- include "orders-api.labels" . | nindent 4 }}
 data:
   ASPNETCORE_ENVIRONMENT: {{ .Values.env.aspnetcoreEnvironment | quote }}
+  {{- if and .Values.tls.enabled .Values.env.https.url }}
+  ASPNETCORE_URLS: {{ .Values.env.https.url | quote }}
+  Kestrel__Endpoints__Https__Url: {{ .Values.env.https.url | quote }}
+  Kestrel__Endpoints__Https__Protocols: {{ .Values.env.https.protocols | default "Http1AndHttp2" | quote }}
+  Kestrel__Certificates__Default__Path: {{ printf "%s/%s" .Values.tls.mountPath .Values.tls.certFile | quote }}
+  Kestrel__Certificates__Default__KeyPath: {{ printf "%s/%s" .Values.tls.mountPath .Values.tls.keyFile | quote }}
+  SSL_CERT_FILE: {{ printf "%s/%s" .Values.tls.mountPath .Values.tls.certFile | quote }}
+  {{- else }}
   ASPNETCORE_URLS: {{ .Values.env.urls | quote }}
   Kestrel__Endpoints__Http__Url: {{ .Values.env.urls | quote }}
   Kestrel__Endpoints__Http__Protocols: {{ .Values.env.httpProtocols | default "Http1" | quote }}
+  {{- end }}
   {{- if .Values.env.grpc.url }}
   Kestrel__Endpoints__Grpc__Url: {{ .Values.env.grpc.url | quote }}
   Kestrel__Endpoints__Grpc__Protocols: {{ .Values.env.grpc.protocols | default "Http2" | quote }}

@@ -6,7 +6,18 @@ metadata:
     {{- include "gateway-api.labels" . | nindent 4 }}
 data:
   ASPNETCORE_ENVIRONMENT: {{ .Values.env.aspnetcoreEnvironment | quote }}
+  {{- if and .Values.tls.enabled .Values.env.https.url }}
+  ASPNETCORE_URLS: {{ .Values.env.https.url | quote }}
+  Kestrel__Endpoints__Https__Url: {{ .Values.env.https.url | quote }}
+  Kestrel__Endpoints__Https__Protocols: {{ .Values.env.https.protocols | default "Http1AndHttp2" | quote }}
+  Kestrel__Certificates__Default__Path: {{ printf "%s/%s" .Values.tls.mountPath .Values.tls.certFile | quote }}
+  Kestrel__Certificates__Default__KeyPath: {{ printf "%s/%s" .Values.tls.mountPath .Values.tls.keyFile | quote }}
+  SSL_CERT_FILE: {{ printf "%s/%s" .Values.tls.mountPath .Values.tls.certFile | quote }}
+  {{- else }}
   ASPNETCORE_URLS: {{ .Values.env.urls | quote }}
+  Kestrel__Endpoints__Http__Url: {{ .Values.env.urls | quote }}
+  Kestrel__Endpoints__Http__Protocols: {{ .Values.env.httpProtocols | default "Http1" | quote }}
+  {{- end }}
   ReverseProxy__Clusters__bookings-cluster__Destinations__bookings-1__Address: {{ include "gateway-api.bookingsAddress" . | quote }}
   ReverseProxy__Clusters__orders-cluster__Destinations__orders-1__Address: {{ include "gateway-api.ordersAddress" . | quote }}
   {{- if .Values.metrics.enabled }}

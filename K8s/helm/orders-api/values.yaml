@@ -36,7 +36,10 @@ ingress:
 env:
   aspnetcoreEnvironment: Development
   urls: http://0.0.0.0:8080
-  httpProtocols: Http1AndHttp2
+  httpProtocols: Http1
+  https:
+    url: https://0.0.0.0:8080
+    protocols: Http1AndHttp2
   grpc:
     url: ""
     protocols: Http2
@@ -61,6 +64,13 @@ secret:
     orders: ""
     transponder: ""
     redis: ""
+
+tls:
+  enabled: false
+  secretName: ""
+  mountPath: /etc/sol9/tls
+  certFile: tls.crt
+  keyFile: tls.key
 
 resources:
   requests:

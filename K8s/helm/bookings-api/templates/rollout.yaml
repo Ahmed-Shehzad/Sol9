@@ -39,10 +39,17 @@ spec:
                 name: {{ include "bookings-api.fullname" . }}
             - secretRef:
                 name: {{ include "bookings-api.fullname" . }}
+          {{- if .Values.tls.enabled }}
+          volumeMounts:
+            - name: tls-cert
+              mountPath: {{ .Values.tls.mountPath }}
+              readOnly: true
+          {{- end }}
           livenessProbe:
             httpGet:
               path: {{ .Values.probes.liveness.path }}
               port: http
+              scheme: {{ ternary "HTTPS" "HTTP" .Values.tls.enabled }}
             initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
             periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
             timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds }}
@@ -51,12 +58,19 @@ spec:
             httpGet:
               path: {{ .Values.probes.readiness.path }}
               port: http
+              scheme: {{ ternary "HTTPS" "HTTP" .Values.tls.enabled }}
             initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
             periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
             timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
             failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
           resources:
             {{- include "bookings-api.resources" . | nindent 12 }}
+      {{- if .Values.tls.enabled }}
+      volumes:
+        - name: tls-cert
+          secret:
+            secretName: {{ .Values.tls.secretName }}
+      {{- end }}
   strategy:
     {{- if eq .Values.rollout.strategy "canary" }}
     canary:

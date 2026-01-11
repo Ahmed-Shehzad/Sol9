@@ -59,7 +59,11 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- if .Values.env.bookingsAddress -}}
 {{- .Values.env.bookingsAddress -}}
 {{- else -}}
+{{- if .Values.tls.enabled -}}
+{{- printf "https://%s-bookings-api:80" .Release.Name -}}
+{{- else -}}
 {{- printf "http://%s-bookings-api:80" .Release.Name -}}
+{{- end -}}
 {{- end -}}
 {{- end -}}
 
@@ -67,7 +71,11 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- if .Values.env.ordersAddress -}}
 {{- .Values.env.ordersAddress -}}
 {{- else -}}
+{{- if .Values.tls.enabled -}}
+{{- printf "https://%s-orders-api:80" .Release.Name -}}
+{{- else -}}
 {{- printf "http://%s-orders-api:80" .Release.Name -}}
+{{- end -}}
 {{- end -}}
 {{- end -}}
 
