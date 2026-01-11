@@ -9,6 +9,7 @@ spec:
   metrics:
     - name: success-rate
       interval: {{ .Values.rollout.analysis.interval }}
+      count: {{ .Values.rollout.analysis.count }}
       failureLimit: {{ .Values.rollout.analysis.failureLimit }}
       successCondition: result[0] >= {{ .Values.rollout.analysis.successRateThreshold }}
       provider:

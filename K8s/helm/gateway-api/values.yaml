@@ -108,6 +108,7 @@ rollout:
     insertAfterWeight: 50
     templateName: ""
     interval: 30s
+    count: 5
     failureLimit: 1
     successRateThreshold: 0.95
     prometheusAddress: http://kube-prometheus-stack-prometheus.monitoring.svc:9090
