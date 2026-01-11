@@ -8,6 +8,8 @@ data:
   ASPNETCORE_ENVIRONMENT: {{ .Values.env.aspnetcoreEnvironment | quote }}
   ASPNETCORE_URLS: {{ .Values.env.urls | quote }}
   {{- if .Values.env.grpc.url }}
+  Kestrel__Endpoints__Http__Url: {{ .Values.env.urls | quote }}
+  Kestrel__Endpoints__Http__Protocols: Http1
   Kestrel__Endpoints__Grpc__Url: {{ .Values.env.grpc.url | quote }}
   Kestrel__Endpoints__Grpc__Protocols: {{ .Values.env.grpc.protocols | default "Http2" | quote }}
   {{- end }}
