@@ -75,8 +75,20 @@ probes:
 
 rollout:
   enabled: false
+  strategy: blueGreen
   blueGreen:
     autoPromotionEnabled: false
     autoPromotionSeconds: 0
     previewReplicaCount: 1
     scaleDownDelaySeconds: 30
+  canary:
+    maxSurge: "25%"
+    maxUnavailable: 0
+    steps:
+      - setWeight: 10
+      - pause:
+          duration: 30
+      - setWeight: 50
+      - pause:
+          duration: 60
+      - setWeight: 100

@@ -53,6 +53,13 @@ spec:
           resources:
             {{- include "bookings-api.resources" . | nindent 12 }}
   strategy:
+    {{- if eq .Values.rollout.strategy "canary" }}
+    canary:
+      maxSurge: {{ .Values.rollout.canary.maxSurge }}
+      maxUnavailable: {{ .Values.rollout.canary.maxUnavailable }}
+      steps:
+        {{- toYaml .Values.rollout.canary.steps | nindent 8 }}
+    {{- else }}
     blueGreen:
       activeService: {{ include "bookings-api.fullname" . }}
       previewService: {{ include "bookings-api.previewServiceName" . }}
@@ -66,4 +73,5 @@ spec:
       {{- if .Values.rollout.blueGreen.scaleDownDelaySeconds }}
       scaleDownDelaySeconds: {{ .Values.rollout.blueGreen.scaleDownDelaySeconds }}
       {{- end }}
+    {{- end }}
 {{- end }}
