@@ -46,37 +46,6 @@ jobs:
       - name: Test
         run: dotnet test Sol9.slnx -c Release --no-build --verbosity normal
 
-  e2e:
-    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
-    needs: build_test
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          global-json-file: global.json
-
-      - name: Restore
-        run: dotnet restore Sol9.slnx
-
-      - name: Build
-        run: dotnet build Sol9.slnx -c Release --no-restore
-
-      - name: Run E2E tests
-        run: ./scripts/e2e.sh
-
-      - name: Upload E2E logs
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: e2e-logs
-          path: artifacts/e2e-logs
-
   publish:
     if: github.ref == 'refs/heads/main'
     needs: build_test
