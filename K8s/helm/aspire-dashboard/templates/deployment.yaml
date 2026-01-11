@@ -33,6 +33,10 @@ spec:
           env:
             - name: ASPNETCORE_URLS
               value: {{ .Values.env.aspnetcoreUrls | quote }}
+            - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
+              value: {{ .Values.env.forwardedHeadersEnabled | quote }}
+            - name: ASPNETCORE_HTTPS_PORT
+              value: {{ .Values.env.httpsPort | quote }}
             - name: ASPIRE_ALLOW_UNSECURED_TRANSPORT
               value: {{ .Values.env.allowUnsecuredTransport | quote }}
             - name: ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL
