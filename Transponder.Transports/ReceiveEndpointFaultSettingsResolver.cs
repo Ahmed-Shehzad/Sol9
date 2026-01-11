@@ -11,9 +11,9 @@ public static class ReceiveEndpointFaultSettingsResolver
         if (configuration is IReceiveEndpointConfigurationWithFaults withFaults &&
             withFaults.FaultSettings is not null) return withFaults.FaultSettings;
 
-        if (configuration.Settings.TryGetValue(ReceiveEndpointSettingsKeys.FaultSettings, out object? value) &&
-            value is ReceiveEndpointFaultSettings faultSettings) return faultSettings;
-
-        return null;
+        return configuration.Settings.TryGetValue(ReceiveEndpointSettingsKeys.FaultSettings, out object? value) &&
+            value is ReceiveEndpointFaultSettings faultSettings
+            ? faultSettings
+            : null;
     }
 }

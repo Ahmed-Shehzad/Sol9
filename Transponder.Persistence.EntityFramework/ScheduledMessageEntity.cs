@@ -87,10 +87,5 @@ public sealed class ScheduledMessageEntity : IScheduledMessage
         return _headersCache;
     }
 
-    private static string? SerializeHeaders(IReadOnlyDictionary<string, object?>? headers)
-    {
-        if (headers == null || headers.Count == 0) return null;
-
-        return JsonSerializer.Serialize(headers, SerializerOptions);
-    }
+    private static string? SerializeHeaders(IReadOnlyDictionary<string, object?>? headers) => headers == null || headers.Count == 0 ? null : JsonSerializer.Serialize(headers, SerializerOptions);
 }

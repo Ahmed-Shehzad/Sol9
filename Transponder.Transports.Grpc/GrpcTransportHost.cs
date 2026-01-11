@@ -86,11 +86,10 @@ public sealed class GrpcTransportHost : TransportHostBase
         ReceiveEndpointFaultSettings? faultSettings = ReceiveEndpointFaultSettingsResolver.Resolve(configuration);
         ResiliencePipeline pipeline = TransportResiliencePipeline.Create(faultSettings?.ResilienceOptions ?? _resilienceOptions);
         var endpoint = new GrpcReceiveEndpoint(this, configuration, faultSettings, pipeline);
-        if (!_endpoints.TryAdd(configuration.InputAddress, endpoint))
-            throw new InvalidOperationException(
-                $"A receive endpoint is already registered for '{configuration.InputAddress}'.");
-
-        return endpoint;
+        return !_endpoints.TryAdd(configuration.InputAddress, endpoint)
+            ? throw new InvalidOperationException(
+                $"A receive endpoint is already registered for '{configuration.InputAddress}'.")
+            : (IReceiveEndpoint)endpoint;
     }
 
     internal bool TryGetEndpoint(Uri address, out GrpcReceiveEndpoint endpoint)

@@ -83,11 +83,10 @@ public sealed class BookingsApiTests : IAsyncLifetime
     private static string GetBaseUrl()
     {
         string? baseUrl = Environment.GetEnvironmentVariable(BaseUrlEnv);
-        if (string.IsNullOrWhiteSpace(baseUrl))
-            throw new InvalidOperationException(
-                $"Set {BaseUrlEnv} to the API gateway base URL (e.g. http://localhost:18080) to run E2E tests.");
-
-        return baseUrl.TrimEnd('/');
+        return string.IsNullOrWhiteSpace(baseUrl)
+            ? throw new InvalidOperationException(
+                $"Set {BaseUrlEnv} to the API gateway base URL (e.g. http://localhost:18080) to run E2E tests.")
+            : baseUrl.TrimEnd('/');
     }
 
     private async static Task<JsonElement> ReadJsonAsync(IAPIResponse response)

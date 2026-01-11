@@ -19,11 +19,10 @@ public sealed class GrpcTransportFactory : ITransportFactory
     {
         ArgumentNullException.ThrowIfNull(settings);
 
-        if (settings is not IGrpcHostSettings grpcSettings)
-            throw new ArgumentException(
+        return settings is not IGrpcHostSettings grpcSettings
+            ? throw new ArgumentException(
                 $"Expected {nameof(IGrpcHostSettings)} but received {settings.GetType().Name}.",
-                nameof(settings));
-
-        return new GrpcTransportHost(grpcSettings);
+                nameof(settings))
+            : (ITransportHost)new GrpcTransportHost(grpcSettings);
     }
 }

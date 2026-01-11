@@ -21,11 +21,10 @@ public sealed class RuleBuilder<T, TProperty> : IValidationRule<T>
         _rules.Add(obj =>
         {
             TProperty value = _getter(obj);
-            if (value is null)
-                return new ValidationFailure(
-                    _propertyName, message ?? $"{_propertyName} must not be null.");
-
-            return null;
+            return value is null
+                ? new ValidationFailure(
+                    _propertyName, message ?? $"{_propertyName} must not be null.")
+                : null;
         });
         return this;
     }
@@ -38,14 +37,13 @@ public sealed class RuleBuilder<T, TProperty> : IValidationRule<T>
 
             bool isEmpty =
                 value is null ||
-                (value is string s && string.IsNullOrWhiteSpace(s))||
+                (value is string s && string.IsNullOrWhiteSpace(s)) ||
                 (value is Ulid g && g == Ulid.Empty);
 
-            if (isEmpty)
-                return new ValidationFailure(
-                    _propertyName, message ?? $"{_propertyName} must not be empty.");
-
-            return null;
+            return isEmpty
+                ? new ValidationFailure(
+                    _propertyName, message ?? $"{_propertyName} must not be empty.")
+                : null;
         });
         return this;
     }

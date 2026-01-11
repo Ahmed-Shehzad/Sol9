@@ -19,11 +19,10 @@ public sealed class RabbitMqTransportFactory : ITransportFactory
     {
         ArgumentNullException.ThrowIfNull(settings);
 
-        if (settings is not IRabbitMqHostSettings rabbitSettings)
-            throw new ArgumentException(
+        return settings is not IRabbitMqHostSettings rabbitSettings
+            ? throw new ArgumentException(
                 $"Expected {nameof(IRabbitMqHostSettings)} but received {settings.GetType().Name}.",
-                nameof(settings));
-
-        return new RabbitMqTransportHost(rabbitSettings);
+                nameof(settings))
+            : (ITransportHost)new RabbitMqTransportHost(rabbitSettings);
     }
 }

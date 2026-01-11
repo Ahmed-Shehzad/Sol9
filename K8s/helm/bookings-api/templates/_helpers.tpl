@@ -35,6 +35,10 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 {{- end -}}
 
+{{- define "bookings-api.previewServiceName" -}}
+{{- printf "%s-preview" (include "bookings-api.fullname" .) | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
 {{- define "bookings-api.postgresHost" -}}
 {{- if .Values.postgres.enabled -}}
 {{- printf "%s-postgres" (include "bookings-api.fullname" .) -}}

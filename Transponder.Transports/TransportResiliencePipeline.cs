@@ -42,9 +42,7 @@ public static class TransportResiliencePipeline
         ArgumentNullException.ThrowIfNull(transport);
         ArgumentNullException.ThrowIfNull(pipeline);
 
-        if (ReferenceEquals(pipeline, ResiliencePipeline.Empty)) return transport;
-
-        return new ResilientSendTransport(transport, pipeline);
+        return ReferenceEquals(pipeline, ResiliencePipeline.Empty) ? transport : new ResilientSendTransport(transport, pipeline);
     }
 
     public static IPublishTransport WrapPublish(IPublishTransport transport, ResiliencePipeline pipeline)
@@ -52,9 +50,7 @@ public static class TransportResiliencePipeline
         ArgumentNullException.ThrowIfNull(transport);
         ArgumentNullException.ThrowIfNull(pipeline);
 
-        if (ReferenceEquals(pipeline, ResiliencePipeline.Empty)) return transport;
-
-        return new ResilientPublishTransport(transport, pipeline);
+        return ReferenceEquals(pipeline, ResiliencePipeline.Empty) ? transport : new ResilientPublishTransport(transport, pipeline);
     }
 
     private static RetryStrategyOptions CreateRetryOptions(TransportRetryOptions options)

@@ -19,11 +19,10 @@ public sealed class KafkaTransportFactory : ITransportFactory
     {
         ArgumentNullException.ThrowIfNull(settings);
 
-        if (settings is not IKafkaHostSettings kafkaSettings)
-            throw new ArgumentException(
+        return settings is not IKafkaHostSettings kafkaSettings
+            ? throw new ArgumentException(
                 $"Expected {nameof(IKafkaHostSettings)} but received {settings.GetType().Name}.",
-                nameof(settings));
-
-        return new KafkaTransportHost(kafkaSettings);
+                nameof(settings))
+            : (ITransportHost)new KafkaTransportHost(kafkaSettings);
     }
 }

@@ -19,11 +19,10 @@ public sealed class AzureServiceBusTransportFactory : ITransportFactory
     {
         ArgumentNullException.ThrowIfNull(settings);
 
-        if (settings is not IAzureServiceBusHostSettings azureSettings)
-            throw new ArgumentException(
+        return settings is not IAzureServiceBusHostSettings azureSettings
+            ? throw new ArgumentException(
                 $"Expected {nameof(IAzureServiceBusHostSettings)} but received {settings.GetType().Name}.",
-                nameof(settings));
-
-        return new AzureServiceBusTransportHost(azureSettings);
+                nameof(settings))
+            : (ITransportHost)new AzureServiceBusTransportHost(azureSettings);
     }
 }

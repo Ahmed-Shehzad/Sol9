@@ -24,6 +24,7 @@ using Transponder.Persistence.EntityFramework.PostgreSql.Abstractions;
 using Transponder.Persistence.Redis;
 using Transponder.Serilog;
 using Transponder.Transports.Grpc;
+
 using Cysharp.Serialization.Json;
 
 using Verifier.Exceptions;
@@ -277,10 +278,10 @@ static void ConfigureTransponderBus(
 static string? GetTransponderSchema(IConfiguration configuration)
 {
     string? schema = configuration["TransponderPersistence:Schema"];
-    if (string.IsNullOrWhiteSpace(schema) ||
-        string.Equals(schema, "public", StringComparison.OrdinalIgnoreCase))
-        return null;
-    return schema;
+    return string.IsNullOrWhiteSpace(schema) ||
+        string.Equals(schema, "public", StringComparison.OrdinalIgnoreCase)
+        ? null
+        : schema;
 }
 
 static int? GetGrpcPort(IConfiguration configuration)
@@ -293,11 +294,10 @@ static int? GetGrpcPort(IConfiguration configuration)
 static Uri ApplyGrpcPort(Uri address, int grpcPort)
 {
     if (address.Port == grpcPort) return address;
-    if (!string.Equals(address.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) &&
-        !string.Equals(address.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
-        return address;
-
-    return new UriBuilder(address) { Port = grpcPort }.Uri;
+    return !string.Equals(address.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) &&
+        !string.Equals(address.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
+        ? address
+        : new UriBuilder(address) { Port = grpcPort }.Uri;
 }
 
 static TransponderSettings LoadTransponderSettings(IServiceCollection services, IConfiguration configuration)

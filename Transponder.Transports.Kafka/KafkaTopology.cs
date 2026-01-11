@@ -17,9 +17,9 @@ public sealed class KafkaTopology : IKafkaTopology
     {
         ArgumentNullException.ThrowIfNull(address);
 
-        if (!string.IsNullOrWhiteSpace(address.AbsolutePath) && address.AbsolutePath != "/") return address.AbsolutePath.Trim('/');
-
-        return address.Host;
+        return !string.IsNullOrWhiteSpace(address.AbsolutePath) && address.AbsolutePath != "/"
+            ? address.AbsolutePath.Trim('/')
+            : address.Host;
     }
 
     public string GetConsumerGroup(Uri address)

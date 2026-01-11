@@ -35,6 +35,10 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 {{- end -}}
 
+{{- define "orders-api.previewServiceName" -}}
+{{- printf "%s-preview" (include "orders-api.fullname" .) | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
 {{- define "orders-api.postgresHost" -}}
 {{- if .Values.postgres.enabled -}}
 {{- printf "%s-postgres" (include "orders-api.fullname" .) -}}

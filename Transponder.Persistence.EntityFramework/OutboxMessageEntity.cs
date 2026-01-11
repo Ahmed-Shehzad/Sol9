@@ -107,17 +107,16 @@ public sealed class OutboxMessageEntity : IOutboxMessage
         return _headersCache;
     }
 
-    private static string? SerializeHeaders(IReadOnlyDictionary<string, object?>? headers)
-    {
-        if (headers == null || headers.Count == 0) return null;
-
-        return JsonSerializer.Serialize(headers, SerializerOptions);
-    }
+    private static string? SerializeHeaders(IReadOnlyDictionary<string, object?>? headers) => headers == null || headers.Count == 0 ? null : JsonSerializer.Serialize(headers, SerializerOptions);
 
     private static Uri? CreateUri(string? value)
     {
-        if (string.IsNullOrWhiteSpace(value)) return null;
+        if (string.IsNullOrWhiteSpace(value))
+            return null;
 
-        return Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out Uri? uri) ? uri : null;
+        if (Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out Uri? uri))
+            return uri;
+
+        return null;
     }
 }

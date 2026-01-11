@@ -72,3 +72,11 @@ probes:
     periodSeconds: 10
     timeoutSeconds: 3
     failureThreshold: 3
+
+rollout:
+  enabled: false
+  blueGreen:
+    autoPromotionEnabled: false
+    autoPromotionSeconds: 0
+    previewReplicaCount: 1
+    scaleDownDelaySeconds: 30

@@ -198,13 +198,12 @@ public sealed class AwsTransportHost : TransportHostBase
         if (!string.IsNullOrWhiteSpace(settings.AccessKeyId) &&
             !string.IsNullOrWhiteSpace(settings.SecretAccessKey))
         {
-            if (!string.IsNullOrWhiteSpace(settings.SessionToken))
-                return new SessionAWSCredentials(
+            return !string.IsNullOrWhiteSpace(settings.SessionToken)
+                ? new SessionAWSCredentials(
                     settings.AccessKeyId,
                     settings.SecretAccessKey,
-                    settings.SessionToken);
-
-            return new BasicAWSCredentials(settings.AccessKeyId, settings.SecretAccessKey);
+                    settings.SessionToken)
+                : new BasicAWSCredentials(settings.AccessKeyId, settings.SecretAccessKey);
         }
 
         return null;

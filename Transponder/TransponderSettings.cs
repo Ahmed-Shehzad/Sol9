@@ -65,10 +65,7 @@ public sealed class TransponderSettings
         if (!string.IsNullOrWhiteSpace(LocalServiceName) && scheme is not null && port.HasValue)
             return new Uri($"{scheme}://{LocalServiceName}:{port.Value}");
 
-        if (!string.IsNullOrWhiteSpace(LocalBaseAddress))
-            return new Uri(LocalBaseAddress);
-
-        return new Uri(defaultLocalAddress);
+        return !string.IsNullOrWhiteSpace(LocalBaseAddress) ? new Uri(LocalBaseAddress) : new Uri(defaultLocalAddress);
     }
 
     public Uri ResolveGrpcAddress(Uri localBaseAddress)

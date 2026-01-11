@@ -38,11 +38,10 @@ public abstract class TransportHostBase : ITransportHost
 
         var endpoint = new ReceiveEndpoint(configuration);
 
-        if (!_endpoints.TryAdd(configuration.InputAddress, endpoint))
-            throw new InvalidOperationException(
-                $"A receive endpoint is already registered for '{configuration.InputAddress}'.");
-
-        return endpoint;
+        return !_endpoints.TryAdd(configuration.InputAddress, endpoint)
+            ? throw new InvalidOperationException(
+                $"A receive endpoint is already registered for '{configuration.InputAddress}'.")
+            : (IReceiveEndpoint)endpoint;
     }
 
     /// <inheritdoc />

@@ -1,0 +1,17 @@
+{{- if .Values.rollout.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "bookings-api.previewServiceName" . }}
+  labels:
+    {{- include "bookings-api.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+  selector:
+    {{- include "bookings-api.selectorLabels" . | nindent 4 }}
+{{- end }}

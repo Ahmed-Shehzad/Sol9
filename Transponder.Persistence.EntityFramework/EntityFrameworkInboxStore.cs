@@ -22,9 +22,9 @@ public sealed class EntityFrameworkInboxStore : IInboxStore
         string consumerId,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(consumerId)) throw new ArgumentException("ConsumerId must be provided.", nameof(consumerId));
-
-        return await _context.Set<InboxStateEntity>()
+        return string.IsNullOrWhiteSpace(consumerId)
+            ? throw new ArgumentException("ConsumerId must be provided.", nameof(consumerId))
+            : (IInboxState?)await _context.Set<InboxStateEntity>()
             .AsNoTracking()
             .FirstOrDefaultAsync(
                 state => state.MessageId == messageId && state.ConsumerId == consumerId,

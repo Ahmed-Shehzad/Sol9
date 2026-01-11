@@ -19,11 +19,10 @@ public sealed class AwsTransportFactory : ITransportFactory
     {
         ArgumentNullException.ThrowIfNull(settings);
 
-        if (settings is not IAwsTransportHostSettings awsSettings)
-            throw new ArgumentException(
+        return settings is not IAwsTransportHostSettings awsSettings
+            ? throw new ArgumentException(
                 $"Expected {nameof(IAwsTransportHostSettings)} but received {settings.GetType().Name}.",
-                nameof(settings));
-
-        return new AwsTransportHost(awsSettings);
+                nameof(settings))
+            : (ITransportHost)new AwsTransportHost(awsSettings);
     }
 }

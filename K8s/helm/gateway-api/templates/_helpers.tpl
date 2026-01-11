@@ -35,6 +35,10 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 {{- end -}}
 
+{{- define "gateway-api.previewServiceName" -}}
+{{- printf "%s-preview" (include "gateway-api.fullname" .) | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
 {{- define "gateway-api.bookingsAddress" -}}
 {{- if .Values.env.bookingsAddress -}}
 {{- .Values.env.bookingsAddress -}}

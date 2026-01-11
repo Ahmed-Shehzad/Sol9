@@ -1,28 +1,28 @@
-{{- if not .Values.rollout.enabled }}
-apiVersion: apps/v1
-kind: Deployment
+{{- if .Values.rollout.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
-  name: {{ include "orders-api.fullname" . }}
+  name: {{ include "gateway-api.fullname" . }}
   labels:
-    {{- include "orders-api.labels" . | nindent 4 }}
+    {{- include "gateway-api.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "orders-api.selectorLabels" . | nindent 6 }}
+      {{- include "gateway-api.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "orders-api.selectorLabels" . | nindent 8 }}
+        {{- include "gateway-api.selectorLabels" . | nindent 8 }}
     spec:
       {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml .Values.imagePullSecrets | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "orders-api.serviceAccountName" . }}
+      serviceAccountName: {{ include "gateway-api.serviceAccountName" . }}
       automountServiceAccountToken: {{ .Values.serviceAccount.automount | default false }}
       containers:
-        - name: orders-api
+        - name: gateway-api
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
@@ -31,9 +31,7 @@ spec:
               protocol: TCP
           envFrom:
             - configMapRef:
-                name: {{ include "orders-api.fullname" . }}
-            - secretRef:
-                name: {{ include "orders-api.fullname" . }}
+                name: {{ include "gateway-api.fullname" . }}
           livenessProbe:
             httpGet:
               path: {{ .Values.probes.liveness.path }}
@@ -51,5 +49,19 @@ spec:
             timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
             failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
           resources:
-            {{- include "orders-api.resources" . | nindent 12 }}
+            {{- include "gateway-api.resources" . | nindent 12 }}
+  strategy:
+    blueGreen:
+      activeService: {{ include "gateway-api.fullname" . }}
+      previewService: {{ include "gateway-api.previewServiceName" . }}
+      autoPromotionEnabled: {{ .Values.rollout.blueGreen.autoPromotionEnabled }}
+      {{- if .Values.rollout.blueGreen.autoPromotionSeconds }}
+      autoPromotionSeconds: {{ .Values.rollout.blueGreen.autoPromotionSeconds }}
+      {{- end }}
+      {{- if .Values.rollout.blueGreen.previewReplicaCount }}
+      previewReplicaCount: {{ .Values.rollout.blueGreen.previewReplicaCount }}
+      {{- end }}
+      {{- if .Values.rollout.blueGreen.scaleDownDelaySeconds }}
+      scaleDownDelaySeconds: {{ .Values.rollout.blueGreen.scaleDownDelaySeconds }}
+      {{- end }}
 {{- end }}

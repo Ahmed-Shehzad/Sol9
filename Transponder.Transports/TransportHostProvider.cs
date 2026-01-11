@@ -41,19 +41,18 @@ public sealed class TransportHostProvider : ITransportHostProvider
     {
         ArgumentNullException.ThrowIfNull(address);
 
-        if (!TryGetHost(address, out ITransportHost? host) || host is null)
-            throw new InvalidOperationException($"No transport host registered for scheme '{address.Scheme}'.");
-
-        return host;
+        return !TryGetHost(address, out ITransportHost? host) || host is null
+            ? throw new InvalidOperationException($"No transport host registered for scheme '{address.Scheme}'.")
+            : host;
     }
 
     public bool TryGetHost(Uri address, out ITransportHost? host)
     {
         ArgumentNullException.ThrowIfNull(address);
 
-        if (address.IsAbsoluteUri && TryGetHostByAuthority(address, out host)) return true;
-
-        return _hostsByScheme.TryGetValue(address.Scheme, out host);
+        return address.IsAbsoluteUri && TryGetHostByAuthority(address, out host)
+            ? true
+            : _hostsByScheme.TryGetValue(address.Scheme, out host);
     }
 
     private bool TryGetHostByAuthority(Uri address, out ITransportHost? host)
