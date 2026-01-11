@@ -56,11 +56,12 @@ public static class Extensions
             Predicate = registration => registration.Tags.Contains("live")
         });
         _ = app.MapGrpcHealthChecksService();
+        _ = app.MapPrometheusScrapingEndpoint();
 
         return app;
     }
 
-    public static async Task EnsureDatabaseCreatedAndMigratedAsync<TContext>(
+    public async static Task EnsureDatabaseCreatedAndMigratedAsync<TContext>(
         this IServiceProvider serviceProvider,
         CancellationToken cancellationToken = default)
         where TContext : DbContext
@@ -70,7 +71,7 @@ public static class Extensions
         await EnsureDatabaseCreatedAndMigratedAsync(dbContext, cancellationToken).ConfigureAwait(false);
     }
 
-    public static async Task EnsureDatabaseCreatedAndMigratedAsync<TContext>(
+    public async static Task EnsureDatabaseCreatedAndMigratedAsync<TContext>(
         this IDbContextFactory<TContext> factory,
         CancellationToken cancellationToken = default)
         where TContext : DbContext
@@ -163,6 +164,7 @@ public static class Extensions
                 _ = metrics.AddAspNetCoreInstrumentation();
                 _ = metrics.AddHttpClientInstrumentation();
                 _ = metrics.AddRuntimeInstrumentation();
+                _ = metrics.AddPrometheusExporter();
                 if (useOtlpExporter) _ = metrics.AddOtlpExporter();
             })
             .WithTracing(tracing =>

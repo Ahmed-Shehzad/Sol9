@@ -39,6 +39,22 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- printf "%s-preview" (include "bookings-api.fullname" .) | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{- define "bookings-api.metricsServiceName" -}}
+{{- if .Values.metrics.serviceName -}}
+{{- .Values.metrics.serviceName -}}
+{{- else -}}
+{{- include "bookings-api.fullname" . -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "bookings-api.analysisTemplateName" -}}
+{{- if .Values.rollout.analysis.templateName -}}
+{{- .Values.rollout.analysis.templateName -}}
+{{- else -}}
+{{- printf "%s-success-rate" (include "bookings-api.fullname" .) -}}
+{{- end -}}
+{{- end -}}
+
 {{- define "bookings-api.postgresHost" -}}
 {{- if .Values.postgres.enabled -}}
 {{- printf "%s-postgres" (include "bookings-api.fullname" .) -}}

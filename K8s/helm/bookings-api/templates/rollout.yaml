@@ -58,7 +58,14 @@ spec:
       maxSurge: {{ .Values.rollout.canary.maxSurge }}
       maxUnavailable: {{ .Values.rollout.canary.maxUnavailable }}
       steps:
-        {{- toYaml .Values.rollout.canary.steps | nindent 8 }}
+        {{- range $step := .Values.rollout.canary.steps }}
+        - {{- toYaml $step | nindent 10 }}
+        {{- if and $.Values.rollout.analysis.enabled (hasKey $step "setWeight") (eq (int $step.setWeight) (int $.Values.rollout.analysis.insertAfterWeight)) }}
+        - analysis:
+            templates:
+              - templateName: {{ include "bookings-api.analysisTemplateName" $ }}
+        {{- end }}
+        {{- end }}
     {{- else }}
     blueGreen:
       activeService: {{ include "bookings-api.fullname" . }}

@@ -39,6 +39,17 @@ env:
     remoteAddress: ""
   extra: {}
 
+metrics:
+  enabled: false
+  path: /metrics
+  serviceName: ""
+  serviceMonitor:
+    enabled: false
+    interval: 30s
+    scrapeTimeout: 10s
+    labels:
+      release: kube-prometheus-stack
+
 secret:
   connectionStrings:
     orders: ""
@@ -99,6 +110,14 @@ rollout:
       - pause:
           duration: 60
       - setWeight: 100
+  analysis:
+    enabled: false
+    insertAfterWeight: 50
+    templateName: ""
+    interval: 30s
+    failureLimit: 1
+    successRateThreshold: 0.95
+    prometheusAddress: http://kube-prometheus-stack-prometheus.monitoring.svc:9090
 
 postgres:
   enabled: false

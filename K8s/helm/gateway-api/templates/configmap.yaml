@@ -9,6 +9,10 @@ data:
   ASPNETCORE_URLS: {{ .Values.env.urls | quote }}
   ReverseProxy__Clusters__bookings-cluster__Destinations__bookings-1__Address: {{ include "gateway-api.bookingsAddress" . | quote }}
   ReverseProxy__Clusters__orders-cluster__Destinations__orders-1__Address: {{ include "gateway-api.ordersAddress" . | quote }}
+  {{- if .Values.metrics.enabled }}
+  OTEL_METRICS_EXPORTER: "prometheus"
+  OTEL_SERVICE_NAME: {{ include "gateway-api.metricsServiceName" . | quote }}
+  {{- end }}
   {{- range $key, $value := .Values.env.extra }}
   {{ $key }}: {{ $value | quote }}
   {{- end }}

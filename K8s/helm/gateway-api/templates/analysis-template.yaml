@@ -1,0 +1,21 @@
+{{- if .Values.rollout.analysis.enabled -}}
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: {{ include "gateway-api.analysisTemplateName" . }}
+  labels:
+    {{- include "gateway-api.labels" . | nindent 4 }}
+spec:
+  metrics:
+    - name: success-rate
+      interval: {{ .Values.rollout.analysis.interval }}
+      failureLimit: {{ .Values.rollout.analysis.failureLimit }}
+      successCondition: result[0] >= {{ .Values.rollout.analysis.successRateThreshold }}
+      provider:
+        prometheus:
+          address: {{ .Values.rollout.analysis.prometheusAddress | quote }}
+          query: |
+            sum(rate(http_server_request_duration_count{service_name="{{ include "gateway-api.metricsServiceName" . }}",http_response_status_code=~"2.."}[1m]))
+            /
+            sum(rate(http_server_request_duration_count{service_name="{{ include "gateway-api.metricsServiceName" . }}"}[1m]))
+{{- end }}

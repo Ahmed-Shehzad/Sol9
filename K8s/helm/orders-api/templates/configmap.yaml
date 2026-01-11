@@ -13,6 +13,10 @@ data:
   {{- if .Values.env.transponderDefaults.remoteAddress }}
   TransponderDefaults__RemoteAddress: {{ .Values.env.transponderDefaults.remoteAddress | quote }}
   {{- end }}
+  {{- if .Values.metrics.enabled }}
+  OTEL_METRICS_EXPORTER: "prometheus"
+  OTEL_SERVICE_NAME: {{ include "orders-api.metricsServiceName" . | quote }}
+  {{- end }}
   {{- range $key, $value := .Values.env.extra }}
   {{ $key }}: {{ $value | quote }}
   {{- end }}

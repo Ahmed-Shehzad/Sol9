@@ -39,6 +39,22 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- printf "%s-preview" (include "orders-api.fullname" .) | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{- define "orders-api.metricsServiceName" -}}
+{{- if .Values.metrics.serviceName -}}
+{{- .Values.metrics.serviceName -}}
+{{- else -}}
+{{- include "orders-api.fullname" . -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "orders-api.analysisTemplateName" -}}
+{{- if .Values.rollout.analysis.templateName -}}
+{{- .Values.rollout.analysis.templateName -}}
+{{- else -}}
+{{- printf "%s-success-rate" (include "orders-api.fullname" .) -}}
+{{- end -}}
+{{- end -}}
+
 {{- define "orders-api.postgresHost" -}}
 {{- if .Values.postgres.enabled -}}
 {{- printf "%s-postgres" (include "orders-api.fullname" .) -}}

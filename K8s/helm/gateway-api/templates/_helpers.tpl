@@ -39,6 +39,22 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- printf "%s-preview" (include "gateway-api.fullname" .) | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{- define "gateway-api.metricsServiceName" -}}
+{{- if .Values.metrics.serviceName -}}
+{{- .Values.metrics.serviceName -}}
+{{- else -}}
+{{- include "gateway-api.fullname" . -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "gateway-api.analysisTemplateName" -}}
+{{- if .Values.rollout.analysis.templateName -}}
+{{- .Values.rollout.analysis.templateName -}}
+{{- else -}}
+{{- printf "%s-success-rate" (include "gateway-api.fullname" .) -}}
+{{- end -}}
+{{- end -}}
+
 {{- define "gateway-api.bookingsAddress" -}}
 {{- if .Values.env.bookingsAddress -}}
 {{- .Values.env.bookingsAddress -}}
