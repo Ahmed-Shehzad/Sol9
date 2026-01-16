@@ -1,324 +1,269 @@
 # Sol9
 
-Multi-project .NET solution with a modular monolith layout: Bookings and Orders modules, shared libraries (Transponder, Intercessor, Verifier), and an Aspire-hosted API gateway.
+A modern .NET modular monolith solution demonstrating enterprise messaging patterns, domain-driven design, and microservices communication using the Transponder messaging framework.
 
 ## Overview
-- Two runnable web apps: `Bookings.API` and `Orders.API`.
-- Aspire AppHost orchestrates Bookings, Orders, PostgreSQL, Redis, and a YARP API gateway.
-- Bookings/Orders communicate via Transponder gRPC with Serilog + OpenTelemetry scopes and PostgreSQL outbox/inbox.
-- Library projects for messaging/transports, persistence, and cross-cutting helpers.
-- See `Intercessor/README.md` and `Verifier/README.md` for those libraries.
 
-## Libraries usage guide
-This solution ships with several internal libraries. Each question below includes a short code snippet.
+Sol9 is a comprehensive solution that showcases:
 
-### Transponder (messaging, gRPC, outbox)
-#### What to use?
-Use `IRequestClient<T>`, `IPublishEndpoint`, and `ISagaMessageHandler<TState, TMessage>`.
-```csharp
-IRequestClient<CreateBookingRequest> client =
-    _clientFactory.CreateRequestClient<CreateBookingRequest>();
+- **Modular Monolith Architecture**: Bookings and Orders modules with clear boundaries
+- **Enterprise Messaging**: Transponder framework for reliable inter-module communication
+- **Multiple Transport Options**: gRPC, SignalR, SSE, Webhooks, Kafka, RabbitMQ, AWS, Azure Service Bus
+- **Resilience Patterns**: Outbox/inbox patterns, saga orchestration, message scheduling
+- **Modern .NET Stack**: .NET 10, ASP.NET Core, Entity Framework Core, .NET Aspire
+- **Observability**: OpenTelemetry, Serilog, structured logging
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Gateway.API (YARP)                        │
+│              API Gateway & Reverse Proxy                    │
+└──────────────┬──────────────────────────┬───────────────────┘
+               │                          │
+    ┌──────────▼──────────┐    ┌──────────▼──────────┐
+    │   Bookings.API      │    │    Orders.API       │
+    │  (gRPC + HTTP)      │    │  (gRPC + HTTP)      │
+    └──────────┬──────────┘    └──────────┬──────────┘
+               │                          │
+    ┌──────────▼──────────┐    ┌──────────▼──────────┐
+    │ Bookings.Application│    │ Orders.Application  │
+    │  (Domain Logic)      │    │  (Domain Logic)     │
+    └──────────┬──────────┘    └──────────┬──────────┘
+               │                          │
+    ┌──────────▼──────────┐    ┌──────────▼──────────┐
+    │ Bookings.Infrastructure│ │ Orders.Infrastructure│
+    │  (EF Core + Repos)   │  │  (EF Core + Repos)   │
+    └──────────────────────┘  └──────────────────────┘
+               │                          │
+               └──────────┬───────────────┘
+                          │
+              ┌───────────▼───────────┐
+              │   Transponder         │
+              │  (Messaging Bus)      │
+              └───────────┬───────────┘
+                          │
+        ┌─────────────────┼─────────────────┐
+        │                 │                 │
+   ┌────▼────┐      ┌─────▼─────┐    ┌─────▼─────┐
+   │  gRPC   │      │  SignalR  │    │   Kafka  │
+   │Transport│      │ Transport │    │Transport │
+   └─────────┘      └───────────┘    └──────────┘
 ```
 
-#### How to use?
-Register Transponder + gRPC in `Program.cs`, then map the gRPC service.
-```csharp
-builder.Services.AddTransponder(localAddress, options =>
-{
-    options.TransportBuilder.UseGrpc(localAddress, remoteAddresses);
-    options.UseOutbox();
-});
-app.MapGrpcService<GrpcTransportService>();
-```
+## Key Components
 
-#### When to use?
-Use it for cross-module workflows or request/response between services.
-```csharp
-CreateBookingResponse response = await client
-    .GetResponseAsync<CreateBookingResponse>(new CreateBookingRequest(order.Id, order.CustomerName), ct);
-```
+### Core Libraries
 
-#### Where to use?
-Transport config lives in API startup; requests live in Application handlers.
-```csharp
-// API startup
-ConfigureTransponder(builder);
+- **Transponder**: Enterprise messaging framework with multiple transport support
+- **Intercessor**: Mediator pattern implementation with pipeline behaviors
+- **Verifier**: Validation framework with fluent rule builders
+- **Sol9.Core**: Shared domain abstractions and integration events
+- **Sol9.Contracts**: Shared message contracts for inter-module communication
 
-// Application handler
-public sealed class CreateOrderCommandHandler : ICommandHandler<CreateOrderCommand, OrderDto> { }
-```
+### Application Modules
 
-#### Why to use?
-It provides resilience and transport abstraction (outbox, retries, gRPC).
-```csharp
-options.UseOutbox();
-options.UsePersistedMessageScheduler();
-```
+- **Bookings.API**: Booking management service
+- **Orders.API**: Order management service
+- **Gateway.API**: YARP-based API gateway
 
-### Intercessor (mediator + pipeline)
-#### What to use?
-Use commands, queries, and handlers.
-```csharp
-public sealed record GetOrdersQuery() : IQuery<IReadOnlyList<OrderDto>>;
-public sealed class GetOrdersQueryHandler : IQueryHandler<GetOrdersQuery, IReadOnlyList<OrderDto>> { }
-```
+### Infrastructure
 
-#### How to use?
-Register Intercessor and scan the Application assembly.
-```csharp
-services.AddIntercessor(options =>
-{
-    options.RegisterFromAssembly(typeof(OrdersApplication).Assembly);
-});
-```
+- **PostgreSQL**: Primary database for Orders, Bookings, and Transponder persistence
+- **Redis**: Caching and distributed coordination
+- **.NET Aspire**: Application orchestration and observability
 
-#### When to use?
-Use it when a controller should delegate to application logic.
-```csharp
-public async Task<IActionResult> GetAsync() =>
-    Ok(await _sender.SendAsync(new GetOrdersQuery()));
-```
+## Quick Start
 
-#### Where to use?
-Handlers and behaviors live in Application, controllers in API.
-```csharp
-// Orders.Application
-public sealed class CreateOrderCommandHandler : ICommandHandler<CreateOrderCommand, OrderDto> { }
-```
+### Prerequisites
 
-#### Why to use?
-It centralizes cross-cutting concerns via pipeline behaviors.
-```csharp
-services.AddIntercessor(options =>
-{
-    options.RegisterFromAssembly(typeof(OrdersApplication).Assembly);
-    options.AddBehavior<LoggingBehavior<,>>();
-});
-```
-
-### Verifier (validation)
-#### What to use?
-Use `AbstractValidator<T>` and rule definitions.
-```csharp
-public sealed class CreateOrderCommandValidator : AbstractValidator<CreateOrderCommand> { }
-```
-
-#### How to use?
-Define rules per request.
-```csharp
-_ = RuleFor(x => x.TotalAmount)
-    .Must(amount => amount > 0, "TotalAmount must be greater than zero.");
-```
-
-#### When to use?
-Use validators for all commands/queries that accept input.
-```csharp
-public sealed record CreateOrderCommand(string CustomerName, decimal TotalAmount) : ICommand<OrderDto>;
-```
-
-#### Where to use?
-Validators live in Application next to the command/query.
-```csharp
-// Orders.Application/Commands/CreateOrder/CreateOrderCommand.cs
-public sealed class CreateOrderCommandValidator : AbstractValidator<CreateOrderCommand> { }
-```
-
-#### Why to use?
-Consistent validation ensures uniform error handling.
-```csharp
-// Intercessor registers ValidationBehavior automatically.
-```
-
-### Sol9.Contracts (shared message contracts)
-#### What to use?
-Use shared message records for cross-module calls.
-```csharp
-public sealed record CreateBookingRequest(Ulid OrderId, string CustomerName) : ICorrelatedMessage;
-```
-
-#### How to use?
-Reference the contracts package/project from both producer and consumer.
-```csharp
-using Sol9.Contracts.Bookings;
-```
-
-#### When to use?
-When a message crosses module boundaries.
-```csharp
-await client.GetResponseAsync<CreateBookingResponse>(new CreateBookingRequest(order.Id, order.CustomerName), ct);
-```
-
-#### Where to use?
-Define in `Sol9.Contracts`, reference from APIs/Application.
-```csharp
-// Sol9.Contracts/Bookings/CreateBookingRequest.cs
-```
-
-#### Why to use?
-Shared contracts prevent schema drift between services.
-```csharp
-// Single source of truth for message shape.
-```
-
-### Sol9.ServiceDefaults (host defaults)
-#### What to use?
-Use `AddServiceDefaults()` for logging/telemetry defaults.
-```csharp
-builder.AddServiceDefaults();
-```
-
-#### How to use?
-Call it once in each API `Program.cs`.
-```csharp
-WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-builder.AddServiceDefaults();
-```
-
-#### When to use?
-Always for hosted APIs (Orders/Bookings/Gateway).
-```csharp
-// Program.cs
-builder.AddServiceDefaults();
-```
-
-#### Where to use?
-At API startup before registering custom services.
-```csharp
-builder.AddServiceDefaults();
-builder.Services.AddControllers();
-```
-
-#### Why to use?
-It standardizes diagnostics and configuration conventions.
-```csharp
-// Consistent telemetry/logging across all services.
-```
-
-## Best practices and recommendations
-- Prefer HTTPS endpoints for gRPC so HTTP/2 is enabled and reliable.
-```csharp
-_ = bookingsApi.WithEnvironment("TransponderDefaults__LocalAddress", bookingsApi.GetEndpoint("https"));
-```
-- Keep handlers small: orchestration in Application, persistence in Infrastructure, HTTP in API.
-- Use outbox for cross-module messaging and make handlers idempotent.
-```csharp
-options.UseOutbox();
-```
-- Ensure only one validator registration per request to avoid duplicate errors.
-- Put message types in `Sol9.Contracts` and keep them backward compatible.
-- Use OpenTelemetry scopes and `Activity.AddException` for failure visibility.
-
-## Stack
-- Language: C# (.NET)
-- Frameworks: ASP.NET Core, gRPC, Entity Framework Core, .NET Aspire, YARP, Transponder
-- Package manager: NuGet via `dotnet restore`
-- Tooling: dotnet CLI, Testcontainers (PostgreSQL), Redis
-
-## Entry points
-- `Bookings.API/Program.cs`
-- `Orders.API/Program.cs`
-- `Gateway.API/Program.cs`
-- `Sol9.AppHost/Program.cs`
-
-## Requirements
 - .NET SDK 10.0.0 (see `global.json`)
-- Docker (for Aspire Postgres + Redis containers and Testcontainers integration tests)
-- PostgreSQL for Orders/Bookings + Transponder persistence
+- Docker Desktop (for Aspire containers and integration tests)
+- PostgreSQL (optional, if not using Docker)
 
-## Setup
+### Setup
+
 ```bash
+# Clone and restore
+git clone <repository-url>
+cd Sol9
 dotnet restore
+
+# Build solution
 dotnet build Sol9.slnx
 ```
 
-## Run (Aspire)
+### Run with Aspire (Recommended)
+
 ```bash
 dotnet run --project Sol9.AppHost/Sol9.AppHost.csproj
 ```
 
-Aspire runs Bookings, Orders, Gateway, PostgreSQL, and Redis. Use the dashboard to see assigned ports and service health.
+This starts:
+- Bookings.API
+- Orders.API
+- Gateway.API
+- PostgreSQL
+- Redis
 
-Redis TLS (local dev):
-- Certs are generated under `Sol9.AppHost/certs/redis` and mounted into the Redis container.
-- Clients use `rediss://` connection strings; Development allows self-signed certs for local runs.
+Access the Aspire dashboard at `https://localhost:15000` to view service health, logs, and metrics.
 
-Gateway routes:
-- `/bookings/*` -> Bookings.API
-- `/orders/*` -> Orders.API
+### Run Individual Services
 
-Transponder flow:
-- Orders.API sends `CreateBookingRequest` to Bookings.API over gRPC and awaits `CreateBookingResponse`.
-
-## Run (individual services)
 ```bash
+# Bookings API
 dotnet run --project Bookings.API/Bookings.API.csproj
+
+# Orders API
 dotnet run --project Orders.API/Orders.API.csproj
+
+# Gateway API
+dotnet run --project Gateway.API/Gateway.API.csproj
 ```
 
-Default launch profiles map to:
-- Bookings.API: `http://localhost:5187` (https: `https://localhost:7266`)
-- Orders.API: `http://localhost:5296` (https: `https://localhost:7268`)
-- Gateway.API: `http://localhost:5400` (https: `https://localhost:7440`)
+Default ports:
+- Bookings.API: `http://localhost:5187` / `https://localhost:7266`
+- Orders.API: `http://localhost:5296` / `https://localhost:7268`
+- Gateway.API: `http://localhost:5400` / `https://localhost:7440`
 
-## Scripts (common dotnet CLI commands)
-- Build: `dotnet build Sol9.slnx`
-- Test: `dotnet test Sol9.slnx`
-- Run app: `dotnet run --project Bookings.API/Bookings.API.csproj`
-- Run Aspire host: `dotnet run --project Sol9.AppHost/Sol9.AppHost.csproj`
+## Documentation
 
-## Environment variables
-The apps use standard ASP.NET Core configuration binding (`:` in JSON, `__` in env vars).
+Comprehensive documentation is available in the `docs/` directory:
 
-Common:
-- `ASPNETCORE_ENVIRONMENT` (e.g. `Development`)
-- `ASPNETCORE_URLS` (used to derive scheme/port for Transponder settings)
+- **[Transponder Messaging Framework](docs/Transponder/README.md)**: Core messaging system, transports, and patterns
+- **[Intercessor](docs/Intercessor/README.md)**: Mediator pattern and pipeline behaviors
+- **[Verifier](docs/Verifier/README.md)**: Validation framework
+- **[Applications](docs/Applications/README.md)**: Bookings and Orders module documentation
+- **[Deployment](docs/Deployment/README.md)**: Kubernetes and Docker deployment guides
 
-Transponder settings (gRPC transport on the same port):
-- `TransponderSettings__LocalBaseAddress`
-- `TransponderSettings__RemoteBaseAddress`
-- `TransponderSettings__RemoteAddressStrategy`
-- `TransponderSettings__RemoteBaseAddresses__0__Url`
-- `TransponderSettings__RemoteBaseAddresses__0__RemoteAddressStrategy`
-- `TransponderSettings__LocalServiceName`
-- `TransponderSettings__RemoteServiceName`
-- `TransponderSettings__GrpcPortOffset`
+## Transports
 
-Transponder persistence (PostgreSQL):
-- `ConnectionStrings__Transponder`
-- `TransponderPersistence__Schema`
+Transponder supports multiple transport implementations:
 
-Orders/Bookings connection strings:
-- `ConnectionStrings__Orders`
-- `ConnectionStrings__Bookings`
-- `ConnectionStrings__Transponder`
-- `ConnectionStrings__Redis`
+- **gRPC**: High-performance RPC for service-to-service communication
+- **SignalR**: Real-time bidirectional communication for web clients
+- **SSE**: Server-Sent Events for one-way real-time updates
+- **Webhooks**: HTTP-based webhook delivery
+- **Kafka**: Distributed event streaming
+- **RabbitMQ**: Message broker with advanced routing
+- **AWS SQS/SNS**: Cloud messaging via AWS
+- **Azure Service Bus**: Cloud messaging via Azure
 
-See `Bookings.API/appsettings.json`, `Orders.API/appsettings.json`, and `Gateway.API/appsettings.json` for base config and defaults.
+See [Transponder Transports Documentation](docs/Transponder/Transports/README.md) for details.
 
-## Tests
+## Features
+
+### Messaging Patterns
+
+- **Request/Response**: Synchronous communication between services
+- **Publish/Subscribe**: Event-driven messaging
+- **Saga Orchestration**: Distributed transaction coordination
+- **Outbox Pattern**: Reliable message delivery with transactional guarantees
+- **Inbox Pattern**: Idempotent message processing
+- **Message Scheduling**: Delayed and scheduled message delivery
+
+### Resilience
+
+- **Retry Policies**: Configurable retry with exponential backoff
+- **Circuit Breakers**: Automatic failure detection and recovery
+- **Dead-Letter Queues**: Handling of unprocessable messages
+- **Optimistic Concurrency**: Saga state versioning for conflict resolution
+
+### Observability
+
+- **Structured Logging**: Serilog with correlation IDs
+- **Distributed Tracing**: OpenTelemetry integration
+- **Metrics**: Performance and health metrics
+- **Activity Scopes**: Automatic context propagation
+
+## Testing
+
 ```bash
+# Run all tests
 dotnet test Sol9.slnx
+
+# Run unit tests only
+dotnet test Transponder.Tests/Transponder.Tests.csproj
+
+# Run integration tests (requires Docker)
+dotnet test Bookings.Integration.Tests/Bookings.Integration.Tests.csproj
+dotnet test Orders.Integration.Tests/Orders.Integration.Tests.csproj
+
+# Run E2E tests
+dotnet test Bookings.E2E.Tests/Bookings.E2E.Tests.csproj
 ```
 
-Testcontainers integration tests require Docker:
-```bash
-dotnet test Bookings.IntegrationTests/Bookings.IntegrationTests.csproj
-dotnet test Orders.IntegrationTests/Orders.IntegrationTests.csproj
+## Configuration
+
+Configuration uses standard ASP.NET Core patterns:
+
+- **appsettings.json**: Base configuration
+- **appsettings.{Environment}.json**: Environment-specific overrides
+- **Environment Variables**: Override any setting using `__` separator
+
+### Key Settings
+
+```json
+{
+  "ConnectionStrings": {
+    "Bookings": "Host=localhost;Database=bookings;Username=postgres;Password=postgres",
+    "Orders": "Host=localhost;Database=orders;Username=postgres;Password=postgres",
+    "Transponder": "Host=localhost;Database=transponder;Username=postgres;Password=postgres",
+    "Redis": "redis://localhost:6379"
+  },
+  "TransponderSettings": {
+    "LocalBaseAddress": "http://localhost:5187",
+    "RemoteBaseAddress": "http://localhost:5296"
+  }
+}
 ```
 
-## Project structure
-- `Bookings.API/`, `Bookings.Application/`, `Bookings.Domain/`, `Bookings.Infrastructure/`
-- `Orders.API/`, `Orders.Application/`, `Orders.Domain/`, `Orders.Infrastructure/`
-- `Gateway.API/` (YARP reverse proxy and API gateway)
-- `Sol9.Contracts/` (shared Transponder message contracts)
-- `Sol9.Core/` (domain and integration event abstractions)
-- `Sol9.AppHost/` and `Sol9.ServiceDefaults/` (.NET Aspire host and defaults)
-- `Transponder/` and `Transponder.*` libraries (contracts, transports, persistence, samples, logging)
-- `Intercessor/` (mediator pipeline library)
-- `Verifier/` (validation library)
-- `Bookings.IntegrationTests/` (PostgreSQL Testcontainers)
-- `Orders.IntegrationTests/` (PostgreSQL Testcontainers)
-- `global.json`, `Directory.Build.props`, `Sol9.slnx`
+## Project Structure
+
+```
+Sol9/
+├── Bookings.API/              # Bookings web API
+├── Bookings.Application/       # Bookings domain logic
+├── Bookings.Domain/            # Bookings domain entities
+├── Bookings.Infrastructure/    # Bookings data access
+├── Orders.API/                 # Orders web API
+├── Orders.Application/         # Orders domain logic
+├── Orders.Domain/             # Orders domain entities
+├── Orders.Infrastructure/      # Orders data access
+├── Gateway.API/                # API Gateway (YARP)
+├── Transponder/                # Core messaging framework
+├── Transponder.Transports.*/   # Transport implementations
+├── Transponder.Persistence.*/  # Persistence implementations
+├── Intercessor/                # Mediator library
+├── Verifier/                   # Validation library
+├── Sol9.Contracts/             # Shared message contracts
+├── Sol9.Core/                  # Shared domain abstractions
+├── Sol9.AppHost/               # Aspire orchestration
+└── Sol9.ServiceDefaults/       # Service defaults
+```
+
+## Best Practices
+
+1. **Use Outbox Pattern**: Always use outbox for cross-module messaging to ensure reliability
+2. **Idempotent Handlers**: Make message handlers idempotent to handle duplicates
+3. **Shared Contracts**: Keep message contracts in `Sol9.Contracts` for versioning
+4. **Structured Logging**: Use correlation IDs for request tracing
+5. **Validation**: Validate all commands/queries using Verifier
+6. **HTTPS for gRPC**: Use HTTPS endpoints to enable HTTP/2
 
 ## License
-MIT License. See `LICENSE`.
+
+MIT License. See `LICENSE` file for details.
+
+## Contributing
+
+Contributions are welcome! Please ensure:
+
+- Code follows existing patterns and conventions
+- Tests are included for new features
+- Documentation is updated
+- All tests pass before submitting
+
+## Support
+
+For questions and issues, please open an issue in the repository.
