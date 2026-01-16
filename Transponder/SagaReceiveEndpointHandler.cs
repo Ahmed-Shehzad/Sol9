@@ -1,7 +1,7 @@
-using System.Diagnostics;
 using System.Reflection;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 using Transponder.Abstractions;
 using Transponder.Persistence.Abstractions;
@@ -21,17 +21,20 @@ internal sealed class SagaReceiveEndpointHandler
     private readonly SagaEndpointRegistry _registry;
     private readonly IMessageSerializer _serializer;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ILogger<SagaReceiveEndpointHandler> _logger;
 
     public SagaReceiveEndpointHandler(
         Uri inputAddress,
         SagaEndpointRegistry registry,
         IMessageSerializer serializer,
-        IServiceScopeFactory scopeFactory)
+        IServiceScopeFactory scopeFactory,
+        ILogger<SagaReceiveEndpointHandler> logger)
     {
         _inputAddress = inputAddress ?? throw new ArgumentNullException(nameof(inputAddress));
         _registry = registry ?? throw new ArgumentNullException(nameof(registry));
         _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
         _scopeFactory = scopeFactory ?? throw new ArgumentNullException(nameof(scopeFactory));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public async Task HandleAsync(IReceiveContext context)
@@ -43,26 +46,26 @@ internal sealed class SagaReceiveEndpointHandler
 
         if (string.IsNullOrWhiteSpace(messageTypeName))
         {
-#if DEBUG
-            Trace.TraceWarning(
-                $"[Transponder] SagaReceiveEndpointHandler missing message type for {_inputAddress}.");
-#endif
+            _logger.LogWarning(
+                "SagaReceiveEndpointHandler missing message type. InputAddress={InputAddress}",
+                _inputAddress);
             return;
         }
 
         if (!_registry.TryGetHandlers(_inputAddress, messageTypeName, out IReadOnlyList<SagaMessageRegistration> registrations))
         {
-#if DEBUG
-            Trace.TraceWarning(
-                $"[Transponder] SagaReceiveEndpointHandler no handlers for {_inputAddress} messageType={messageTypeName}.");
-#endif
+            _logger.LogDebug(
+                "SagaReceiveEndpointHandler no handlers found. InputAddress={InputAddress}, MessageType={MessageType}",
+                _inputAddress,
+                messageTypeName);
             return;
         }
 
-#if DEBUG
-        Trace.TraceInformation(
-            $"[Transponder] SagaReceiveEndpointHandler dispatching {registrations.Count} handler(s) for {_inputAddress} messageType={messageTypeName}.");
-#endif
+        _logger.LogDebug(
+            "SagaReceiveEndpointHandler dispatching handlers. InputAddress={InputAddress}, MessageType={MessageType}, HandlerCount={HandlerCount}",
+            _inputAddress,
+            messageTypeName,
+            registrations.Count);
 
         using IServiceScope scope = _scopeFactory.CreateScope();
 
@@ -123,10 +126,10 @@ internal sealed class SagaReceiveEndpointHandler
         Ulid? correlationId = consumeContext.CorrelationId ?? consumeContext.ConversationId;
         if (!correlationId.HasValue)
         {
-#if DEBUG
-            Trace.TraceWarning(
-                $"[Transponder] SagaReceiveEndpointHandler missing correlation id for messageType={typeof(TMessage).Name}.");
-#endif
+            var logger = serviceProvider.GetService<ILogger<SagaReceiveEndpointHandler>>();
+            logger?.LogWarning(
+                "SagaReceiveEndpointHandler missing correlation id. MessageType={MessageType}",
+                typeof(TMessage).Name);
             return;
         }
 
@@ -175,6 +178,20 @@ internal sealed class SagaReceiveEndpointHandler
         if (!skipHandler) await handler.HandleAsync(sagaContext).ConfigureAwait(false);
 
         if (sagaContext.IsCompleted) await repository.DeleteAsync(state.CorrelationId, cancellationToken).ConfigureAwait(false);
-        else await repository.SaveAsync(state, cancellationToken).ConfigureAwait(false);
+        else
+        {
+            bool saved = await repository.SaveAsync(state, cancellationToken).ConfigureAwait(false);
+            if (!saved)
+            {
+                var logger = serviceProvider.GetService<ILogger<SagaReceiveEndpointHandler>>();
+                logger?.LogWarning(
+                    "SagaReceiveEndpointHandler: Concurrency conflict saving saga state. CorrelationId={CorrelationId}, MessageType={MessageType}, Version={Version}",
+                    state.CorrelationId,
+                    typeof(TMessage).Name,
+                    state.Version);
+                // State was modified by another handler, skip this update
+                // The message will be retried and processed with the updated state
+            }
+        }
     }
 }

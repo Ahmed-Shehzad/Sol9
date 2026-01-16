@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Threading.Channels;
+
+using Microsoft.Extensions.Logging;
 
 using Transponder.Persistence;
 using Transponder.Persistence.Abstractions;
@@ -14,6 +15,8 @@ public sealed class OutboxDispatcher : IAsyncDisposable
     private readonly IStorageSessionFactory _sessionFactory;
     private readonly ITransportHostProvider _hostProvider;
     private readonly OutboxDispatchOptions _options;
+    private readonly ILogger<OutboxDispatcher> _logger;
+    private readonly Uri? _deadLetterAddress;
     private readonly Channel<OutboxMessage> _channel;
     private readonly ConcurrentDictionary<Ulid, byte> _inflight = new();
     private readonly ConcurrentDictionary<string, byte> _activeDestinations = new(StringComparer.OrdinalIgnoreCase);
@@ -25,11 +28,14 @@ public sealed class OutboxDispatcher : IAsyncDisposable
     public OutboxDispatcher(
         IStorageSessionFactory sessionFactory,
         ITransportHostProvider hostProvider,
-        OutboxDispatchOptions options)
+        OutboxDispatchOptions options,
+        ILogger<OutboxDispatcher> logger)
     {
         _sessionFactory = sessionFactory ?? throw new ArgumentNullException(nameof(sessionFactory));
         _hostProvider = hostProvider ?? throw new ArgumentNullException(nameof(hostProvider));
         _options = options ?? throw new ArgumentNullException(nameof(options));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _deadLetterAddress = options.DeadLetterAddress;
 
         if (_options.ChannelCapacity <= 0) throw new ArgumentOutOfRangeException(nameof(options));
         if (_options.BatchSize <= 0) throw new ArgumentOutOfRangeException(nameof(options));
@@ -71,7 +77,10 @@ public sealed class OutboxDispatcher : IAsyncDisposable
         if (dispatchLoop is not null || pollLoop is not null)
         {
             var all = Task.WhenAll(dispatchLoop ?? Task.CompletedTask, pollLoop ?? Task.CompletedTask);
-            _ = await Task.WhenAny(all, Task.Delay(Timeout.Infinite, cancellationToken)).ConfigureAwait(false);
+            var timeout = Task.Delay(TimeSpan.FromSeconds(30), cancellationToken);
+            var completed = await Task.WhenAny(all, timeout).ConfigureAwait(false);
+            
+            if (completed == timeout) _logger.LogWarning("OutboxDispatcher stop timed out after 30 seconds");
         }
 
         _activeDestinations.Clear();
@@ -174,31 +183,46 @@ public sealed class OutboxDispatcher : IAsyncDisposable
 
         try
         {
+            int attempt = 0;
             while (!cancellationToken.IsCancellationRequested)
                 try
                 {
-#if DEBUG
-                    Trace.TraceInformation(
-                        $"[Transponder] OutboxDispatcher dispatching messageId={message.MessageId} " +
-                        $"destination={destination} messageType={message.MessageType ?? "unknown"}.");
-#endif
+                    attempt++;
+                    _logger.LogDebug(
+                        "OutboxDispatcher dispatching message. MessageId={MessageId}, Destination={Destination}, MessageType={MessageType}, Attempt={Attempt}",
+                        message.MessageId,
+                        destination,
+                        message.MessageType ?? "unknown",
+                        attempt);
+
                     await DispatchMessageAsync(message, cancellationToken).ConfigureAwait(false);
                     await MarkSentAsync(message.MessageId, cancellationToken).ConfigureAwait(false);
+                    
+                    if (attempt > 1)
+                        _logger.LogInformation(
+                            "OutboxDispatcher successfully dispatched message after {Attempt} attempts. MessageId={MessageId}, Destination={Destination}",
+                            attempt,
+                            message.MessageId,
+                            destination);
+
                     return;
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
+                    _logger.LogDebug("OutboxDispatcher dispatch cancelled. MessageId={MessageId}", message.MessageId);
                     return;
                 }
                 catch (Exception ex)
                 {
-#if DEBUG
-                    Trace.TraceWarning(
-                        $"[Transponder] OutboxDispatcher dispatch failed messageId={message.MessageId} " +
-                        $"destination={destination} error={ex.GetType().Name}: {ex.Message}");
-#else
-                    _ = ex;
-#endif
+                    _logger.LogWarning(
+                        ex,
+                        "OutboxDispatcher dispatch failed. MessageId={MessageId}, Destination={Destination}, MessageType={MessageType}, Attempt={Attempt}, RetryDelay={RetryDelay}ms",
+                        message.MessageId,
+                        destination,
+                        message.MessageType ?? "unknown",
+                        attempt,
+                        _options.RetryDelay.TotalMilliseconds);
+                    
                     await Task.Delay(_options.RetryDelay, cancellationToken).ConfigureAwait(false);
                 }
         }
@@ -242,8 +266,42 @@ public sealed class OutboxDispatcher : IAsyncDisposable
             return;
         }
 
-        Type? messageType = OutboxMessageTypeResolver.Resolve(message.MessageType) ?? throw new InvalidOperationException("Outbox message type could not be resolved.");
-        if (message.SourceAddress is null) throw new InvalidOperationException("Outbox publish requires a source address.");
+        Type? messageType = OutboxMessageTypeResolver.Resolve(message.MessageType);
+        if (messageType is null)
+        {
+            _logger.LogError(
+                "OutboxDispatcher: Failed to resolve message type. MessageId={MessageId}, MessageType={MessageType}",
+                message.MessageId,
+                message.MessageType ?? "null");
+            
+            if (_deadLetterAddress is not null)
+            {
+                await SendToDeadLetterQueueAsync(transportMessage, "UnresolvableMessageType", 
+                    $"Message type '{message.MessageType}' could not be resolved.", cancellationToken)
+                    .ConfigureAwait(false);
+                return;
+            }
+            
+            throw new InvalidOperationException($"Outbox message type '{message.MessageType}' could not be resolved.");
+        }
+        
+        if (message.SourceAddress is null)
+        {
+            _logger.LogError(
+                "OutboxDispatcher: Source address is required for publish. MessageId={MessageId}, MessageType={MessageType}",
+                message.MessageId,
+                message.MessageType ?? "unknown");
+            
+            if (_deadLetterAddress is not null)
+            {
+                await SendToDeadLetterQueueAsync(transportMessage, "MissingSourceAddress", 
+                    "Outbox publish requires a source address.", cancellationToken)
+                    .ConfigureAwait(false);
+                return;
+            }
+            
+            throw new InvalidOperationException("Outbox publish requires a source address.");
+        }
 
         ITransportHost publishHost = _hostProvider.GetHost(message.SourceAddress);
         IPublishTransport publishTransport = await publishHost.GetPublishTransportAsync(messageType, cancellationToken)
@@ -267,5 +325,53 @@ public sealed class OutboxDispatcher : IAsyncDisposable
 
         destinationKey = string.Empty;
         return false;
+    }
+
+    private async Task SendToDeadLetterQueueAsync(
+        ITransportMessage message,
+        string reason,
+        string description,
+        CancellationToken cancellationToken)
+    {
+        if (_deadLetterAddress is null) return;
+
+        try
+        {
+            ITransportHost host = _hostProvider.GetHost(_deadLetterAddress);
+            ISendTransport transport = await host.GetSendTransportAsync(_deadLetterAddress, cancellationToken)
+                .ConfigureAwait(false);
+            
+            var deadLetterMessage = new TransportMessage(
+                message.Body,
+                message.ContentType,
+                new Dictionary<string, object?>(message.Headers, StringComparer.OrdinalIgnoreCase)
+                {
+                    ["DeadLetterReason"] = reason,
+                    ["DeadLetterDescription"] = description,
+                    ["DeadLetterTime"] = DateTimeOffset.UtcNow.ToString("O")
+                },
+                message.MessageId,
+                message.CorrelationId,
+                message.ConversationId,
+                message.MessageType,
+                message.SentTime);
+            
+            await transport.SendAsync(deadLetterMessage, cancellationToken).ConfigureAwait(false);
+            
+            _logger.LogInformation(
+                "OutboxDispatcher: Message sent to dead-letter queue. MessageId={MessageId}, Reason={Reason}, Description={Description}",
+                message.MessageId,
+                reason,
+                description);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "OutboxDispatcher: Failed to send message to dead-letter queue. MessageId={MessageId}, Reason={Reason}",
+                message.MessageId,
+                reason);
+            throw;
+        }
     }
 }

@@ -33,7 +33,7 @@ public sealed class EntityFrameworkSagaRepository<TState> : ISagaRepository<TSta
     }
 
     /// <inheritdoc />
-    public async Task SaveAsync(TState state, CancellationToken cancellationToken = default)
+    public async Task<bool> SaveAsync(TState state, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(state);
 
@@ -47,17 +47,25 @@ public sealed class EntityFrameworkSagaRepository<TState> : ISagaRepository<TSta
 
         if (existing is null)
         {
+            state.Version = 1;
             var entity = SagaStateEntity.FromState(state);
             _ = await _context.Set<SagaStateEntity>()
                 .AddAsync(entity, cancellationToken)
                 .ConfigureAwait(false);
-            return;
+            return true;
         }
 
+        // Optimistic concurrency check
+        if (existing.Version != state.Version) return false;
+
+        state.Version++;
         var updated = SagaStateEntity.FromState(state);
         existing.ConversationId = updated.ConversationId;
         existing.StateData = updated.StateData;
         existing.UpdatedTime = updated.UpdatedTime;
+        existing.Version = updated.Version;
+
+        return true;
     }
 
     /// <inheritdoc />

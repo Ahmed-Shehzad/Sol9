@@ -1,3 +1,5 @@
+using Transponder.Transports.Abstractions;
+
 namespace Transponder;
 
 /// <summary>
@@ -14,4 +16,9 @@ public sealed class OutboxDispatchOptions
     public TimeSpan RetryDelay { get; set; } = TimeSpan.FromSeconds(5);
 
     public int MaxConcurrentDestinations { get; set; } = Math.Max(1, Environment.ProcessorCount);
+
+    /// <summary>
+    /// Gets or sets the dead-letter address for unresolvable messages.
+    /// </summary>
+    public Uri? DeadLetterAddress { get; set; }
 }

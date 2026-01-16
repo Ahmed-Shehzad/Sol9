@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+
 using Transponder.Abstractions;
 using Transponder.Transports.Abstractions;
 
@@ -16,4 +18,6 @@ public sealed class TransponderBusRuntimeOptions
     public OutboxDispatcher? OutboxDispatcher { get; init; }
 
     public IEnumerable<ITransponderMessageScopeProvider>? MessageScopeProviders { get; init; }
+
+    public ILoggerFactory? LoggerFactory { get; init; }
 }

@@ -40,7 +40,8 @@ public sealed class WebhookSignatureValidationMiddleware
             return;
         }
 
-        if (!long.TryParse(timestamp, out long unixSeconds))
+        // At this point, signature and timestamp are guaranteed to be non-null due to TryGetHeader check
+        if (!long.TryParse(timestamp!, out long unixSeconds))
         {
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             return;
@@ -66,7 +67,7 @@ public sealed class WebhookSignatureValidationMiddleware
         }
 
         byte[] body = await ReadBodyAsync(context).ConfigureAwait(false);
-        if (!WebhookSignature.Verify(signature, secret, timestamp, body, _options.SignatureOptions))
+        if (!WebhookSignature.Verify(signature!, secret, timestamp!, body, _options.SignatureOptions))
         {
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             return;

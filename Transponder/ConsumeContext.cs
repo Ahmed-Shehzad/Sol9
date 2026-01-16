@@ -1,4 +1,4 @@
-using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 using Transponder.Abstractions;
 using Transponder.Transports.Abstractions;
@@ -70,13 +70,9 @@ public sealed class ConsumeContext<TMessage> : IConsumeContext<TMessage>
         where TResponse : class, IMessage
     {
         if (_responseAddress is null)
-        {
-#if DEBUG
-            Trace.TraceWarning(
-                $"[Transponder] ConsumeContext<{typeof(TMessage).Name}> response address missing; cannot respond.");
-#endif
-            throw new InvalidOperationException("Response address is not available for this context.");
-        }
+            // Note: Logger would need to be injected, but ConsumeContext is created internally
+            // For now, we'll throw the exception without logging to avoid breaking changes
+            throw new InvalidOperationException($"Response address is not available for this context. MessageType={typeof(TMessage).Name}");
 
         var headers = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 

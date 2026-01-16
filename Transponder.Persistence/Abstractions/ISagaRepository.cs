@@ -15,11 +15,12 @@ public interface ISagaRepository<TState>
     Task<TState?> GetAsync(Ulid correlationId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Persists the saga state.
+    /// Persists the saga state with optimistic concurrency control.
     /// </summary>
     /// <param name="state">The saga state.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
-    Task SaveAsync(TState state, CancellationToken cancellationToken = default);
+    /// <returns><c>true</c> if the save succeeded; <c>false</c> if a concurrency conflict occurred.</returns>
+    Task<bool> SaveAsync(TState state, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Deletes a saga state by correlation identifier.

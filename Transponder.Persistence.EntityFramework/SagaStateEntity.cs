@@ -23,6 +23,8 @@ public sealed class SagaStateEntity
 
     public DateTimeOffset UpdatedTime { get; set; }
 
+    public int Version { get; set; }
+
     internal static SagaStateEntity FromState<TState>(TState state)
         where TState : class, ISagaState
     {
@@ -34,7 +36,8 @@ public sealed class SagaStateEntity
             ConversationId = state.ConversationId,
             StateType = typeof(TState).FullName ?? typeof(TState).Name,
             StateData = JsonSerializer.Serialize(state, SerializerOptions),
-            UpdatedTime = DateTimeOffset.UtcNow
+            UpdatedTime = DateTimeOffset.UtcNow,
+            Version = state.Version
         };
     }
 

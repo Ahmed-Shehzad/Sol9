@@ -55,7 +55,10 @@
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=7020124F_002D9FFC_002D4AC3_002D8F3D_002DAAB8E0240759_002Ff_003AValueTask_002Ecs_002Fl_003A_002E_002E_003F_002E_002E_003F_002E_002E_003FLibrary_003FApplication_0020Support_003FJetBrains_003FRider2025_002E3_003Fresharper_002Dhost_003FSourcesCache_003Fc6af16cde689ee7920c565b9c5df245662d24471bf8eef27a08b99542f4188f3_003FValueTask_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=7020124F_002D9FFC_002D4AC3_002D8F3D_002DAAB8E0240759_002Ff_003AVirtualDispatchHelpers_002Ecs_002Fl_003A_002E_002E_003F_002E_002E_003F_002E_002E_003FLibrary_003FApplication_0020Support_003FJetBrains_003FRider2025_002E3_003Fresharper_002Dhost_003FSourcesCache_003F6d719a294f20c84cf43e36625958e579b98a7a5b8b104e0e68ffd66241bea_003FVirtualDispatchHelpers_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=2cbd2ce2_002De4be_002D423e_002Db4a1_002D2b64210f4d8b/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from &amp;lt;Services.Tests&amp;gt;" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
-  &lt;Project Location="/Users/muhammadahmedshehzad/Personal/RiderProjects/Sol9" Presentation="&amp;lt;Services.Tests&amp;gt;" /&gt;
+  &lt;Or&gt;
+    &lt;Project Location="/Users/muhammadahmedshehzad/Personal/RiderProjects/Sol9" Presentation="&amp;lt;Services.Tests&amp;gt;" /&gt;
+    &lt;Project Location="/Users/muhammadahmedshehzad/Personal/RiderProjects/Sol9/Transponder.Tests" Presentation="&amp;lt;Transponder.Tests&amp;gt;\&amp;lt;Transponder.Tests&amp;gt;" /&gt;
+  &lt;/Or&gt;
 &lt;/SessionState&gt;</s:String>
 	
 	

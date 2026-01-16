@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+
 using Transponder.Abstractions;
 using Transponder.Persistence;
 using Transponder.Transports;
@@ -19,6 +21,7 @@ public sealed class TransponderBus : IBusControl
     private readonly TimeSpan _defaultRequestTimeout;
     private readonly OutboxDispatcher? _outboxDispatcher;
     private readonly IReadOnlyList<ITransponderMessageScopeProvider> _scopeProviders;
+    private readonly ILoggerFactory? _loggerFactory;
 
     public TransponderBus(
         Uri address,
@@ -39,6 +42,7 @@ public sealed class TransponderBus : IBusControl
         _receiveEndpoints = options.ReceiveEndpoints?.ToArray() ?? [];
         _outboxDispatcher = options.OutboxDispatcher;
         _scopeProviders = options.MessageScopeProviders?.ToArray() ?? [];
+        _loggerFactory = options.LoggerFactory;
     }
 
     /// <inheritdoc />
@@ -91,12 +95,15 @@ public sealed class TransponderBus : IBusControl
 
         TimeSpan requestTimeout = timeout ?? _defaultRequestTimeout;
 
+        ILogger<RequestClient<TRequest>>? logger = _loggerFactory?.CreateLogger<RequestClient<TRequest>>();
+        
         return new RequestClient<TRequest>(
             this,
             _serializer,
             _hostProvider,
             address,
-            requestTimeout);
+            requestTimeout,
+            logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<RequestClient<TRequest>>.Instance);
     }
 
     /// <inheritdoc />

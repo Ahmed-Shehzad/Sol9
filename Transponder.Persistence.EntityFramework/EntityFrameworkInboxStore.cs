@@ -37,22 +37,25 @@ public sealed class EntityFrameworkInboxStore : IInboxStore
     {
         ArgumentNullException.ThrowIfNull(state);
 
-        bool exists = await _context.Set<InboxStateEntity>()
-            .AsNoTracking()
-            .AnyAsync(
-                existing => existing.MessageId == state.MessageId && existing.ConsumerId == state.ConsumerId,
-                cancellationToken)
-            .ConfigureAwait(false);
-
-        if (exists) return false;
-
         var entity = InboxStateEntity.FromState(state);
 
-        _ = await _context.Set<InboxStateEntity>()
-            .AddAsync(entity, cancellationToken)
-            .ConfigureAwait(false);
-
-        return true;
+        try
+        {
+            _ = await _context.Set<InboxStateEntity>()
+                .AddAsync(entity, cancellationToken)
+                .ConfigureAwait(false);
+            
+            await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            return true;
+        }
+        catch (DbUpdateException ex) when (ex.InnerException?.Message?.Contains("UNIQUE") == true || 
+                                            ex.InnerException?.Message?.Contains("duplicate") == true ||
+                                            ex.InnerException?.Message?.Contains("unique constraint") == true)
+        {
+            // Race condition: another request already added this inbox state
+            // This is expected in concurrent scenarios, return false to indicate it already exists
+            return false;
+        }
     }
 
     /// <inheritdoc />

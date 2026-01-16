@@ -1,3 +1,5 @@
+using Transponder.Transports.Abstractions;
+
 namespace Transponder;
 
 /// <summary>
@@ -8,4 +10,9 @@ public sealed class PersistedMessageSchedulerOptions
     public TimeSpan PollInterval { get; set; } = TimeSpan.FromSeconds(2);
 
     public int BatchSize { get; set; } = 100;
+
+    /// <summary>
+    /// Gets or sets the dead-letter address for unresolvable messages.
+    /// </summary>
+    public Uri? DeadLetterAddress { get; set; }
 }

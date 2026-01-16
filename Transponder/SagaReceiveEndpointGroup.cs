@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 using Transponder.Transports.Abstractions;
 
@@ -10,6 +11,7 @@ internal sealed class SagaReceiveEndpointGroup : IReceiveEndpoint
     private readonly ITransportHostProvider _hostProvider;
     private readonly IMessageSerializer _serializer;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ILogger<SagaReceiveEndpointHandler> _logger;
     private readonly List<IReceiveEndpoint> _endpoints = [];
     private bool _started;
 
@@ -17,12 +19,14 @@ internal sealed class SagaReceiveEndpointGroup : IReceiveEndpoint
         SagaEndpointRegistry registry,
         ITransportHostProvider hostProvider,
         IMessageSerializer serializer,
-        IServiceScopeFactory scopeFactory)
+        IServiceScopeFactory scopeFactory,
+        ILogger<SagaReceiveEndpointHandler> logger)
     {
         _registry = registry ?? throw new ArgumentNullException(nameof(registry));
         _hostProvider = hostProvider ?? throw new ArgumentNullException(nameof(hostProvider));
         _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
         _scopeFactory = scopeFactory ?? throw new ArgumentNullException(nameof(scopeFactory));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         InputAddress = new Uri("transponder://saga");
     }
 
@@ -39,7 +43,8 @@ internal sealed class SagaReceiveEndpointGroup : IReceiveEndpoint
                 inputAddress,
                 _registry,
                 _serializer,
-                _scopeFactory);
+                _scopeFactory,
+                _logger);
 
             var configuration = new ReceiveEndpointConfiguration(
                 inputAddress,

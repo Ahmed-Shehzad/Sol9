@@ -20,14 +20,23 @@ public sealed class InMemorySagaRepository<TState> : ISagaRepository<TState>
     }
 
     /// <inheritdoc />
-    public Task SaveAsync(TState state, CancellationToken cancellationToken = default)
+    public Task<bool> SaveAsync(TState state, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(state);
 
         if (state.CorrelationId == Ulid.Empty) throw new ArgumentException("CorrelationId must be provided.", nameof(state));
 
+        if (_states.TryGetValue(state.CorrelationId, out TState? existing))
+        {
+            // Optimistic concurrency check
+            if (existing.Version != state.Version) return Task.FromResult(false);
+
+            state.Version++;
+        }
+        else state.Version = 1;
+
         _states[state.CorrelationId] = state;
-        return Task.CompletedTask;
+        return Task.FromResult(true);
     }
 
     /// <inheritdoc />

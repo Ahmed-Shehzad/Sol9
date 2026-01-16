@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 
 using Transponder.Abstractions;
 using Transponder.Persistence.Abstractions;
@@ -41,7 +42,11 @@ public static class Extensions
         if (options.OutboxOptions is not null)
         {
             _ = services.AddSingleton(options.OutboxOptions);
-            _ = services.AddSingleton<OutboxDispatcher>();
+            _ = services.AddSingleton<OutboxDispatcher>(sp => new OutboxDispatcher(
+                sp.GetRequiredService<IStorageSessionFactory>(),
+                sp.GetRequiredService<ITransportHostProvider>(),
+                options.OutboxOptions,
+                sp.GetRequiredService<ILogger<OutboxDispatcher>>()));
         }
 
         _ = services.AddSingleton(sp =>
@@ -67,7 +72,8 @@ public static class Extensions
                     SchedulerFactory = bus => schedulerFactory(sp, bus),
                     ReceiveEndpoints = sp.GetServices<IReceiveEndpoint>(),
                     OutboxDispatcher = sp.GetService<OutboxDispatcher>(),
-                    MessageScopeProviders = sp.GetServices<ITransponderMessageScopeProvider>()
+                    MessageScopeProviders = sp.GetServices<ITransponderMessageScopeProvider>(),
+                    LoggerFactory = sp.GetService<ILoggerFactory>()
                 });
         });
 
@@ -94,7 +100,9 @@ public static class Extensions
             bus,
             sp.GetRequiredService<IScheduledMessageStore>(),
             sp.GetRequiredService<IMessageSerializer>(),
-            schedulerOptions);
+            sp.GetRequiredService<ITransportHostProvider>(),
+            schedulerOptions,
+            sp.GetService<ILogger<PersistedMessageScheduler>>());
 
         return options;
     }

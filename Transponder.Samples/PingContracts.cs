@@ -11,6 +11,7 @@ public sealed class PingState : ISagaState
 {
     public Ulid CorrelationId { get; set; }
     public Ulid? ConversationId { get; set; }
+    public int Version { get; set; }
     public DateTimeOffset? LastPingAt { get; set; }
     public string? LastSender { get; set; }
     public string? LastMessage { get; set; }

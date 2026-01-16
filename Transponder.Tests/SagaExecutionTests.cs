@@ -8,6 +8,7 @@ public sealed class SagaExecutionTests
     {
         public Ulid CorrelationId { get; set; }
         public Ulid? ConversationId { get; set; }
+        public int Version { get; set; }
         public SagaStatus Status { get; set; }
     }
 

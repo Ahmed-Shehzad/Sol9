@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
-using System.Diagnostics;
+
+using Microsoft.Extensions.Logging;
 
 using Transponder.Abstractions;
 using Transponder.Transports.Abstractions;
@@ -12,25 +13,29 @@ internal sealed class RequestClient<TRequest> : IRequestClient<TRequest>
     private readonly TransponderBus _bus;
     private readonly IMessageSerializer _serializer;
     private readonly ITransportHostProvider _hostProvider;
+    private readonly ILogger<RequestClient<TRequest>> _logger;
     private readonly Uri _destinationAddress;
     private readonly TimeSpan _timeout;
     private readonly ConcurrentDictionary<Ulid, PendingRequest> _pendingRequests = new();
     private readonly Lock _sync = new();
     private IReceiveEndpoint? _responseEndpoint;
     private Uri? _responseAddress;
+    private Task? _initializationTask;
 
     public RequestClient(
         TransponderBus bus,
         IMessageSerializer serializer,
         ITransportHostProvider hostProvider,
         Uri destinationAddress,
-        TimeSpan timeout)
+        TimeSpan timeout,
+        ILogger<RequestClient<TRequest>> logger)
     {
         _bus = bus ?? throw new ArgumentNullException(nameof(bus));
         _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
         _hostProvider = hostProvider ?? throw new ArgumentNullException(nameof(hostProvider));
         _destinationAddress = destinationAddress ?? throw new ArgumentNullException(nameof(destinationAddress));
         _timeout = timeout <= TimeSpan.Zero ? TimeSpan.FromSeconds(30) : timeout;
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public async Task<TResponse> GetResponseAsync<TResponse>(
@@ -40,17 +45,17 @@ internal sealed class RequestClient<TRequest> : IRequestClient<TRequest>
     {
         ArgumentNullException.ThrowIfNull(request);
 
-#if DEBUG
-        Trace.TraceInformation(
-            $"[Transponder] RequestClient<{typeof(TRequest).Name}> starting. Destination={_destinationAddress}");
-#endif
+        _logger.LogDebug(
+            "RequestClient starting request. RequestType={RequestType}, Destination={Destination}",
+            typeof(TRequest).Name,
+            _destinationAddress);
 
         await EnsureResponseEndpointAsync(cancellationToken).ConfigureAwait(false);
 
-#if DEBUG
-        Trace.TraceInformation(
-            $"[Transponder] RequestClient<{typeof(TRequest).Name}> response endpoint ready. ResponseAddress={_responseAddress}");
-#endif
+        _logger.LogDebug(
+            "RequestClient response endpoint ready. RequestType={RequestType}, ResponseAddress={ResponseAddress}",
+            typeof(TRequest).Name,
+            _responseAddress);
 
         var requestId = Ulid.NewUlid();
         var pending = new PendingRequest(typeof(TResponse));
@@ -75,17 +80,34 @@ internal sealed class RequestClient<TRequest> : IRequestClient<TRequest>
                     cancellationToken)
                 .ConfigureAwait(false);
 
-#if DEBUG
-            Trace.TraceInformation(
-                $"[Transponder] RequestClient<{typeof(TRequest).Name}> sent request. RequestId={requestId}");
-#endif
+            _logger.LogDebug(
+                "RequestClient sent request. RequestType={RequestType}, RequestId={RequestId}",
+                typeof(TRequest).Name,
+                requestId);
 
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeoutCts.CancelAfter(_timeout);
+            
             var delayTask = Task.Delay(_timeout, cancellationToken);
             Task completed = await Task.WhenAny(pending.Task, delayTask).ConfigureAwait(false);
 
             if (completed == delayTask)
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    _logger.LogDebug(
+                        "RequestClient request cancelled. RequestType={RequestType}, RequestId={RequestId}",
+                        typeof(TRequest).Name,
+                        requestId);
+                    cancellationToken.ThrowIfCancellationRequested();
+                }
+                
+                _logger.LogWarning(
+                    "RequestClient request timed out. RequestType={RequestType}, RequestId={RequestId}, Timeout={Timeout}s",
+                    typeof(TRequest).Name,
+                    requestId,
+                    _timeout.TotalSeconds);
+                
                 throw new TimeoutException(
                     $"Request timed out after {_timeout.TotalSeconds:F0} seconds for {typeof(TRequest).Name}.");
             }
@@ -103,21 +125,31 @@ internal sealed class RequestClient<TRequest> : IRequestClient<TRequest>
     {
         if (_responseEndpoint is not null) return;
 
+        Task? initTask;
         lock (_sync)
         {
             if (_responseEndpoint is not null) return;
 
-            _responseAddress = _bus.CreateResponseAddress();
-            ITransportHost host = _hostProvider.GetHost(_responseAddress);
+            if (_initializationTask is not null) initTask = _initializationTask;
+            else
+            {
+                _responseAddress = _bus.CreateResponseAddress();
+                ITransportHost host = _hostProvider.GetHost(_responseAddress);
 
-            var configuration = new ReceiveEndpointConfiguration(
-                _responseAddress,
-                HandleResponseAsync);
+                var configuration = new ReceiveEndpointConfiguration(
+                    _responseAddress,
+                    HandleResponseAsync);
 
-            _responseEndpoint = host.ConnectReceiveEndpoint(configuration);
+                _responseEndpoint = host.ConnectReceiveEndpoint(configuration);
+                
+                initTask = _responseEndpoint.StartAsync(cancellationToken);
+                _initializationTask = initTask;
+            }
         }
 
-        await _responseEndpoint!.StartAsync(cancellationToken).ConfigureAwait(false);
+        await initTask.ConfigureAwait(false);
+        
+        lock (_sync) _initializationTask = null;
     }
 
     private Task HandleResponseAsync(IReceiveContext context)
@@ -132,32 +164,37 @@ internal sealed class RequestClient<TRequest> : IRequestClient<TRequest>
 
         if (!TryGetRequestId(message, out Ulid requestId) || !_pendingRequests.TryGetValue(requestId, out PendingRequest? pending))
         {
-#if DEBUG
-            Trace.TraceWarning(
-                $"[Transponder] RequestClient<{typeof(TRequest).Name}> response ignored. " +
-                $"HasRequestId={TryGetRequestId(message, out _)} " +
-                $"MessageType={message.MessageType ?? "unknown"}");
-#endif
+            _logger.LogDebug(
+                "RequestClient response ignored. RequestType={RequestType}, HasRequestId={HasRequestId}, MessageType={MessageType}",
+                typeof(TRequest).Name,
+                TryGetRequestId(message, out _),
+                message.MessageType ?? "unknown");
             return Task.CompletedTask;
         }
 
         try
         {
-#if DEBUG
-            Trace.TraceInformation(
-                $"[Transponder] RequestClient<{typeof(TRequest).Name}> response received. RequestId={requestId}");
-#endif
+            _logger.LogDebug(
+                "RequestClient response received. RequestType={RequestType}, RequestId={RequestId}",
+                typeof(TRequest).Name,
+                requestId);
+            
             object response = _serializer.Deserialize(message.Body.Span, pending.ResponseType);
             pending.TrySetResult(response);
         }
         catch (Exception ex)
         {
-#if DEBUG
-            Trace.TraceError(
-                $"[Transponder] RequestClient<{typeof(TRequest).Name}> response deserialize failed. RequestId={requestId} Error={ex.Message}");
-#endif
             string responseTypeName = pending.ResponseType.FullName ?? pending.ResponseType.Name;
             string messageTypeName = message.MessageType ?? "unknown";
+            
+            _logger.LogError(
+                ex,
+                "RequestClient response deserialize failed. RequestType={RequestType}, RequestId={RequestId}, MessageType={MessageType}, ResponseType={ResponseType}",
+                typeof(TRequest).Name,
+                requestId,
+                messageTypeName,
+                responseTypeName);
+            
             var wrapped = new InvalidOperationException(
                 $"Failed to deserialize response for request {requestId} (message type: {messageTypeName}, response type: {responseTypeName}).",
                 ex);

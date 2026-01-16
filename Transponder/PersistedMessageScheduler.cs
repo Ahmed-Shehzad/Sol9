@@ -1,8 +1,11 @@
 using System.Text.Json;
 
+using Microsoft.Extensions.Logging;
+
 using Transponder.Abstractions;
 using Transponder.Persistence;
 using Transponder.Persistence.Abstractions;
+using Transponder.Transports;
 using Transponder.Transports.Abstractions;
 
 namespace Transponder;
@@ -15,7 +18,10 @@ public sealed class PersistedMessageScheduler : IMessageScheduler, IAsyncDisposa
     private readonly TransponderBus _bus;
     private readonly IScheduledMessageStore _store;
     private readonly IMessageSerializer _serializer;
+    private readonly ILogger<PersistedMessageScheduler> _logger;
+    private readonly ITransportHostProvider _hostProvider;
     private readonly PersistedMessageSchedulerOptions _options;
+    private readonly Uri? _deadLetterAddress;
     private readonly CancellationTokenSource _cts = new();
     private readonly Task _loop;
     private int _disposed;
@@ -24,12 +30,17 @@ public sealed class PersistedMessageScheduler : IMessageScheduler, IAsyncDisposa
         TransponderBus bus,
         IScheduledMessageStore store,
         IMessageSerializer serializer,
-        PersistedMessageSchedulerOptions? options = null)
+        ITransportHostProvider hostProvider,
+        PersistedMessageSchedulerOptions? options = null,
+        ILogger<PersistedMessageScheduler>? logger = null)
     {
         _bus = bus ?? throw new ArgumentNullException(nameof(bus));
         _store = store ?? throw new ArgumentNullException(nameof(store));
         _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
+        _hostProvider = hostProvider ?? throw new ArgumentNullException(nameof(hostProvider));
         _options = options ?? new PersistedMessageSchedulerOptions();
+        _logger = logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<PersistedMessageScheduler>.Instance;
+        _deadLetterAddress = _options.DeadLetterAddress;
 
         _loop = Task.Run(() => DispatchLoopAsync(_cts.Token), _cts.Token);
     }
@@ -189,8 +200,43 @@ public sealed class PersistedMessageScheduler : IMessageScheduler, IAsyncDisposa
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            if (string.IsNullOrWhiteSpace(message.MessageType))
+            {
+                _logger.LogWarning(
+                    "PersistedMessageScheduler: Message type is null or empty. TokenId={TokenId}",
+                    message.TokenId);
+                
+                if (_deadLetterAddress is not null)
+                {
+                    await SendToDeadLetterQueueAsync(message, "MissingMessageType", 
+                        "Message type is null or empty.", cancellationToken)
+                        .ConfigureAwait(false);
+                    await _store.MarkDispatchedAsync(message.TokenId, DateTimeOffset.UtcNow, cancellationToken)
+                        .ConfigureAwait(false);
+                }
+                
+                continue;
+            }
+
             Type? messageType = ResolveMessageType(message.MessageType);
-            if (messageType is null) continue;
+            if (messageType is null)
+            {
+                _logger.LogWarning(
+                    "PersistedMessageScheduler: Failed to resolve message type. TokenId={TokenId}, MessageType={MessageType}",
+                    message.TokenId,
+                    message.MessageType ?? "null");
+                
+                if (_deadLetterAddress is not null)
+                {
+                    await SendToDeadLetterQueueAsync(message, "UnresolvableMessageType", 
+                        $"Message type '{message.MessageType}' could not be resolved.", cancellationToken)
+                        .ConfigureAwait(false);
+                    await _store.MarkDispatchedAsync(message.TokenId, DateTimeOffset.UtcNow, cancellationToken)
+                        .ConfigureAwait(false);
+                }
+                
+                continue;
+            }
 
             object? payload;
 
@@ -198,15 +244,47 @@ public sealed class PersistedMessageScheduler : IMessageScheduler, IAsyncDisposa
             {
                 payload = _serializer.Deserialize(message.Body.Span, messageType);
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(
+                    ex,
+                    "PersistedMessageScheduler: Failed to deserialize message. TokenId={TokenId}, MessageType={MessageType}",
+                    message.TokenId,
+                    message.MessageType ?? "unknown");
+                
+                if (_deadLetterAddress is not null)
+                {
+                    await SendToDeadLetterQueueAsync(message, "DeserializationFailure", 
+                        $"Failed to deserialize message: {ex.Message}", cancellationToken)
+                        .ConfigureAwait(false);
+                    await _store.MarkDispatchedAsync(message.TokenId, DateTimeOffset.UtcNow, cancellationToken)
+                        .ConfigureAwait(false);
+                }
+                
                 continue;
             }
 
             Uri? destinationAddress = null;
             if (message.Headers.TryGetValue(TransponderMessageHeaders.DestinationAddress, out object? destinationValue))
             {
-                if (!TryParseDestinationAddress(destinationValue, out Uri? parsed)) continue;
+                if (!TryParseDestinationAddress(destinationValue, out Uri? parsed))
+                {
+                    _logger.LogWarning(
+                        "PersistedMessageScheduler: Failed to parse destination address. TokenId={TokenId}, DestinationValue={DestinationValue}",
+                        message.TokenId,
+                        destinationValue);
+                    
+                    if (_deadLetterAddress is not null)
+                    {
+                        await SendToDeadLetterQueueAsync(message, "InvalidDestinationAddress", 
+                            $"Failed to parse destination address: {destinationValue}", cancellationToken)
+                            .ConfigureAwait(false);
+                        await _store.MarkDispatchedAsync(message.TokenId, DateTimeOffset.UtcNow, cancellationToken)
+                            .ConfigureAwait(false);
+                    }
+                    
+                    continue;
+                }
 
                 destinationAddress = parsed;
             }
@@ -226,8 +304,14 @@ public sealed class PersistedMessageScheduler : IMessageScheduler, IAsyncDisposa
                 await _store.MarkDispatchedAsync(message.TokenId, DateTimeOffset.UtcNow, cancellationToken)
                     .ConfigureAwait(false);
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogWarning(
+                    ex,
+                    "PersistedMessageScheduler: Failed to dispatch message, will retry. TokenId={TokenId}, MessageType={MessageType}, DestinationAddress={DestinationAddress}",
+                    message.TokenId,
+                    message.MessageType ?? "unknown",
+                    destinationAddress?.ToString() ?? "publish");
                 // Leave for retry on the next polling cycle.
             }
         }
@@ -276,5 +360,54 @@ public sealed class PersistedMessageScheduler : IMessageScheduler, IAsyncDisposa
 
         public Task CancelAsync(CancellationToken cancellationToken = default)
             => _store.CancelAsync(TokenId, cancellationToken);
+    }
+
+    private async Task SendToDeadLetterQueueAsync(
+        IScheduledMessage message,
+        string reason,
+        string description,
+        CancellationToken cancellationToken)
+    {
+        if (_deadLetterAddress is null) return;
+
+        try
+        {
+            ITransportHost host = _hostProvider.GetHost(_deadLetterAddress);
+            ISendTransport transport = await host.GetSendTransportAsync(_deadLetterAddress, cancellationToken)
+                .ConfigureAwait(false);
+            
+            var deadLetterMessage = new TransportMessage(
+                message.Body,
+                message.ContentType ?? "application/json",
+                new Dictionary<string, object?>(message.Headers, StringComparer.OrdinalIgnoreCase)
+                {
+                    ["DeadLetterReason"] = reason,
+                    ["DeadLetterDescription"] = description,
+                    ["DeadLetterTime"] = DateTimeOffset.UtcNow.ToString("O"),
+                    ["ScheduledTokenId"] = message.TokenId.ToString()
+                },
+                Ulid.NewUlid(),
+                null,
+                null,
+                message.MessageType,
+                DateTimeOffset.UtcNow);
+            
+            await transport.SendAsync(deadLetterMessage, cancellationToken).ConfigureAwait(false);
+            
+            _logger.LogInformation(
+                "PersistedMessageScheduler: Message sent to dead-letter queue. TokenId={TokenId}, Reason={Reason}, Description={Description}",
+                message.TokenId,
+                reason,
+                description);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "PersistedMessageScheduler: Failed to send message to dead-letter queue. TokenId={TokenId}, Reason={Reason}",
+                message.TokenId,
+                reason);
+            throw;
+        }
     }
 }

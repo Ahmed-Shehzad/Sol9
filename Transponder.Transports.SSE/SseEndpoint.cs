@@ -113,7 +113,7 @@ internal static class SseEndpoint
             return [];
 
         var results = new List<string>();
-        foreach (string value in values)
+        foreach (string? value in values)
         {
             if (string.IsNullOrWhiteSpace(value)) continue;
 
