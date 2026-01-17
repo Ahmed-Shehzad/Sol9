@@ -92,27 +92,27 @@ public class OrdersController : ControllerBase
 
     private IReadOnlyDictionary<string, LinkDto> BuildOrderLinks(Guid id, string? version)
         => Hateoas.Links(
-            ("self", Url.Action(GetByIdAction, new { id, version }) ?? string.Empty, "GET"),
-            ("cancel", Url.Action(CancelAction, new { id, version }) ?? string.Empty, "POST"),
-            ("collection", Url.Action(GetAction, new { version, page = PaginationRequest.DefaultPage, pageSize = PaginationRequest.DefaultPageSize }) ?? string.Empty, "GET"));
+            ("self", Url.Action(GetByIdAction, new { id, version }) ?? string.Empty, HttpMethod.Get.Method),
+            ("cancel", Url.Action(CancelAction, new { id, version }) ?? string.Empty, HttpMethod.Post.Method),
+            ("collection", Url.Action(GetAction, new { version, page = PaginationRequest.DefaultPage, pageSize = PaginationRequest.DefaultPageSize }) ?? string.Empty, HttpMethod.Get.Method));
 
     private IReadOnlyDictionary<string, LinkDto> BuildCollectionLinks(string? version, PagedResult<OrderDto> result)
     {
         var links = new Dictionary<string, LinkDto>(StringComparer.OrdinalIgnoreCase)
         {
-            ["self"] = Hateoas.Link(Url.Action(GetAction, new { version, page = result.Page, pageSize = result.PageSize }) ?? string.Empty, "GET"),
-            ["create"] = Hateoas.Link(Url.Action(GetAction, new { version }) ?? string.Empty, "POST")
+            ["self"] = Hateoas.Link(Url.Action(GetAction, new { version, page = result.Page, pageSize = result.PageSize }) ?? string.Empty, HttpMethod.Get.Method),
+            ["create"] = Hateoas.Link(Url.Action(GetAction, new { version }) ?? string.Empty, HttpMethod.Post.Method)
         };
 
         if (result.HasPrevious)
             links["prev"] = Hateoas.Link(
                 Url.Action(GetAction, new { version, page = result.Page - 1, pageSize = result.PageSize }) ?? string.Empty,
-                "GET");
+                HttpMethod.Get.Method);
 
         if (result.HasNext)
             links["next"] = Hateoas.Link(
                 Url.Action(GetAction, new { version, page = result.Page + 1, pageSize = result.PageSize }) ?? string.Empty,
-                "GET");
+                HttpMethod.Get.Method);
 
         return links;
     }

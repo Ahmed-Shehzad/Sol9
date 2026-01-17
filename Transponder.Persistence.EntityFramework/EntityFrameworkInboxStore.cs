@@ -37,6 +37,15 @@ public sealed class EntityFrameworkInboxStore : IInboxStore
     {
         ArgumentNullException.ThrowIfNull(state);
 
+        // Check if entity already exists (either tracked or in database)
+        InboxStateEntity? existing = await _context.Set<InboxStateEntity>()
+            .FindAsync(new object[] { state.MessageId, state.ConsumerId }, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (existing != null)
+            // Entity already exists
+            return false;
+
         var entity = InboxStateEntity.FromState(state);
 
         try
@@ -44,11 +53,11 @@ public sealed class EntityFrameworkInboxStore : IInboxStore
             _ = await _context.Set<InboxStateEntity>()
                 .AddAsync(entity, cancellationToken)
                 .ConfigureAwait(false);
-            
+
             await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             return true;
         }
-        catch (DbUpdateException ex) when (ex.InnerException?.Message?.Contains("UNIQUE") == true || 
+        catch (DbUpdateException ex) when (ex.InnerException?.Message?.Contains("UNIQUE") == true ||
                                             ex.InnerException?.Message?.Contains("duplicate") == true ||
                                             ex.InnerException?.Message?.Contains("unique constraint") == true)
         {
