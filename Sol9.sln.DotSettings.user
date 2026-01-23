@@ -58,6 +58,7 @@
   &lt;Or&gt;
     &lt;Project Location="/Users/muhammadahmedshehzad/Personal/RiderProjects/Sol9" Presentation="&amp;lt;Services.Tests&amp;gt;" /&gt;
     &lt;Project Location="/Users/muhammadahmedshehzad/Personal/RiderProjects/Sol9/Transponder.Tests" Presentation="&amp;lt;Transponder.Tests&amp;gt;\&amp;lt;Transponder.Tests&amp;gt;" /&gt;
+    &lt;Project Location="/Users/muhammadahmedshehzad/Personal/RiderProjects/Sol9" Presentation="&amp;lt;Transponder.Tests&amp;gt;" /&gt;
   &lt;/Or&gt;
 &lt;/SessionState&gt;</s:String>
 	

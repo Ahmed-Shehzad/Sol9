@@ -56,6 +56,7 @@
     <Project Path="Transponder.Transports\Transponder.Transports.csproj" />
     <Project Path="Transponder/Transponder.csproj" />
     <Project Path="Transponder.Persistence.EntityFramework.PostgreSql\Transponder.Persistence.EntityFramework.PostgreSql.csproj" />
+    <Project Path="Transponder.Service\Transponder.Service.csproj" />
   </Folder>
   <Folder Name="/Transponder.Tests/">
     <Project Path="Transponder.Tests\Transponder.Tests.csproj" />
@@ -69,6 +70,7 @@
     <Project Path="Transponder.Transports.Grpc.Tests\Transponder.Transports.Grpc.Tests.csproj" />
     <Project Path="Transponder.Transports.Kafka.Tests\Transponder.Transports.Kafka.Tests.csproj" />
     <Project Path="Transponder.Transports.RabbitMq.Tests\Transponder.Transports.RabbitMq.Tests.csproj" />
+    <Project Path="Transponder.Service.Tests\Transponder.Service.Tests.csproj" />
   </Folder>
   <Folder Name="/Services.Tests/" />
   <Folder Name="/Verifier/">

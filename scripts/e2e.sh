@@ -95,24 +95,37 @@ export ASPNETCORE_ENVIRONMENT=Development
 export DOTNET_ENVIRONMENT=Development
 mkdir -p "$LOG_DIR"
 
+# Start centralized Transponder gRPC service on port 50051
+ASPNETCORE_URLS=https://localhost:50051 \
+Kestrel__Endpoints__Grpc__Url=https://localhost:50051 \
+Kestrel__Endpoints__Grpc__Protocols=Http2 \
+  dotnet run --project "$ROOT_DIR/Transponder.Service" -c Release --no-build --no-launch-profile >"$LOG_DIR/transponder-service.log" 2>&1 &
+PIDS+=("$!")
+
+# Wait for Transponder service to be ready
+wait_for_url "https://localhost:50051/health" 60 2
+
+# Start Orders.API - connects to centralized Transponder service
 ASPNETCORE_URLS=http://localhost:5296 \
 ConnectionStrings__Orders="Host=localhost;Database=orders;Username=postgres;Password=postgres" \
 ConnectionStrings__Transponder="Host=localhost;Database=orders;Username=postgres;Password=postgres" \
 ConnectionStrings__Redis="redis://localhost:6379" \
 TransponderDefaults__LocalAddress=http://localhost:5296 \
-TransponderDefaults__RemoteAddress=http://localhost:5187 \
+TransponderDefaults__RemoteAddress=https://localhost:50051 \
   dotnet run --project "$ROOT_DIR/Orders.API" -c Release --no-build --no-launch-profile >"$LOG_DIR/orders-api.log" 2>&1 &
 PIDS+=("$!")
 
+# Start Bookings.API - connects to centralized Transponder service
 ASPNETCORE_URLS=http://localhost:5187 \
 ConnectionStrings__Bookings="Host=localhost;Database=bookings;Username=postgres;Password=postgres" \
 ConnectionStrings__Transponder="Host=localhost;Database=bookings;Username=postgres;Password=postgres" \
 ConnectionStrings__Redis="redis://localhost:6379" \
 TransponderDefaults__LocalAddress=http://localhost:5187 \
-TransponderDefaults__RemoteAddress=http://localhost:5296 \
+TransponderDefaults__RemoteAddress=https://localhost:50051 \
   dotnet run --project "$ROOT_DIR/Bookings.API" -c Release --no-build --no-launch-profile >"$LOG_DIR/bookings-api.log" 2>&1 &
 PIDS+=("$!")
 
+# Start Gateway.API
 ASPNETCORE_URLS=http://localhost:18080 \
   dotnet run --project "$ROOT_DIR/Gateway.API" -c Release --no-build --no-launch-profile >"$LOG_DIR/gateway-api.log" 2>&1 &
 PIDS+=("$!")
@@ -120,7 +133,9 @@ PIDS+=("$!")
 wait_for_url "http://localhost:18080/alive" 60 2
 
 export E2E_BASE_URL=http://localhost:18080
+export TRANSPONDER_SERVICE_URL=https://localhost:50051
 
+# Run E2E tests
 dotnet test "$ROOT_DIR/Orders.E2E.Tests" -c Release --no-build --verbosity normal
-
 dotnet test "$ROOT_DIR/Bookings.E2E.Tests" -c Release --no-build --verbosity normal
+dotnet test "$ROOT_DIR/Transponder.Service.Tests" -c Release --no-build --verbosity normal
