@@ -193,9 +193,11 @@ dotnet test Orders.Integration.Tests/Orders.Integration.Tests.csproj
 
 ### Coverage workflow
 
-- Local: Rider "Run with Coverage" for fast feedback.
-- Validation/CI: Coverlet (`dotnet test ... /p:CollectCoverage=true`).
-- Rider inspection: import `coverage/coverage.cobertura.xml` (auto after running the provided CLI config).
+- Local: Rider "Run with Coverage" (dotCover) for fast feedback.
+- Validation/CI: dotCover CLI (`dotnet dotCover cover ...`).
+- Rider inspection: open `coverage/solution.dcvr` (Coverage tool window).
+- CLI setup: `dotnet tool restore` (installs dotCover tool).
+- Report output: `coverage/coverage.xml` (XML report).
 
 ## Configuration
 

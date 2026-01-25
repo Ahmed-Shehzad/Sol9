@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<teamcity-agent-plugin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:schemas-jetbrains-com:teamcity-agent-plugin-v1-xml">
+  <parameters>
+    <parameter name="dotCoverApiVersion">3</parameter>
+    <parameter name="dotCoverRequirementsVersion">3</parameter>
+  </parameters>
+  <tool-deployment>
+    <layout>
+      <executable-files>
+        <include name="linux-arm/JetBrains.Profiler.PdbServer" />
+        <include name="linux-arm64/JetBrains.Profiler.PdbServer" />
+        <include name="linux-musl-arm64/JetBrains.Profiler.PdbServer" />
+        <include name="linux-musl-x64/JetBrains.Profiler.PdbServer" />
+        <include name="linux-x64/JetBrains.Profiler.PdbServer" />
+        <include name="macos-arm64/JetBrains.Profiler.PdbServer" />
+        <include name="macos-x64/JetBrains.Profiler.PdbServer" />
+      </executable-files>
+    </layout>
+  </tool-deployment>
+</teamcity-agent-plugin>

@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>JetBrains.dotCover.CommandLineTools</id>
+    <version>2025.3.1</version>
+    <title>JetBrains dotCover Command Line Tools 2025.3.1</title>
+    <authors>JetBrains</authors>
+    <owners>JetBrains</owners>
+    <developmentDependency>true</developmentDependency>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="file">tools\License\dotcover_clt_license.md</license>
+    <licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
+    <icon>tools\Resources\dotCover.png</icon>
+    <readme>tools\Resources\dotCover.README.md</readme>
+    <projectUrl>https://www.jetbrains.com/dotcover/</projectUrl>
+    <description>Cross-platform .NET code coverage tool.</description>
+    <copyright>JetBrains</copyright>
+    <packageTypes>
+      <packageType name="DotnetTool" />
+    </packageTypes>
+  </metadata>
+</package>

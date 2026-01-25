@@ -40,11 +40,16 @@ jobs:
       - name: Restore
         run: dotnet restore Sol9.slnx
 
+      - name: Restore dotCover tool
+        run: dotnet tool restore
+
       - name: Build
         run: dotnet build Sol9.slnx -c Release --no-restore
 
       - name: Test with coverage
-        run: dotnet test Sol9.slnx -c Release --no-build --verbosity normal /p:CollectCoverage=true
+        run: |
+          mkdir -p coverage
+          dotnet dotCover cover --targetExecutable=dotnet --targetArguments="test Sol9.slnx -c Release --no-build --verbosity normal" --snapshot-output=coverage/solution.dcvr --xml-report-output=coverage/coverage.xml --returnTargetExitCode
 
       - name: Upload coverage
         if: always()
