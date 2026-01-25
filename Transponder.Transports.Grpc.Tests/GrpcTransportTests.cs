@@ -28,7 +28,7 @@ public sealed class GrpcTransportTests
     [Fact]
     public void GrpcHostSettings_Defaults_Apply()
     {
-        var settings = new GrpcHostSettings(new Uri("grpc://localhost"));
+        var settings = new GrpcHostSettings(new Uri("https://localhost"));
 
         Assert.True(settings.UseTls);
         Assert.NotNull(settings.Topology);
@@ -38,7 +38,7 @@ public sealed class GrpcTransportTests
     public void GrpcTransportFactory_Throws_For_Wrong_Settings()
     {
         var factory = new GrpcTransportFactory();
-        var settings = new StubTransportHostSettings(new Uri("grpc://localhost"));
+        var settings = new StubTransportHostSettings(new Uri("https://localhost"));
 
         _ = Assert.Throws<ArgumentException>(() => factory.CreateHost(settings));
     }

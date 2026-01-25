@@ -19,6 +19,5 @@
     <ProjectReference Include="..\Bookings.API\Bookings.API.csproj" IsAspireProjectResource="true" />
     <ProjectReference Include="..\Orders.API\Orders.API.csproj" IsAspireProjectResource="true" />
     <ProjectReference Include="..\Gateway.API\Gateway.API.csproj" IsAspireProjectResource="true" />
-    <ProjectReference Include="..\Transponder.Service\Transponder.Service.csproj" IsAspireProjectResource="true" />
   </ItemGroup>
 </Project>

@@ -43,8 +43,8 @@ jobs:
       - name: Build
         run: dotnet build Sol9.slnx -c Release --no-restore
 
-      - name: Test
-        run: dotnet test Sol9.slnx -c Release --no-build --verbosity normal
+      - name: Test with coverage
+        run: dotnet test Sol9.slnx -c Release --no-build --verbosity normal --collect:"XPlat Code Coverage"
 
   publish:
     if: github.ref == 'refs/heads/main'

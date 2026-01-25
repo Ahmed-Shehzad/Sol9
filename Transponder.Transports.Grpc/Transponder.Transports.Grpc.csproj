@@ -9,6 +9,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Transponder.Transports\Transponder.Transports.csproj" />
         <ProjectReference Include="..\Transponder\Transponder.csproj" />
+        <ProjectReference Include="..\Transponder.Transports.Grpc.Contracts\Transponder.Transports.Grpc.Contracts.csproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -18,12 +19,7 @@
     <ItemGroup>
       <PackageReference Include="Grpc.AspNetCore" />
       <PackageReference Include="Grpc.Net.Client" />
-      <PackageReference Include="Grpc.Tools" PrivateAssets="all" />
       <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Protobuf Include="Protos/transponder_transport.proto" GrpcServices="Both" />
     </ItemGroup>
 
 </Project>

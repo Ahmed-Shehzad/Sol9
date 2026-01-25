@@ -32,7 +32,15 @@ gRPC transport is ideal for:
 dotnet add package Transponder.Transports.Grpc
 ```
 
-### 2. Register Services
+### 2. Shared Contracts
+
+The gRPC `.proto` contract lives in a shared project so all services compile against the same schema:
+
+- `Transponder.Transports.Grpc.Contracts/Protos/transponder_transport.proto`
+
+Each service hosts its own gRPC endpoints; the shared project is only for contract + codegen.
+
+### 3. Register Services
 
 ```csharp
 using Transponder;
@@ -51,8 +59,10 @@ builder.Services.AddTransponder(
             });
     });
 
-// Enable gRPC
-builder.Services.AddGrpc();
+// Enable gRPC + interceptors
+builder.Services.AddGrpc(options => options.Interceptors.Add<GrpcTransportServerInterceptor>());
+
+// The interceptor enforces required fields, injects correlation IDs, and validates content type.
 
 var app = builder.Build();
 
@@ -60,7 +70,7 @@ var app = builder.Build();
 app.MapGrpcService<GrpcTransportService>();
 ```
 
-### 3. Configure Kestrel for HTTP/2
+### 4. Configure Kestrel for HTTP/2
 
 ```csharp
 builder.WebHost.ConfigureKestrel(options =>
@@ -89,25 +99,24 @@ options.TransportBuilder.UseGrpc(
 ### Advanced Configuration
 
 ```csharp
-options.TransportBuilder.UseGrpc(
-    localAddress: new Uri("https://localhost:7266"),
-    remoteAddresses: new[] { new Uri("https://localhost:7268") },
-    grpcOptions =>
+using Transponder.Transports.Abstractions;
+
+var settings = new GrpcHostSettings(
+    new Uri("https://localhost:7266"),
+    maxReceiveMessageSize: 16 * 1024 * 1024,
+    keepAliveTime: TimeSpan.FromSeconds(30),
+    resilienceOptions: new TransportResilienceOptions
     {
-        // Configure resilience
-        grpcOptions.Resilience = new TransportResilienceOptions
+        EnableRetry = true,
+        EnableCircuitBreaker = true,
+        Retry = new TransportRetryOptions
         {
-            RetryPolicy = RetryPolicy.ExponentialBackoff(maxRetries: 3),
-            CircuitBreaker = new CircuitBreakerOptions
-            {
-                FailureThreshold = 5,
-                SamplingDuration = TimeSpan.FromSeconds(30)
-            }
-        };
-        
-        // Configure timeouts
-        grpcOptions.Timeout = TimeSpan.FromSeconds(30);
+            MaxRetryAttempts = 3,
+            Delay = TimeSpan.FromMilliseconds(200)
+        }
     });
+
+options.TransportBuilder.UseGrpc(settings);
 ```
 
 ## Use Cases
@@ -133,7 +142,7 @@ await _publisher.PublishAsync(new OrderCreatedEvent(order.Id));
 ```csharp
 // Orders.API
 var endpoint = await _sendEndpointProvider.GetSendEndpointAsync(
-    new Uri("grpc://bookings-service:8080"));
+    new Uri("https://bookings-service:8080"));
 await endpoint.SendAsync(new ProcessBookingCommand(bookingId));
 ```
 
@@ -165,19 +174,29 @@ builder.WebHost.ConfigureKestrel(options =>
 Configure retry and circuit breaker:
 
 ```csharp
-grpcOptions.Resilience = new TransportResilienceOptions
+var resilience = new TransportResilienceOptions
 {
-    RetryPolicy = RetryPolicy.ExponentialBackoff(
-        maxRetries: 3,
-        initialDelay: TimeSpan.FromSeconds(1),
-        maxDelay: TimeSpan.FromSeconds(10)),
-    CircuitBreaker = new CircuitBreakerOptions
+    EnableRetry = true,
+    EnableCircuitBreaker = true,
+    Retry = new TransportRetryOptions
     {
-        FailureThreshold = 5,
+        MaxRetryAttempts = 3,
+        Delay = TimeSpan.FromSeconds(1),
+        MaxDelay = TimeSpan.FromSeconds(10)
+    },
+    CircuitBreaker = new TransportCircuitBreakerOptions
+    {
+        FailureRatio = 0.5,
         SamplingDuration = TimeSpan.FromSeconds(30),
         MinimumThroughput = 10
     }
 };
+
+var settings = new GrpcHostSettings(
+    new Uri("https://localhost:7266"),
+    resilienceOptions: resilience);
+
+options.TransportBuilder.UseGrpc(settings);
 ```
 
 ## Performance Tips

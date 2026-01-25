@@ -189,8 +189,6 @@ dotnet test Transponder.Tests/Transponder.Tests.csproj
 dotnet test Bookings.Integration.Tests/Bookings.Integration.Tests.csproj
 dotnet test Orders.Integration.Tests/Orders.Integration.Tests.csproj
 
-# Run E2E tests
-dotnet test Bookings.E2E.Tests/Bookings.E2E.Tests.csproj
 ```
 
 ## Configuration

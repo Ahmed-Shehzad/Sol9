@@ -173,14 +173,16 @@ builder.Services.AddTransponder(localAddress, options =>
 Configure resilience per transport:
 
 ```csharp
-options.TransportBuilder.UseGrpc(localAddress, remoteAddresses, grpcOptions =>
-{
-    grpcOptions.Resilience = new TransportResilienceOptions
+var grpcSettings = new GrpcHostSettings(
+    localAddress,
+    resilienceOptions: new TransportResilienceOptions
     {
-        RetryPolicy = RetryPolicy.ExponentialBackoff(maxRetries: 3),
-        CircuitBreaker = new CircuitBreakerOptions { FailureThreshold = 5 }
-    };
-});
+        EnableRetry = true,
+        EnableCircuitBreaker = true,
+        Retry = new TransportRetryOptions { MaxRetryAttempts = 3 }
+    });
+
+options.TransportBuilder.UseGrpc(grpcSettings);
 ```
 
 ## See Also

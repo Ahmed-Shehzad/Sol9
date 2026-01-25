@@ -332,29 +332,6 @@ public async Task BookingsDbContext_Can_Persist_Booking()
 }
 ```
 
-### E2E Tests
-
-Test full request flow:
-
-```csharp
-[Fact]
-public async Task Create_Order_Should_Create_Booking()
-{
-    var response = await _client.PostAsJsonAsync("/api/v1/orders", new
-    {
-        customerName = "John Doe",
-        totalAmount = 99.99
-    });
-    
-    response.EnsureSuccessStatusCode();
-    var order = await response.Content.ReadFromJsonAsync<OrderDto>();
-    
-    // Verify booking was created
-    var bookingResponse = await _client.GetAsync($"/api/v1/bookings/{order.Id}");
-    bookingResponse.EnsureSuccessStatusCode();
-}
-```
-
 ## Deployment
 
 See [Deployment Documentation](../Deployment/README.md) for Kubernetes and Docker deployment guides.

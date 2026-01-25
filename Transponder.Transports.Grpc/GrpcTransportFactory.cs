@@ -9,7 +9,7 @@ namespace Transponder.Transports.Grpc;
 public sealed class GrpcTransportFactory : ITransportFactory
 {
     private static readonly IReadOnlyCollection<string> Schemes =
-        ["grpc", "grpcs"];
+        ["http", "https", "grpc", "grpcs"];
 
     public string Name => "Grpc";
 

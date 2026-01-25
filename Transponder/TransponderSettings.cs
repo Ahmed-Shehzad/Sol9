@@ -10,8 +10,6 @@ public sealed class TransponderSettings
 
     public string? RemoteServiceName { get; set; }
 
-    public int GrpcPortOffset { get; set; } = 1;
-
     public RemoteAddressStrategy? RemoteAddressStrategy { get; set; }
 
     public RemoteAddressStrategySettings[] RemoteBaseAddresses { get; set; } = [];
@@ -27,7 +25,7 @@ public sealed class TransponderSettings
             throw new ArgumentException("Default remote address is required.", nameof(defaultRemoteAddress));
 
         Uri localBaseAddress = ResolveLocalBaseAddress(defaultLocalAddress);
-        Uri localAddress = ResolveGrpcAddress(localBaseAddress);
+        Uri localAddress = localBaseAddress;
 
         string remoteFallback = !string.IsNullOrWhiteSpace(RemoteServiceName)
             ? $"{localBaseAddress.Scheme}://{RemoteServiceName}:{localBaseAddress.Port}"
@@ -44,7 +42,7 @@ public sealed class TransponderSettings
             RemoteAddressStrategy,
             remoteFallback);
 
-        IReadOnlyList<Uri> remoteAddresses = [.. baseResolution.Addresses.Select(MapToGrpcAddress)];
+        IReadOnlyList<Uri> remoteAddresses = baseResolution.Addresses;
 
         var remoteResolution = new RemoteAddressResolution(remoteAddresses, baseResolution.Strategy);
 
@@ -68,13 +66,6 @@ public sealed class TransponderSettings
         return !string.IsNullOrWhiteSpace(LocalBaseAddress) ? new Uri(LocalBaseAddress) : new Uri(defaultLocalAddress);
     }
 
-    public Uri ResolveGrpcAddress(Uri localBaseAddress)
-    {
-        ArgumentNullException.ThrowIfNull(localBaseAddress);
-
-        return MapToGrpcAddress(localBaseAddress);
-    }
-
     private static bool UsesHttp(Uri address) =>
         string.Equals(address.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase);
 
@@ -96,18 +87,4 @@ public sealed class TransponderSettings
         return (defaultLocalUri.Scheme, defaultLocalUri.Port);
     }
 
-    private Uri MapToGrpcAddress(Uri baseAddress)
-    {
-        if (!UsesHttp(baseAddress)) return baseAddress;
-
-        int grpcPort = baseAddress.Port + GrpcPortOffset;
-        if (grpcPort == baseAddress.Port) return baseAddress;
-
-        var builder = new UriBuilder(baseAddress)
-        {
-            Port = grpcPort
-        };
-
-        return builder.Uri;
-    }
 }

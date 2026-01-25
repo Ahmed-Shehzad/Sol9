@@ -51,7 +51,7 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddProblemDetails();
 
-builder.Services.AddGrpc();
+builder.Services.AddGrpc(options => options.Interceptors.Add<GrpcTransportServerInterceptor>());
 
 builder.Services.AddInfrastructure(builder.Configuration);
 ConfigureTransponder(builder);
@@ -196,28 +196,18 @@ static void ConfigureTransponder(WebApplicationBuilder builder)
                            ?? "http://localhost:5187";
 
     (Uri localAddress, RemoteAddressResolution remoteResolution) = settings.ResolveAddresses(defaultLocal, defaultRemote);
-    int? grpcPort = GetGrpcPort(builder.Configuration);
-    if (grpcPort.HasValue)
-    {
-        localAddress = ApplyGrpcPort(localAddress, grpcPort.Value);
-        IReadOnlyList<Uri> remoteAddresses = remoteResolution.Addresses
-            .Select(address => ApplyGrpcPort(address, grpcPort.Value))
-            .ToList();
-        remoteResolution = new RemoteAddressResolution(remoteAddresses, remoteResolution.Strategy);
-    }
     Log.Information(
-        "Transponder resolved: local={LocalAddress} remote={RemoteAddresses} defaultLocal={DefaultLocal} defaultRemote={DefaultRemote} settingsLocalBase={SettingsLocalBase} settingsRemoteBase={SettingsRemoteBase} grpcPort={GrpcPort}",
+        "Transponder resolved: local={LocalAddress} remote={RemoteAddresses} defaultLocal={DefaultLocal} defaultRemote={DefaultRemote} settingsLocalBase={SettingsLocalBase} settingsRemoteBase={SettingsRemoteBase}",
         localAddress,
         string.Join(",", remoteResolution.Addresses),
         defaultLocal,
         defaultRemote,
         settings.LocalBaseAddress,
-        settings.RemoteBaseAddress,
-        grpcPort);
+        settings.RemoteBaseAddress);
     Console.WriteLine(
         $"Transponder resolved: local={localAddress} remote={string.Join(",", remoteResolution.Addresses)} " +
         $"defaultLocal={defaultLocal} defaultRemote={defaultRemote} settingsLocalBase={settings.LocalBaseAddress} " +
-        $"settingsRemoteBase={settings.RemoteBaseAddress} grpcPort={grpcPort}");
+        $"settingsRemoteBase={settings.RemoteBaseAddress}");
 
     _ = builder.Services.UseSerilog();
     _ = builder.Services.UseOpenTelemetry();
@@ -284,29 +274,10 @@ static string? GetTransponderSchema(IConfiguration configuration)
         : schema;
 }
 
-static int? GetGrpcPort(IConfiguration configuration)
-{
-    string? url = Environment.GetEnvironmentVariable("Kestrel__Endpoints__Grpc__Url")
-                  ?? configuration["Kestrel:Endpoints:Grpc:Url"];
-    return Uri.TryCreate(url, UriKind.Absolute, out Uri? parsed) ? parsed.Port : null;
-}
-
-static Uri ApplyGrpcPort(Uri address, int grpcPort)
-{
-    if (address.Port == grpcPort) return address;
-    return !string.Equals(address.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) &&
-        !string.Equals(address.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
-        ? address
-        : new UriBuilder(address) { Port = grpcPort }.Uri;
-}
-
 static TransponderSettings LoadTransponderSettings(IServiceCollection services, IConfiguration configuration)
 {
     TransponderSettings settings = configuration.GetSection("TransponderSettings").Get<TransponderSettings>()
                                   ?? new TransponderSettings();
-    string? grpcPortOffset = Environment.GetEnvironmentVariable("TransponderSettings__GrpcPortOffset");
-    if (int.TryParse(grpcPortOffset, out int parsedOffset))
-        settings.GrpcPortOffset = parsedOffset;
     _ = services.AddSingleton(settings);
     return settings;
 }

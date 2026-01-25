@@ -33,6 +33,7 @@
       <ProjectReference Include="..\Transponder.Persistence.EntityFramework.PostgreSql\Transponder.Persistence.EntityFramework.PostgreSql.csproj" />
       <ProjectReference Include="..\Transponder.Persistence.Redis\Transponder.Persistence.Redis.csproj" />
       <ProjectReference Include="..\Transponder.Serilog\Transponder.Serilog.csproj" />
+      <ProjectReference Include="..\Transponder.Transports.Grpc.Contracts\Transponder.Transports.Grpc.Contracts.csproj" />
       <ProjectReference Include="..\Transponder.Transports.Grpc\Transponder.Transports.Grpc.csproj" />
       <ProjectReference Include="..\Transponder\Transponder.csproj" />
     </ItemGroup>

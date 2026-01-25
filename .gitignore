@@ -7,3 +7,5 @@ riderModule.iml
 .data/
 K8S/.image-tag
 K8S/helm/sol9/values.local.yaml
+[Cc]overage.cobertura.xml
+**/TestResults/
