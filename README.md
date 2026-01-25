@@ -191,6 +191,12 @@ dotnet test Orders.Integration.Tests/Orders.Integration.Tests.csproj
 
 ```
 
+### Coverage workflow
+
+- Local: Rider "Run with Coverage" for fast feedback.
+- Validation/CI: Coverlet (`dotnet test ... /p:CollectCoverage=true`).
+- Rider inspection: import `coverage/coverage.cobertura.xml` (auto after running the provided CLI config).
+
 ## Configuration
 
 Configuration uses standard ASP.NET Core patterns:

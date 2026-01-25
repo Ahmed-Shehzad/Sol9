@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="DotNet Test Coverage" type="DotNetCli" factoryName=".NET CLI">
+    <option name="COMMAND" value="test" />
+    <option name="PROGRAM_PARAMETERS" value="/p:CollectCoverage=true /p:CoverletOutput=./coverage/coverage.cobertura.xml /p:CoverletOutputFormat=cobertura" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+  </configuration>
+</component>

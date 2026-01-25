@@ -44,7 +44,15 @@ jobs:
         run: dotnet build Sol9.slnx -c Release --no-restore
 
       - name: Test with coverage
-        run: dotnet test Sol9.slnx -c Release --no-build --verbosity normal --collect:"XPlat Code Coverage"
+        run: dotnet test Sol9.slnx -c Release --no-build --verbosity normal /p:CollectCoverage=true
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage
+          if-no-files-found: warn
 
   publish:
     if: github.ref == 'refs/heads/main'
