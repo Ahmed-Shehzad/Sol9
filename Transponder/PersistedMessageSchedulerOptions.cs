@@ -1,5 +1,3 @@
-using Transponder.Transports.Abstractions;
-
 namespace Transponder;
 
 /// <summary>

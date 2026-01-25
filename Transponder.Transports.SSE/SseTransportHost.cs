@@ -1,6 +1,5 @@
 using Polly;
 
-using Transponder.Transports;
 using Transponder.Transports.Abstractions;
 using Transponder.Transports.SSE.Abstractions;
 

@@ -100,6 +100,9 @@ public partial class PostgreSqlTransponderDbContextModelSnapshot : ModelSnapshot
             _ = b.Property<DateTimeOffset>("UpdatedTime")
                 .HasColumnType("timestamp with time zone");
 
+            _ = b.Property<int>("Version")
+                .HasColumnType("integer");
+
             _ = b.HasKey("CorrelationId", "StateType");
 
             _ = b.HasIndex("ConversationId");

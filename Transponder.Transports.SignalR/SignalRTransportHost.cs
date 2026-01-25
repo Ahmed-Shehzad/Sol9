@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.SignalR;
 
 using Polly;
 
-using Transponder.Transports;
 using Transponder.Transports.Abstractions;
 using Transponder.Transports.SignalR.Abstractions;
 

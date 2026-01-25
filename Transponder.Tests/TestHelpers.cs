@@ -1,4 +1,3 @@
-using Transponder;
 using Transponder.Transports;
 using Transponder.Transports.Abstractions;
 

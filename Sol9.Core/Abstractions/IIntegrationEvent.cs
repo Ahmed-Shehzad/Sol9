@@ -1,5 +1,3 @@
-using Intercessor.Abstractions;
-
 using Transponder.Abstractions;
 
 namespace Sol9.Core.Abstractions;

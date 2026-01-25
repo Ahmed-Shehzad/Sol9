@@ -3,13 +3,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 using Moq;
 
-using Transponder;
 using Transponder.Persistence;
 using Transponder.Persistence.Abstractions;
-using Transponder.Transports;
 using Transponder.Transports.Abstractions;
-
-using Xunit;
 
 namespace Transponder.Tests;
 

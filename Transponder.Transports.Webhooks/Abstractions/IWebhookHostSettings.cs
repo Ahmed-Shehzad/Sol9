@@ -1,5 +1,4 @@
 using Transponder.Transports.Abstractions;
-using Transponder.Transports.Webhooks;
 
 namespace Transponder.Transports.Webhooks.Abstractions;
 

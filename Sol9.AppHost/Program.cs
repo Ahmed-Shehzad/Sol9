@@ -14,7 +14,7 @@ IResourceBuilder<ParameterResource> pgPassword = builder.AddParameter("postgres-
 IResourceBuilder<ParameterResource> redisPassword = builder.AddParameter("redis-password", "redis", secret: true);
 
 IResourceBuilder<PostgresServerResource> postgres = builder.AddPostgres("postgres", pgUser, pgPassword, 5432)
-    .WithDataBindMount("./.data/postgres");
+    .WithDataBindMount("./postgres/.data");
 
 IResourceBuilder<PostgresDatabaseResource> bookingsDb = postgres.AddDatabase("bookings");
 IResourceBuilder<PostgresDatabaseResource> ordersDb = postgres.AddDatabase("orders");
@@ -22,6 +22,7 @@ IResourceBuilder<PostgresDatabaseResource> ordersDb = postgres.AddDatabase("orde
 IResourceBuilder<ContainerResource> redis = builder.AddContainer("redis", "redis:8.2")
     .WithEnvironment("REDIS_PASSWORD", redisPassword)
     .WithArgs("--requirepass", redisPassword, "--port", "6379")
+    .WithBindMount("./redis/.data", "/data")
     .WithEndpoint(targetPort: 6379, name: "tcp");
 
 EndpointReference redisEndpoint = redis.GetEndpoint("tcp");
@@ -36,16 +37,18 @@ const string https = "https";
 IResourceBuilder<ProjectResource> bookingsApi = builder.AddProject<Projects.Bookings_API>("bookings-api")
     .WithReference(bookingsDb)
     .WithReference(bookingsDb, "Transponder")
-    .WithHttpsEndpoint()
+    .WithHttpsEndpoint(port: 7002)
     .WithEnvironment("ConnectionStrings__Redis", redisConnection)
-    .WaitForStart(redis);
+    .WaitForStart(redis)
+    .WaitForStart(postgres);
 
 IResourceBuilder<ProjectResource> ordersApi = builder.AddProject<Projects.Orders_API>("orders-api")
     .WithReference(ordersDb)
     .WithReference(ordersDb, "Transponder")
-    .WithHttpsEndpoint()
+    .WithHttpsEndpoint(port: 7003)
     .WithEnvironment("ConnectionStrings__Redis", redisConnection)
-    .WaitForStart(redis);
+    .WaitForStart(redis)
+    .WaitForStart(postgres);
 
 // Each service hosts its own gRPC transport endpoint; share contracts, not runtime.
 _ = bookingsApi.WithEnvironment("TransponderDefaults__LocalAddress", bookingsApi.GetEndpoint(https));

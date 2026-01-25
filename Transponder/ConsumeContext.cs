@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Logging;
-
 using Transponder.Abstractions;
 using Transponder.Transports.Abstractions;
 

@@ -1,8 +1,6 @@
 using Transponder.Persistence;
 using Transponder.Persistence.Abstractions;
 
-using Xunit;
-
 namespace Transponder.Tests;
 
 public sealed class SagaRepositoryConcurrencyTests

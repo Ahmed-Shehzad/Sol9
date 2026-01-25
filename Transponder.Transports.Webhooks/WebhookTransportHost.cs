@@ -1,8 +1,5 @@
-using System.Net.Http;
-
 using Polly;
 
-using Transponder.Transports;
 using Transponder.Transports.Abstractions;
 using Transponder.Transports.Webhooks.Abstractions;
 
