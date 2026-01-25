@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 
 using Transponder;
-using Transponder.Transports;
 using Transponder.Transports.Abstractions;
 using Transponder.Transports.Grpc;
 
@@ -14,14 +13,14 @@ namespace Orders.Integration.Tests;
 public sealed class GrpcTransportConfigurationTests
 {
     [Fact]
-    public async Task UseGrpc_registers_hosts_and_provider_resolves_https_addresses()
+    public async Task UseGrpc_registers_hosts_and_provider_resolves_https_addressesAsync()
     {
         var services = new ServiceCollection();
         var local = new Uri("https://localhost:7268");
 
-        services.AddTransponder(local, options =>
+        _ = services.AddTransponder(local, options =>
         {
-            options.TransportBuilder.UseGrpc(local);
+            _ = options.TransportBuilder.UseGrpc(local);
         });
 
         await using ServiceProvider provider = services.BuildServiceProvider();
@@ -37,7 +36,7 @@ public sealed class GrpcTransportConfigurationTests
         ITransportHostProvider hostProvider = provider.GetRequiredService<ITransportHostProvider>();
         ITransportHost resolved = hostProvider.GetHost(new Uri("https://localhost:7268/requests/test"));
 
-        resolved.ShouldBeOfType<GrpcTransportHost>();
+        _ = resolved.ShouldBeOfType<GrpcTransportHost>();
         resolved.Address.ShouldBe(local);
 
         GrpcTransportHost localHost = hosts.Single(host => host.Address == local);
@@ -45,15 +44,15 @@ public sealed class GrpcTransportConfigurationTests
     }
 
     [Fact]
-    public async Task UseGrpc_sets_useTls_false_for_http_addresses()
+    public async Task UseGrpc_sets_useTls_false_for_http_addressesAsync()
     {
         var services = new ServiceCollection();
         var local = new Uri("http://localhost:5187");
         var remote = new Uri("http://localhost:5296");
 
-        services.AddTransponder(local, options =>
+        _ = services.AddTransponder(local, options =>
         {
-            options.TransportBuilder.UseGrpc(local, new[] { remote });
+            _ = options.TransportBuilder.UseGrpc(local, new[] { remote });
         });
 
         await using ServiceProvider provider = services.BuildServiceProvider();
@@ -68,14 +67,14 @@ public sealed class GrpcTransportConfigurationTests
     }
 
     [Fact]
-    public async Task Grpc_transport_factory_resolves_for_https_scheme()
+    public async Task Grpc_transport_factory_resolves_for_https_schemeAsync()
     {
         var services = new ServiceCollection();
         var local = new Uri("https://localhost:7268");
 
-        services.AddTransponder(local, options =>
+        _ = services.AddTransponder(local, options =>
         {
-            options.TransportBuilder.UseGrpc(local);
+            _ = options.TransportBuilder.UseGrpc(local);
         });
 
         await using ServiceProvider provider = services.BuildServiceProvider();
@@ -84,6 +83,6 @@ public sealed class GrpcTransportConfigurationTests
         bool resolved = registry.TryResolve(new Uri("https://localhost:7268"), out ITransportFactory? factory);
 
         resolved.ShouldBeTrue();
-        factory.ShouldBeOfType<GrpcTransportFactory>();
+        _ = factory.ShouldBeOfType<GrpcTransportFactory>();
     }
 }
