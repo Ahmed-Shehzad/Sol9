@@ -64,7 +64,7 @@ internal sealed class WebhookPublishTransport : IPublishTransport
 
         using HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken)
             .ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+        _ = response.EnsureSuccessStatusCode();
     }
 
     private void AddMetadataHeaders(

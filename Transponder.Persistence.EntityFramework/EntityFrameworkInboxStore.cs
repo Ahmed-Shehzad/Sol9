@@ -54,7 +54,7 @@ public sealed class EntityFrameworkInboxStore : IInboxStore
                 .AddAsync(entity, cancellationToken)
                 .ConfigureAwait(false);
 
-            await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            _ = await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             return true;
         }
         catch (DbUpdateException ex) when (ex.InnerException?.Message?.Contains("UNIQUE") == true ||

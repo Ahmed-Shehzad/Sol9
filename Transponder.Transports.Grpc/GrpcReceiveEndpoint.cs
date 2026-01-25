@@ -1,5 +1,7 @@
 using Polly;
 
+using Transponder;
+using Transponder.Transports;
 using Transponder.Transports.Abstractions;
 
 namespace Transponder.Transports.Grpc;
@@ -10,6 +12,8 @@ internal sealed class GrpcReceiveEndpoint : IReceiveEndpoint
     private readonly Func<IReceiveContext, Task> _handler;
     private readonly ResiliencePipeline _resiliencePipeline;
     private readonly Uri? _deadLetterAddress;
+    private readonly string? _deadLetterReason;
+    private readonly string? _deadLetterDescription;
 
     public GrpcReceiveEndpoint(
         GrpcTransportHost host,
@@ -25,6 +29,8 @@ internal sealed class GrpcReceiveEndpoint : IReceiveEndpoint
         _handler = configuration.Handler ?? throw new ArgumentNullException(nameof(configuration.Handler));
         _resiliencePipeline = resiliencePipeline;
         _deadLetterAddress = faultSettings?.DeadLetterAddress;
+        _deadLetterReason = faultSettings?.DeadLetterReason;
+        _deadLetterDescription = faultSettings?.DeadLetterDescription;
     }
 
     public Uri InputAddress { get; }
@@ -57,13 +63,34 @@ internal sealed class GrpcReceiveEndpoint : IReceiveEndpoint
                     cancellationToken)
                 .ConfigureAwait(false);
         }
-        catch
+        catch (Exception ex)
         {
             if (_deadLetterAddress is null) throw;
 
             ISendTransport sendTransport = await _host.GetSendTransportAsync(_deadLetterAddress, cancellationToken)
                 .ConfigureAwait(false);
-            await sendTransport.SendAsync(message, cancellationToken).ConfigureAwait(false);
+
+            var headers = new Dictionary<string, object?>(message.Headers, StringComparer.OrdinalIgnoreCase)
+            {
+                ["DeadLetterReason"] = _deadLetterReason ?? "HandlerFailure",
+                ["DeadLetterDescription"] = _deadLetterDescription ?? ex.Message,
+                ["DeadLetterTime"] = DateTimeOffset.UtcNow.ToString("O")
+            };
+
+            if (context.DestinationAddress is not null &&
+                !headers.ContainsKey(TransponderMessageHeaders.DestinationAddress)) headers[TransponderMessageHeaders.DestinationAddress] = context.DestinationAddress.ToString();
+
+            var deadLetterMessage = new TransportMessage(
+                message.Body,
+                message.ContentType,
+                headers,
+                message.MessageId,
+                message.CorrelationId,
+                message.ConversationId,
+                message.MessageType,
+                message.SentTime);
+
+            await sendTransport.SendAsync(deadLetterMessage, cancellationToken).ConfigureAwait(false);
         }
     }
 }

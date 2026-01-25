@@ -12,6 +12,7 @@ internal sealed class SagaReceiveEndpointGroup : IReceiveEndpoint
     private readonly IMessageSerializer _serializer;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<SagaReceiveEndpointHandler> _logger;
+    private readonly ReceiveEndpointFaultSettings? _faultSettings;
     private readonly List<IReceiveEndpoint> _endpoints = [];
     private bool _started;
 
@@ -20,13 +21,15 @@ internal sealed class SagaReceiveEndpointGroup : IReceiveEndpoint
         ITransportHostProvider hostProvider,
         IMessageSerializer serializer,
         IServiceScopeFactory scopeFactory,
-        ILogger<SagaReceiveEndpointHandler> logger)
+        ILogger<SagaReceiveEndpointHandler> logger,
+        ReceiveEndpointFaultSettings? faultSettings = null)
     {
         _registry = registry ?? throw new ArgumentNullException(nameof(registry));
         _hostProvider = hostProvider ?? throw new ArgumentNullException(nameof(hostProvider));
         _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
         _scopeFactory = scopeFactory ?? throw new ArgumentNullException(nameof(scopeFactory));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _faultSettings = faultSettings;
         InputAddress = new Uri("transponder://saga");
     }
 
@@ -46,9 +49,17 @@ internal sealed class SagaReceiveEndpointGroup : IReceiveEndpoint
                 _scopeFactory,
                 _logger);
 
+            IReadOnlyDictionary<string, object?>? settings = null;
+            if (_faultSettings is not null)
+                settings = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase)
+                {
+                    [ReceiveEndpointSettingsKeys.FaultSettings] = _faultSettings
+                };
+
             var configuration = new ReceiveEndpointConfiguration(
                 inputAddress,
-                handler.HandleAsync);
+                handler.HandleAsync,
+                settings);
 
             ITransportHost host = _hostProvider.GetHost(inputAddress);
             IReceiveEndpoint endpoint = host.ConnectReceiveEndpoint(configuration);

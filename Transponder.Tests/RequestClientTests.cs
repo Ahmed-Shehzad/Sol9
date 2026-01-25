@@ -33,21 +33,21 @@ public sealed class RequestClientTests
         // Arrange
         var responseHostMock = new Mock<ITransportHost>();
         var responseEndpointMock = new Mock<IReceiveEndpoint>();
-        responseEndpointMock.Setup(e => e.StartAsync(It.IsAny<CancellationToken>()))
+        _ = responseEndpointMock.Setup(e => e.StartAsync(It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        
+
         var destinationHostMock = new Mock<ITransportHost>();
         var sendTransportMock = new Mock<ISendTransport>();
-        sendTransportMock.Setup(e => e.SendAsync(It.IsAny<ITransportMessage>(), It.IsAny<CancellationToken>()))
+        _ = sendTransportMock.Setup(e => e.SendAsync(It.IsAny<ITransportMessage>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        destinationHostMock.Setup(h => h.GetSendTransportAsync(It.IsAny<Uri>(), It.IsAny<CancellationToken>()))
+        _ = destinationHostMock.Setup(h => h.GetSendTransportAsync(It.IsAny<Uri>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(sendTransportMock.Object);
-        
-        _hostProviderMock.Setup(h => h.GetHost(It.Is<Uri>(u => u.ToString().Contains("response"))))
+
+        _ = _hostProviderMock.Setup(h => h.GetHost(It.Is<Uri>(u => u.ToString().Contains("response"))))
             .Returns(responseHostMock.Object);
-        _hostProviderMock.Setup(h => h.GetHost(It.Is<Uri>(u => u.ToString().Contains("requests"))))
+        _ = _hostProviderMock.Setup(h => h.GetHost(It.Is<Uri>(u => u.ToString().Contains("requests"))))
             .Returns(destinationHostMock.Object);
-        responseHostMock.Setup(h => h.ConnectReceiveEndpoint(It.IsAny<IReceiveEndpointConfiguration>()))
+        _ = responseHostMock.Setup(h => h.ConnectReceiveEndpoint(It.IsAny<IReceiveEndpointConfiguration>()))
             .Returns(responseEndpointMock.Object);
 
         var client = new RequestClient<TestRequest>(
@@ -61,7 +61,7 @@ public sealed class RequestClientTests
         var request = new TestRequest();
 
         // Act & Assert
-        await Assert.ThrowsAsync<TimeoutException>(async () =>
+        _ = await Assert.ThrowsAsync<TimeoutException>(async () =>
             await client.GetResponseAsync<TestResponse>(request));
     }
 
@@ -71,12 +71,12 @@ public sealed class RequestClientTests
         // Arrange
         var hostMock = new Mock<ITransportHost>();
         var endpointMock = new Mock<IReceiveEndpoint>();
-        endpointMock.Setup(e => e.StartAsync(It.IsAny<CancellationToken>()))
+        _ = endpointMock.Setup(e => e.StartAsync(It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        _hostProviderMock.Setup(h => h.GetHost(It.IsAny<Uri>()))
+        _ = _hostProviderMock.Setup(h => h.GetHost(It.IsAny<Uri>()))
             .Returns(hostMock.Object);
-        hostMock.Setup(h => h.ConnectReceiveEndpoint(It.IsAny<IReceiveEndpointConfiguration>()))
+        _ = hostMock.Setup(h => h.ConnectReceiveEndpoint(It.IsAny<IReceiveEndpointConfiguration>()))
             .Returns(endpointMock.Object);
 
         var client = new RequestClient<TestRequest>(
@@ -93,7 +93,7 @@ public sealed class RequestClientTests
             {
                 try
                 {
-                    await client.GetResponseAsync<TestResponse>(new TestRequest());
+                    _ = await client.GetResponseAsync<TestResponse>(new TestRequest());
                 }
                 catch
                 {

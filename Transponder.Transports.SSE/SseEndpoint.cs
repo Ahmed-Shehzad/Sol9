@@ -54,7 +54,7 @@ internal static class SseEndpoint
             if (options.SendConnectionEventOnConnect)
             {
                 string payload = $"{{\"connectionId\":\"{connectionId}\"}}";
-                connection.TryEnqueue(new SseEvent(
+                _ = connection.TryEnqueue(new SseEvent(
                     id: null,
                     eventName: options.ConnectionEventName,
                     data: payload,
@@ -70,7 +70,7 @@ internal static class SseEndpoint
                     .ConfigureAwait(false);
 
                 foreach (SseCatchUpEvent replay in replayEvents)
-                    connection.TryEnqueue(new SseEvent(
+                    _ = connection.TryEnqueue(new SseEvent(
                         replay.Id,
                         replay.EventName,
                         replay.Data,
@@ -151,6 +151,6 @@ internal static class SseEndpoint
         {
             using var timer = new PeriodicTimer(interval);
             while (await timer.WaitForNextTickAsync(cancellationToken).ConfigureAwait(false))
-                connection.TryEnqueue(SseEvent.CreateComment("keep-alive"));
+                _ = connection.TryEnqueue(SseEvent.CreateComment("keep-alive"));
         }, cancellationToken);
 }

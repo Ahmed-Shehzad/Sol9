@@ -48,7 +48,7 @@ public sealed class PersistedMessageSchedulerTests
         var pastTime = DateTimeOffset.UtcNow.AddMinutes(-1);
 
         // Act & Assert
-        await Assert.ThrowsAsync<ArgumentException>(async () =>
+        _ = await Assert.ThrowsAsync<ArgumentException>(async () =>
             await scheduler.ScheduleSendAsync(new Uri("http://test/destination"), message, pastTime));
     }
 
@@ -90,7 +90,7 @@ public sealed class PersistedMessageSchedulerTests
         var message = new TestMessage();
 
         // Act & Assert
-        await Assert.ThrowsAsync<ArgumentException>(async () =>
+        _ = await Assert.ThrowsAsync<ArgumentException>(async () =>
             await scheduler.SchedulePublishAsync(message, TimeSpan.Zero));
     }
 

@@ -21,6 +21,7 @@ using Cysharp.Serialization.Json;
 
 using Sol9.Contracts.Bookings;
 using Sol9.ServiceDefaults;
+using Sol9.ServiceDefaults.DeadLetter;
 
 using Transponder;
 using Transponder.OpenTelemetry;
@@ -70,6 +71,7 @@ builder.Services.AddOpenApi("v2", options => options.OpenApiVersion = OpenApiSpe
 
 // Add services to the container.
 builder.AddServiceDefaults();
+builder.AddPostgresDeadLetterQueue();
 builder.Services.AddControllers()
     .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new UlidJsonConverter()));
 builder.Services.AddEndpointsApiExplorer();
@@ -265,8 +267,16 @@ static void ConfigureTransponderBus(
             remoteResolution.Strategy,
             options.RequestPathPrefix,
             options.RequestPathFormatter);
-        _ = options.UseOutbox();
-        _ = options.UsePersistedMessageScheduler();
+        var dlqSettings =
+            PostgresDeadLetterQueueSettings.FromConfiguration(builder.Configuration);
+        _ = options.UseOutbox(outbox =>
+        {
+            if (dlqSettings is not null) outbox.DeadLetterAddress = dlqSettings.Address;
+        });
+        _ = options.UsePersistedMessageScheduler(scheduler =>
+        {
+            if (dlqSettings is not null) scheduler.DeadLetterAddress = dlqSettings.Address;
+        });
         _ = options.UseSagaChoreography(registration =>
         {
             _ = registration.AddSaga<CreateBookingSaga, CreateBookingSagaState>(endpoint =>

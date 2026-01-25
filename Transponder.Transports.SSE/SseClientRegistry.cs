@@ -70,7 +70,7 @@ public sealed class SseClientRegistry
     private void AddConnections(HashSet<string> resolved, IReadOnlyList<string> connectionIds)
     {
         foreach (string id in connectionIds)
-            if (_connections.ContainsKey(id)) resolved.Add(id);
+            if (_connections.ContainsKey(id)) _ = resolved.Add(id);
     }
 
     private void AddIndexedConnections(
@@ -82,7 +82,7 @@ public sealed class SseClientRegistry
         {
             if (!index.TryGetValue(key, out ConcurrentDictionary<string, byte>? ids)) continue;
 
-            foreach (string id in ids.Keys) resolved.Add(id);
+            foreach (string id in ids.Keys) _ = resolved.Add(id);
         }
     }
 
@@ -125,7 +125,7 @@ public sealed class SseClientRegistry
             ConcurrentDictionary<string, byte> set = index.GetOrAdd(
                 key,
                 _ => new ConcurrentDictionary<string, byte>(StringComparer.OrdinalIgnoreCase));
-            set.TryAdd(connectionId, 0);
+            _ = set.TryAdd(connectionId, 0);
         }
     }
 

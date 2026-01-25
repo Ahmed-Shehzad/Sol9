@@ -37,7 +37,7 @@ const string https = "https";
 IResourceBuilder<ProjectResource> bookingsApi = builder.AddProject<Projects.Bookings_API>("bookings-api")
     .WithReference(bookingsDb)
     .WithReference(bookingsDb, "Transponder")
-    .WithHttpsEndpoint(port: 7002)
+    .WithHttpsEndpoint(port: 7002, targetPort: 7002, isProxied: false)
     .WithEnvironment("ConnectionStrings__Redis", redisConnection)
     .WaitForStart(redis)
     .WaitForStart(postgres);
@@ -45,7 +45,7 @@ IResourceBuilder<ProjectResource> bookingsApi = builder.AddProject<Projects.Book
 IResourceBuilder<ProjectResource> ordersApi = builder.AddProject<Projects.Orders_API>("orders-api")
     .WithReference(ordersDb)
     .WithReference(ordersDb, "Transponder")
-    .WithHttpsEndpoint(port: 7003)
+    .WithHttpsEndpoint(port: 7003, targetPort: 7003, isProxied: false)
     .WithEnvironment("ConnectionStrings__Redis", redisConnection)
     .WaitForStart(redis)
     .WaitForStart(postgres);

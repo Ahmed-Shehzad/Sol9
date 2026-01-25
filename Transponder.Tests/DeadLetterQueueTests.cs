@@ -16,8 +16,8 @@ public sealed class DeadLetterQueueTests
         var sessionFactoryMock = new Mock<IStorageSessionFactory>();
         var sessionMock = new Mock<IStorageSession>();
         var outboxMock = new Mock<IOutboxStore>();
-        sessionMock.Setup(s => s.Outbox).Returns(outboxMock.Object);
-        sessionFactoryMock.Setup(f => f.CreateSessionAsync(It.IsAny<CancellationToken>()))
+        _ = sessionMock.Setup(s => s.Outbox).Returns(outboxMock.Object);
+        _ = sessionFactoryMock.Setup(f => f.CreateSessionAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(sessionMock.Object);
 
         var hostMock = new Mock<ITransportHost>();
@@ -25,9 +25,9 @@ public sealed class DeadLetterQueueTests
         var hostProviderMock = new Mock<ITransportHostProvider>();
         var loggerMock = new Mock<ILogger<OutboxDispatcher>>();
 
-        hostProviderMock.Setup(h => h.GetHost(It.IsAny<Uri>()))
+        _ = hostProviderMock.Setup(h => h.GetHost(It.IsAny<Uri>()))
             .Returns(hostMock.Object);
-        hostMock.Setup(h => h.GetSendTransportAsync(It.IsAny<Uri>(), It.IsAny<CancellationToken>()))
+        _ = hostMock.Setup(h => h.GetSendTransportAsync(It.IsAny<Uri>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(transportMock.Object);
 
         var deadLetterAddress = new Uri("http://test/dlq");

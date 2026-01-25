@@ -18,6 +18,8 @@ using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 
+using Sol9.ServiceDefaults.DeadLetter;
+
 namespace Sol9.ServiceDefaults;
 
 public static class Extensions
@@ -57,6 +59,7 @@ public static class Extensions
         });
         _ = app.MapGrpcHealthChecksService();
         _ = app.MapPrometheusScrapingEndpoint();
+        _ = app.MapDeadLetterQueueEndpoints();
 
         return app;
     }

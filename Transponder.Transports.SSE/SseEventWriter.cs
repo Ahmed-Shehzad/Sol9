@@ -13,27 +13,27 @@ internal static class SseEventWriter
 
         if (!string.IsNullOrWhiteSpace(message.Comment))
         {
-            builder.Append(':').Append(' ').Append(message.Comment).Append('\n');
-            builder.Append('\n');
+            _ = builder.Append(':').Append(' ').Append(message.Comment).Append('\n');
+            _ = builder.Append('\n');
             await WriteAsync(stream, builder, cancellationToken).ConfigureAwait(false);
             return;
         }
 
         if (!string.IsNullOrWhiteSpace(message.Id))
-            builder.Append("id: ").Append(message.Id).Append('\n');
+            _ = builder.Append("id: ").Append(message.Id).Append('\n');
 
         if (!string.IsNullOrWhiteSpace(message.EventName))
-            builder.Append("event: ").Append(message.EventName).Append('\n');
+            _ = builder.Append("event: ").Append(message.EventName).Append('\n');
 
         if (!string.IsNullOrWhiteSpace(message.Data))
         {
             string[] lines = message.Data.Split('\n');
             foreach (string line in lines)
-                builder.Append("data: ").Append(line).Append('\n');
+                _ = builder.Append("data: ").Append(line).Append('\n');
         }
-        else builder.Append("data: ").Append('\n');
+        else _ = builder.Append("data: ").Append('\n');
 
-        builder.Append('\n');
+        _ = builder.Append('\n');
         await WriteAsync(stream, builder, cancellationToken).ConfigureAwait(false);
     }
 

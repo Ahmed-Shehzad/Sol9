@@ -27,6 +27,8 @@ using Transponder.Transports.Grpc;
 
 using Cysharp.Serialization.Json;
 
+using Sol9.ServiceDefaults.DeadLetter;
+
 using Verifier.Exceptions;
 
 using ILogger = Microsoft.Extensions.Logging.ILogger;
@@ -46,6 +48,7 @@ builder.WebHost.ConfigureKestrel(options =>
 
 // Add services to the container.
 builder.AddServiceDefaults();
+builder.AddPostgresDeadLetterQueue();
 builder.Services.AddControllers()
     .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new UlidJsonConverter()));
 builder.Services.AddEndpointsApiExplorer();
@@ -258,8 +261,16 @@ static void ConfigureTransponderBus(
             remoteResolution.Strategy,
             options.RequestPathPrefix,
             options.RequestPathFormatter);
-        _ = options.UseOutbox();
-        _ = options.UsePersistedMessageScheduler();
+        var dlqSettings =
+            PostgresDeadLetterQueueSettings.FromConfiguration(builder.Configuration);
+        _ = options.UseOutbox(outbox =>
+        {
+            if (dlqSettings is not null) outbox.DeadLetterAddress = dlqSettings.Address;
+        });
+        _ = options.UsePersistedMessageScheduler(scheduler =>
+        {
+            if (dlqSettings is not null) scheduler.DeadLetterAddress = dlqSettings.Address;
+        });
     });
 
     _ = builder.Services.AddHostedService<TransponderBusHostedService>();

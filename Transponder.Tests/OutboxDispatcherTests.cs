@@ -37,8 +37,8 @@ public sealed class OutboxDispatcherTests
         // Arrange
         var sessionMock = new Mock<IStorageSession>();
         var outboxMock = new Mock<IOutboxStore>();
-        sessionMock.Setup(s => s.Outbox).Returns(outboxMock.Object);
-        _sessionFactoryMock.Setup(f => f.CreateSessionAsync(It.IsAny<CancellationToken>()))
+        _ = sessionMock.Setup(s => s.Outbox).Returns(outboxMock.Object);
+        _ = _sessionFactoryMock.Setup(f => f.CreateSessionAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(sessionMock.Object);
 
         var dispatcher = new OutboxDispatcher(
@@ -72,10 +72,10 @@ public sealed class OutboxDispatcherTests
         // Arrange
         var sessionMock = new Mock<IStorageSession>();
         var outboxMock = new Mock<IOutboxStore>();
-        outboxMock.Setup(o => o.GetPendingAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
+        _ = outboxMock.Setup(o => o.GetPendingAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Array.Empty<IOutboxMessage>());
-        sessionMock.Setup(s => s.Outbox).Returns(outboxMock.Object);
-        _sessionFactoryMock.Setup(f => f.CreateSessionAsync(It.IsAny<CancellationToken>()))
+        _ = sessionMock.Setup(s => s.Outbox).Returns(outboxMock.Object);
+        _ = _sessionFactoryMock.Setup(f => f.CreateSessionAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(sessionMock.Object);
 
         var dispatcher = new OutboxDispatcher(
@@ -102,10 +102,10 @@ public sealed class OutboxDispatcherTests
         // Arrange
         var sessionMock = new Mock<IStorageSession>();
         var outboxMock = new Mock<IOutboxStore>();
-        outboxMock.Setup(o => o.GetPendingAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
+        _ = outboxMock.Setup(o => o.GetPendingAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Array.Empty<IOutboxMessage>());
-        sessionMock.Setup(s => s.Outbox).Returns(outboxMock.Object);
-        _sessionFactoryMock.Setup(f => f.CreateSessionAsync(It.IsAny<CancellationToken>()))
+        _ = sessionMock.Setup(s => s.Outbox).Returns(outboxMock.Object);
+        _ = _sessionFactoryMock.Setup(f => f.CreateSessionAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(sessionMock.Object);
 
         var dispatcher = new OutboxDispatcher(
