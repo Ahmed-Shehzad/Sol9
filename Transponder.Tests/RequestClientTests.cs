@@ -93,7 +93,7 @@ public sealed class RequestClientTests
             {
                 try
                 {
-                    _ = await client.GetResponseAsync<TestResponse>(new TestRequest());
+                    await client.GetResponseAsync<TestResponse>(new TestRequest());
                 }
                 catch
                 {
