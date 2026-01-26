@@ -79,7 +79,7 @@ public sealed class OutboxDispatcher : IAsyncDisposable
             var all = Task.WhenAll(dispatchLoop ?? Task.CompletedTask, pollLoop ?? Task.CompletedTask);
             var timeout = Task.Delay(TimeSpan.FromSeconds(30), cancellationToken);
             Task completed = await Task.WhenAny(all, timeout).ConfigureAwait(false);
-            
+
             if (completed == timeout) _logger.LogWarning("OutboxDispatcher stop timed out after 30 seconds");
         }
 
@@ -197,7 +197,7 @@ public sealed class OutboxDispatcher : IAsyncDisposable
 
                     await DispatchMessageAsync(message, cancellationToken).ConfigureAwait(false);
                     await MarkSentAsync(message.MessageId, cancellationToken).ConfigureAwait(false);
-                    
+
                     if (attempt > 1)
                         _logger.LogInformation(
                             "OutboxDispatcher successfully dispatched message after {Attempt} attempts. MessageId={MessageId}, Destination={Destination}",
@@ -222,7 +222,7 @@ public sealed class OutboxDispatcher : IAsyncDisposable
                         message.MessageType ?? "unknown",
                         attempt,
                         _options.RetryDelay.TotalMilliseconds);
-                    
+
                     await Task.Delay(_options.RetryDelay, cancellationToken).ConfigureAwait(false);
                 }
         }
@@ -273,33 +273,33 @@ public sealed class OutboxDispatcher : IAsyncDisposable
                 "OutboxDispatcher: Failed to resolve message type. MessageId={MessageId}, MessageType={MessageType}",
                 message.MessageId,
                 message.MessageType ?? "null");
-            
+
             if (_deadLetterAddress is not null)
             {
-                await SendToDeadLetterQueueAsync(transportMessage, "UnresolvableMessageType", 
+                await SendToDeadLetterQueueAsync(transportMessage, "UnresolvableMessageType",
                     $"Message type '{message.MessageType}' could not be resolved.", cancellationToken)
                     .ConfigureAwait(false);
                 return;
             }
-            
+
             throw new InvalidOperationException($"Outbox message type '{message.MessageType}' could not be resolved.");
         }
-        
+
         if (message.SourceAddress is null)
         {
             _logger.LogError(
                 "OutboxDispatcher: Source address is required for publish. MessageId={MessageId}, MessageType={MessageType}",
                 message.MessageId,
                 message.MessageType ?? "unknown");
-            
+
             if (_deadLetterAddress is not null)
             {
-                await SendToDeadLetterQueueAsync(transportMessage, "MissingSourceAddress", 
+                await SendToDeadLetterQueueAsync(transportMessage, "MissingSourceAddress",
                     "Outbox publish requires a source address.", cancellationToken)
                     .ConfigureAwait(false);
                 return;
             }
-            
+
             throw new InvalidOperationException("Outbox publish requires a source address.");
         }
 
@@ -340,7 +340,7 @@ public sealed class OutboxDispatcher : IAsyncDisposable
             ITransportHost host = _hostProvider.GetHost(_deadLetterAddress);
             ISendTransport transport = await host.GetSendTransportAsync(_deadLetterAddress, cancellationToken)
                 .ConfigureAwait(false);
-            
+
             var deadLetterMessage = new TransportMessage(
                 message.Body,
                 message.ContentType,
@@ -355,9 +355,9 @@ public sealed class OutboxDispatcher : IAsyncDisposable
                 message.ConversationId,
                 message.MessageType,
                 message.SentTime);
-            
+
             await transport.SendAsync(deadLetterMessage, cancellationToken).ConfigureAwait(false);
-            
+
             _logger.LogInformation(
                 "OutboxDispatcher: Message sent to dead-letter queue. MessageId={MessageId}, Reason={Reason}, Description={Description}",
                 message.MessageId,

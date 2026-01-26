@@ -33,7 +33,7 @@ public sealed class PersistedMessageSchedulerTests
     }
 
     [Fact]
-    public async Task ScheduleSendAsync_Should_Throw_When_ScheduledTime_In_Past()
+    public async Task ScheduleSendAsync_Should_Throw_When_ScheduledTime_In_PastAsync()
     {
         // Arrange
         var scheduler = new PersistedMessageScheduler(
@@ -53,7 +53,7 @@ public sealed class PersistedMessageSchedulerTests
     }
 
     [Fact]
-    public async Task ScheduleSendAsync_Should_Store_Message()
+    public async Task ScheduleSendAsync_Should_Store_MessageAsync()
     {
         // Arrange
         var scheduler = new PersistedMessageScheduler(
@@ -76,7 +76,7 @@ public sealed class PersistedMessageSchedulerTests
     }
 
     [Fact]
-    public async Task SchedulePublishAsync_Should_Throw_When_Delay_Is_Zero()
+    public async Task SchedulePublishAsync_Should_Throw_When_Delay_Is_ZeroAsync()
     {
         // Arrange
         var scheduler = new PersistedMessageScheduler(

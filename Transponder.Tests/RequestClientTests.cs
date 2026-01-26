@@ -28,7 +28,7 @@ public sealed class RequestClientTests
     }
 
     [Fact]
-    public async Task GetResponseAsync_Should_Timeout_When_No_Response_Received()
+    public async Task GetResponseAsync_Should_Timeout_When_No_Response_ReceivedAsync()
     {
         // Arrange
         var responseHostMock = new Mock<ITransportHost>();
@@ -66,7 +66,7 @@ public sealed class RequestClientTests
     }
 
     [Fact]
-    public async Task EnsureResponseEndpointAsync_Should_Only_Initialize_Once()
+    public async Task EnsureResponseEndpointAsync_Should_Only_Initialize_OnceAsync()
     {
         // Arrange
         var hostMock = new Mock<ITransportHost>();
@@ -93,7 +93,7 @@ public sealed class RequestClientTests
             {
                 try
                 {
-                    await client.GetResponseAsync<TestResponse>(new TestRequest());
+                    _ = await client.GetResponseAsync<TestResponse>(new TestRequest());
                 }
                 catch
                 {
@@ -117,5 +117,7 @@ public sealed class RequestClientTests
     private sealed class TestResponse : IMessage
     {
         public Ulid? CorrelationId { get; set; }
+
+        public static implicit operator int(TestResponse v) => throw new NotImplementedException();
     }
 }
