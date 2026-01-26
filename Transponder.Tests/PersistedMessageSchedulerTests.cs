@@ -45,7 +45,7 @@ public sealed class PersistedMessageSchedulerTests
             _logger);
 
         var message = new TestMessage();
-        var pastTime = DateTimeOffset.UtcNow.AddMinutes(-1);
+        DateTimeOffset pastTime = DateTimeOffset.UtcNow.AddMinutes(-1);
 
         // Act & Assert
         _ = await Assert.ThrowsAsync<ArgumentException>(async () =>
@@ -65,10 +65,10 @@ public sealed class PersistedMessageSchedulerTests
             _logger);
 
         var message = new TestMessage();
-        var futureTime = DateTimeOffset.UtcNow.AddMinutes(1);
+        DateTimeOffset futureTime = DateTimeOffset.UtcNow.AddMinutes(1);
 
         // Act
-        var handle = await scheduler.ScheduleSendAsync(new Uri("http://test/destination"), message, futureTime);
+        IScheduledMessageHandle handle = await scheduler.ScheduleSendAsync(new Uri("http://test/destination"), message, futureTime);
 
         // Assert
         Assert.NotNull(handle);

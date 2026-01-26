@@ -1,6 +1,9 @@
 using System.Text.Json;
 
 using Cysharp.Serialization.Json;
+
+using Transponder.Serialization;
+
 using Transponder.Transports.Abstractions;
 
 namespace Transponder;
@@ -16,6 +19,7 @@ public sealed class JsonMessageSerializer : IMessageSerializer
     {
         _options = options ?? new JsonSerializerOptions(JsonSerializerDefaults.Web);
         _options.Converters.Add(new UlidJsonConverter());
+        _options.Converters.Add(new EnumerationJsonConverterFactory());
     }
 
     /// <inheritdoc />

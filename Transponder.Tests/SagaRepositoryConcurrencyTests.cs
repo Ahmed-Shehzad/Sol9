@@ -30,7 +30,7 @@ public sealed class SagaRepositoryConcurrencyTests
         Assert.Equal(1, state1.Version);
 
         // Get the updated state
-        var retrieved = await repository.GetAsync(correlationId);
+        TestSagaState? retrieved = await repository.GetAsync(correlationId);
         Assert.NotNull(retrieved);
         Assert.Equal(1, retrieved!.Version);
 
@@ -89,7 +89,7 @@ public sealed class SagaRepositoryConcurrencyTests
         Assert.True(saved);
         Assert.Equal(1, state.Version);
 
-        var retrieved = await repository.GetAsync(correlationId);
+        TestSagaState? retrieved = await repository.GetAsync(correlationId);
         Assert.NotNull(retrieved);
         Assert.Equal(1, retrieved!.Version);
     }

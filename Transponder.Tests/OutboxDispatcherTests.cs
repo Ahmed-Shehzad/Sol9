@@ -118,10 +118,10 @@ public sealed class OutboxDispatcherTests
         await Task.Delay(50);
 
         // Act
-        var stopTask = dispatcher.StopAsync();
+        Task stopTask = dispatcher.StopAsync();
         var timeoutTask = Task.Delay(TimeSpan.FromSeconds(5));
 
-        var completedTask = await Task.WhenAny(stopTask, timeoutTask);
+        Task completedTask = await Task.WhenAny(stopTask, timeoutTask);
 
         // Assert
         Assert.Equal(stopTask, completedTask);

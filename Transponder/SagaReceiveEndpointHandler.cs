@@ -126,7 +126,7 @@ internal sealed class SagaReceiveEndpointHandler
         Ulid? correlationId = consumeContext.CorrelationId ?? consumeContext.ConversationId;
         if (!correlationId.HasValue)
         {
-            var logger = serviceProvider.GetService<ILogger<SagaReceiveEndpointHandler>>();
+            ILogger<SagaReceiveEndpointHandler>? logger = serviceProvider.GetService<ILogger<SagaReceiveEndpointHandler>>();
             logger?.LogWarning(
                 "SagaReceiveEndpointHandler missing correlation id. MessageType={MessageType}",
                 typeof(TMessage).Name);
@@ -183,7 +183,7 @@ internal sealed class SagaReceiveEndpointHandler
             bool saved = await repository.SaveAsync(state, cancellationToken).ConfigureAwait(false);
             if (!saved)
             {
-                var logger = serviceProvider.GetService<ILogger<SagaReceiveEndpointHandler>>();
+                ILogger<SagaReceiveEndpointHandler>? logger = serviceProvider.GetService<ILogger<SagaReceiveEndpointHandler>>();
                 logger?.LogWarning(
                     "SagaReceiveEndpointHandler: Concurrency conflict saving saga state. CorrelationId={CorrelationId}, MessageType={MessageType}, Version={Version}",
                     state.CorrelationId,

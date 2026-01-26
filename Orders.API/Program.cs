@@ -28,6 +28,7 @@ using Transponder.Transports.Grpc;
 using Cysharp.Serialization.Json;
 
 using Sol9.ServiceDefaults.DeadLetter;
+using Sol9.Core.Serialization;
 
 using Verifier.Exceptions;
 
@@ -50,7 +51,11 @@ builder.WebHost.ConfigureKestrel(options =>
 builder.AddServiceDefaults();
 builder.AddPostgresDeadLetterQueue();
 builder.Services.AddControllers()
-    .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new UlidJsonConverter()));
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new UlidJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new EnumerationJsonConverterFactory());
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddProblemDetails();
 
@@ -108,8 +113,8 @@ app.UseExceptionHandler(handler =>
         IHostEnvironment environment = context.RequestServices.GetRequiredService<IHostEnvironment>();
         bool includeDetails = environment.IsDevelopment();
 
-        _ = (Activity.Current?.AddException(exception));
-        _ = (Activity.Current?.SetStatus(ActivityStatusCode.Error, exception.Message));
+        _ = Activity.Current?.AddException(exception);
+        _ = Activity.Current?.SetStatus(ActivityStatusCode.Error, exception.Message);
 
         (Result result, ProblemDetails problemDetails, int statusCode) = exception switch
         {

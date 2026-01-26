@@ -78,7 +78,7 @@ public sealed class OutboxDispatcher : IAsyncDisposable
         {
             var all = Task.WhenAll(dispatchLoop ?? Task.CompletedTask, pollLoop ?? Task.CompletedTask);
             var timeout = Task.Delay(TimeSpan.FromSeconds(30), cancellationToken);
-            var completed = await Task.WhenAny(all, timeout).ConfigureAwait(false);
+            Task completed = await Task.WhenAny(all, timeout).ConfigureAwait(false);
             
             if (completed == timeout) _logger.LogWarning("OutboxDispatcher stop timed out after 30 seconds");
         }

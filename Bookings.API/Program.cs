@@ -20,6 +20,7 @@ using Serilog;
 using Cysharp.Serialization.Json;
 
 using Sol9.Contracts.Bookings;
+using Sol9.Core.Serialization;
 using Sol9.ServiceDefaults;
 using Sol9.ServiceDefaults.DeadLetter;
 
@@ -73,7 +74,11 @@ builder.Services.AddOpenApi("v2", options => options.OpenApiVersion = OpenApiSpe
 builder.AddServiceDefaults();
 builder.AddPostgresDeadLetterQueue();
 builder.Services.AddControllers()
-    .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new UlidJsonConverter()));
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new UlidJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new EnumerationJsonConverterFactory());
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddProblemDetails();
 builder.Services.AddGrpc(options => options.Interceptors.Add<GrpcTransportServerInterceptor>());
@@ -111,8 +116,8 @@ app.UseExceptionHandler(handler =>
         IHostEnvironment environment = context.RequestServices.GetRequiredService<IHostEnvironment>();
         bool includeDetails = environment.IsDevelopment();
 
-        _ = (Activity.Current?.AddException(exception));
-        _ = (Activity.Current?.SetStatus(ActivityStatusCode.Error, exception.Message));
+        _ = Activity.Current?.AddException(exception);
+        _ = Activity.Current?.SetStatus(ActivityStatusCode.Error, exception.Message);
 
         (Result result, ProblemDetails problemDetails, int statusCode) = exception switch
         {

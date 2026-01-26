@@ -2,6 +2,8 @@ using System.Text.Json;
 
 using Cysharp.Serialization.Json;
 
+using Sol9.Core.Serialization;
+
 using Transponder.Persistence.Abstractions;
 
 namespace Transponder.Persistence.EntityFramework;
@@ -52,6 +54,7 @@ public sealed class SagaStateEntity
     {
         var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
         options.Converters.Add(new UlidJsonConverter());
+        options.Converters.Add(new EnumerationJsonConverterFactory());
         return options;
     }
 }
