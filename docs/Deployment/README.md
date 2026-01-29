@@ -1,6 +1,6 @@
 # Deployment Guide
 
-This guide covers deploying Sol9 applications to various environments using Docker and Kubernetes.
+This guide covers deploying Sol9 applications to various environments using Docker and Kubernetes, including blue-green deployment with Argo Rollouts.
 
 ## Prerequisites
 
@@ -8,10 +8,13 @@ This guide covers deploying Sol9 applications to various environments using Dock
 - Kubernetes cluster (for production)
 - kubectl configured
 - Docker registry access (for container images)
+- **Argo Rollouts** controller (for blue-green deployments; see [Blue-Green Deployment](#blue-green-deployment))
 
 ## Docker Deployment
 
 ### Building Images
+
+Dockerfiles are provided for each API. Build from the **repository root**:
 
 ```bash
 # Build all images
@@ -19,8 +22,10 @@ docker build -t sol9/bookings-api:latest -f Bookings.API/Dockerfile .
 docker build -t sol9/orders-api:latest -f Orders.API/Dockerfile .
 docker build -t sol9/gateway-api:latest -f Gateway.API/Dockerfile .
 
-# Or use docker-compose
-docker-compose build
+# Or with a version tag (e.g. commit SHA)
+docker build -t <registry>/sol9/bookings-api:<tag> -f Bookings.API/Dockerfile .
+docker build -t <registry>/sol9/orders-api:<tag> -f Orders.API/Dockerfile .
+docker build -t <registry>/sol9/gateway-api:<tag> -f Gateway.API/Dockerfile .
 ```
 
 ### Running with Docker Compose
@@ -101,6 +106,25 @@ volumes:
 kubectl create namespace sol9
 ```
 
+### gRPC and Transponder Service Configuration
+
+Bookings.API and Orders.API communicate via **gRPC** (Transponder transport). In Kubernetes, set the following so each service resolves the other via **K8s Service DNS**:
+
+- **TransponderDefaults__LocalAddress** – this service’s base URL (e.g. `http://<bookings-api-service>:80`).
+- **TransponderDefaults__RemoteAddress** – the other service’s base URL (e.g. `http://<orders-api-service>:80`).
+
+When using Helm, service names follow the release and chart (e.g. release `sol9-bookings`, chart `bookings-api` → service `sol9-bookings-bookings-api`). Configure in your values or ConfigMap:
+
+```yaml
+# Example: for Bookings.API (replace namespace/release as needed)
+env:
+  transponderDefaults:
+    localAddress: "http://sol9-bookings-bookings-api:80"
+    remoteAddress: "http://sol9-orders-orders-api:80"
+```
+
+For Orders.API, swap local and remote. If you use a **dedicated gRPC port**, set `service.grpcPort` and `service.grpcTargetPort` in the Helm values and use the same service name with the gRPC port in the URL.
+
 ### ConfigMap
 
 ```yaml
@@ -111,8 +135,8 @@ metadata:
   namespace: sol9
 data:
   ASPNETCORE_ENVIRONMENT: "Production"
-  TransponderSettings__LocalBaseAddress: "http://bookings-api:8080"
-  TransponderSettings__RemoteBaseAddress: "http://orders-api:8080"
+  TransponderSettings__LocalBaseAddress: "http://bookings-api:80"
+  TransponderSettings__RemoteBaseAddress: "http://orders-api:80"
 ```
 
 ### Secrets
@@ -124,6 +148,74 @@ kubectl create secret generic sol9-secrets \
   --from-literal=redis-password=your-password \
   -n sol9
 ```
+
+### Deploying with Helm
+
+Deploy **backends first**, then the gateway:
+
+```bash
+# Backend APIs (order can be parallel)
+helm upgrade --install sol9-bookings ./K8s/helm/bookings-api -n sol9 -f values.prod.yaml --set image.tag=<tag>
+helm upgrade --install sol9-orders   ./K8s/helm/orders-api   -n sol9 -f values.prod.yaml --set image.tag=<tag>
+
+# Gateway (after backends)
+helm upgrade --install sol9-gateway ./K8s/helm/gateway-api  -n sol9 -f values.prod.yaml --set image.tag=<tag>
+```
+
+## Blue-Green Deployment
+
+Blue-green is implemented with **Argo Rollouts** in the Helm charts. The active Service keeps the same name; promotion switches traffic from blue (current) to green (new) ReplicaSet so **HTTP and gRPC** both move to the new version without changing DNS.
+
+### Prerequisites
+
+- **Argo Rollouts** controller installed in the cluster:
+  ```bash
+  kubectl create namespace argo-rollouts
+  kubectl apply -n argo-rollouts -f https://github.com/argoproj/rollouts-operator/releases/latest/download/install.yaml
+  ```
+- Optional: **kubectl argo rollouts** plugin for CLI:
+  ```bash
+  curl -LO https://github.com/argoproj/rollouts-operator/releases/latest/download/kubectl-argo-rollouts-linux-amd64
+  chmod +x kubectl-argo-rollouts-linux-amd64 && sudo mv kubectl-argo-rollouts-linux-amd64 /usr/local/bin/kubectl-argo-rollouts
+  ```
+
+### Enabling Blue-Green in Helm
+
+In your values (e.g. `values.prod.yaml`) for **bookings-api**, **orders-api**, and **gateway-api**:
+
+```yaml
+rollout:
+  enabled: true
+  strategy: blueGreen
+  blueGreen:
+    autoPromotionEnabled: false   # manual promote
+    previewReplicaCount: 1
+    scaleDownDelaySeconds: 30
+```
+
+Optional: enable analysis (e.g. Prometheus success rate) via `rollout.analysis` in values.
+
+### Blue-Green Flow
+
+1. **Deploy new version (green)**  
+   `helm upgrade ... --set image.tag=<new-tag>`. Argo creates a new ReplicaSet (green) and keeps the active Service pointing at blue.
+
+2. **Validate green**  
+   Use the **preview** Service (e.g. `sol9-bookings-bookings-api-preview`) for HTTP (and gRPC if `service.grpcPort` is set). Run smoke tests or wait for automated analysis.
+
+3. **Promote**  
+   When satisfied:
+   ```bash
+   kubectl argo rollouts promote <rollout-name> -n sol9
+   ```
+   Rollout names follow Helm fullname: `sol9-bookings-bookings-api`, `sol9-orders-orders-api`, `sol9-gateway-gateway-api`.
+
+4. **Rollback (if needed)**  
+   Abort the rollout or revert:
+   ```bash
+   kubectl argo rollouts abort <rollout-name> -n sol9
+   ```
+   Or revert to a previous Helm revision and run `helm upgrade` again; Argo can roll back to the previous ReplicaSet.
 
 ### PostgreSQL Deployment
 
@@ -183,6 +275,8 @@ spec:
 ```
 
 ### Bookings API Deployment
+
+When `rollout.enabled` is false, the chart renders a standard Deployment. When true, it renders an Argo Rollout with blue-green strategy (see [Blue-Green Deployment](#blue-green-deployment)).
 
 ```yaml
 apiVersion: apps/v1
@@ -346,6 +440,8 @@ GET /health   # Liveness probe
 GET /ready    # Readiness probe
 ```
 
+Helm charts use `/alive` by default for probes; adjust in values if needed.
+
 ## Monitoring
 
 ### Prometheus Metrics
@@ -386,6 +482,8 @@ spec:
 ## Scaling
 
 ### Horizontal Pod Autoscaling
+
+When using a standard Deployment, reference `Deployment`; when using Argo Rollouts, reference `Rollout` and `argoproj.io/v1alpha1`:
 
 ```yaml
 apiVersion: autoscaling/v2
@@ -440,32 +538,17 @@ spec:
 
 ## CI/CD
 
-### GitHub Actions Example
+The repository includes a GitHub Actions workflow (`.github/workflows/ci-cd.yml`) that:
 
-```yaml
-name: Deploy to Kubernetes
+1. **Build and test** – Restore, build, and run tests with coverage.
+2. **Publish** – Publish API artifacts (on `main`/`master`).
+3. **Docker build and push** – Build and push images to GHCR (on `main`/`master`):
+   - `ghcr.io/<owner>/sol9-bookings-api:<sha>` and `latest`
+   - `ghcr.io/<owner>/sol9-orders-api:<sha>` and `latest`
+   - `ghcr.io/<owner>/sol9-gateway-api:<sha>` and `latest`
+4. **Deploy** (optional) – When secret `KUBE_CONFIG_DATA` (base64 kubeconfig) is set, runs `helm upgrade --install` for the three charts and optionally promotes Argo Rollouts.
 
-on:
-  push:
-    branches: [main]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Build and push images
-      run: |
-        docker build -t registry.example.com/sol9/bookings-api:${{ github.sha }} .
-        docker push registry.example.com/sol9/bookings-api:${{ github.sha }}
-    
-    - name: Deploy to Kubernetes
-      run: |
-        kubectl set image deployment/bookings-api \
-          bookings-api=registry.example.com/sol9/bookings-api:${{ github.sha }} \
-          -n sol9
-```
+To enable deploy, add a repository secret `KUBE_CONFIG_DATA` with the base64-encoded kubeconfig for your cluster.
 
 ## Troubleshooting
 
@@ -484,6 +567,13 @@ kubectl get services -n sol9
 kubectl get endpoints -n sol9
 ```
 
+### Argo Rollouts Status
+
+```bash
+kubectl argo rollouts list -n sol9
+kubectl argo rollouts status <rollout-name> -n sol9
+```
+
 ### Database Connection Issues
 
 ```bash
@@ -499,4 +589,5 @@ kubectl exec -it bookings-api-xxx -n sol9 -- \
 
 - [Kubernetes Documentation](https://kubernetes.io/docs/)
 - [Docker Documentation](https://docs.docker.com/)
+- [Argo Rollouts](https://argoproj.github.io/rollouts/)
 - [.NET Aspire Documentation](https://learn.microsoft.com/en-us/dotnet/aspire/)

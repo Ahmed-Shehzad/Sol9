@@ -91,3 +91,115 @@ jobs:
         with:
           name: api-artifacts
           path: artifacts
+
+  docker_build_push:
+    if: github.ref == 'refs/heads/main'
+    needs: build_test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata and build Bookings API
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Bookings.API/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/sol9-bookings-api:${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/sol9-bookings-api:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Extract metadata and build Orders API
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Orders.API/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/sol9-orders-api:${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/sol9-orders-api:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Extract metadata and build Gateway API
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Gateway.API/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/sol9-gateway-api:${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/sol9-gateway-api:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && secrets.KUBE_CONFIG_DATA != ''
+    needs: docker_build_push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.13.0
+
+      - name: Set up kubeconfig
+        run: |
+          mkdir -p "$HOME/.kube"
+          echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 -d > "$HOME/.kube/config"
+          chmod 600 "$HOME/.kube/config"
+
+      - name: Install Argo Rollouts kubectl plugin
+        run: |
+          curl -LO https://github.com/argoproj/rollouts-operator/releases/latest/download/kubectl-argo-rollouts-linux-amd64
+          chmod +x kubectl-argo-rollouts-linux-amd64
+          sudo mv kubectl-argo-rollouts-linux-amd64 /usr/local/bin/kubectl-argo-rollouts
+
+      - name: Deploy Bookings API
+        run: |
+          helm upgrade --install sol9-bookings ./K8s/helm/bookings-api \
+            -n sol9 --create-namespace \
+            --set image.repository=ghcr.io/${{ github.repository_owner }}/sol9-bookings-api \
+            --set image.tag=${{ github.sha }}
+
+      - name: Deploy Orders API
+        run: |
+          helm upgrade --install sol9-orders ./K8s/helm/orders-api \
+            -n sol9 --create-namespace \
+            --set image.repository=ghcr.io/${{ github.repository_owner }}/sol9-orders-api \
+            --set image.tag=${{ github.sha }}
+
+      - name: Deploy Gateway API
+        run: |
+          helm upgrade --install sol9-gateway ./K8s/helm/gateway-api \
+            -n sol9 --create-namespace \
+            --set image.repository=ghcr.io/${{ github.repository_owner }}/sol9-gateway-api \
+            --set image.tag=${{ github.sha }}
+
+      - name: Promote rollouts (optional)
+        if: success()
+        run: |
+          kubectl argo rollouts promote sol9-bookings-bookings-api -n sol9 2>/dev/null || true
+          kubectl argo rollouts promote sol9-orders-orders-api -n sol9 2>/dev/null || true
+          kubectl argo rollouts promote sol9-gateway-gateway-api -n sol9 2>/dev/null || true
