@@ -128,13 +128,13 @@ Default ports:
 
 ## Documentation
 
-Comprehensive documentation is available in the `docs/` directory:
+Comprehensive documentation is available in the [`docs/`](docs/README.md) directory:
 
-- **[Transponder Messaging Framework](docs/Transponder/README.md)**: Core messaging system, transports, and patterns
-- **[Intercessor](docs/Intercessor/README.md)**: Mediator pattern and pipeline behaviors
-- **[Verifier](docs/Verifier/README.md)**: Validation framework
-- **[Applications](docs/Applications/README.md)**: Bookings and Orders module documentation
-- **[Deployment](docs/Deployment/README.md)**: Kubernetes and Docker deployment guides
+- **[Transponder](docs/Transponder/README.md)**: Messaging framework – setup, config, when/where/why to use; transports (gRPC, Kafka, etc.)
+- **[Intercessor](docs/Intercessor/README.md)**: Mediator – commands, queries, notifications, pipeline behaviors; setup, config, when/where/why
+- **[Verifier](docs/Verifier/README.md)**: Validation framework – fluent rules, sync/async validators; setup, config, when/where/why
+- **[Deployment](docs/Deployment/README.md)**: Docker, Kubernetes, blue-green deployment, gRPC/Transponder configuration
+- **[Documentation index](docs/README.md)**: Overview of all docs and quick reference
 
 ## Transports
 
