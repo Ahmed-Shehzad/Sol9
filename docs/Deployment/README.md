@@ -550,6 +550,74 @@ The repository includes a GitHub Actions workflow (`.github/workflows/ci-cd.yml`
 
 To enable deploy, add a repository secret `KUBE_CONFIG_DATA` with the base64-encoded kubeconfig for your cluster.
 
+---
+
+## Automating Blue-Green and Kubernetes Deployment
+
+### Automating blue-green deployment
+
+Blue-green can be fully automated. You already use **Argo Rollouts** in Helm (blue-green strategy). Automation options:
+
+| Approach | What is automated | How |
+|----------|-------------------|-----|
+| **CI-driven** | Build → push image → deploy new version (green) → optionally promote | In GitHub Actions: after `helm upgrade` with the new tag, run `kubectl argo rollouts promote` (removes the manual gate), or use **post-deploy analysis** (e.g. Argo Rollouts + Prometheus) and **auto-promote** when metrics pass. |
+| **GitOps (Argo CD)** | “What’s in Git” is deployed and kept in sync; Rollouts still perform blue-green. | You change **Git** (e.g. image tag in `values.yaml` or a Kustomize overlay); Argo CD applies that to the cluster. Rollouts still create green; you then promote (manually or via Analysis + auto-promote). |
+
+To automate promotion in CI: ensure the deploy job runs `kubectl argo rollouts promote` for each rollout after `helm upgrade`, or enable Argo Rollouts **analysis** (e.g. Prometheus success rate) and set `autoPromotionEnabled: true` (or use `autoPromotionSeconds`) in your Helm values so green is promoted automatically when analysis succeeds.
+
+### Automating the Kubernetes process
+
+The “Kubernetes process” (applying manifests, upgrading releases) can be automated in two main ways:
+
+1. **CI-driven (what you have now)**  
+   The pipeline builds images, pushes to a registry, then runs `helm upgrade` (and optionally promote). Every merge to `main` triggers a deploy; no manual `kubectl` or `helm` needed.
+
+2. **GitOps (Argo CD)**  
+   You only change **Git** (manifests, Helm values, or Kustomize). Argo CD watches the repo and **continuously syncs** the cluster to that state. The “Kubernetes process” is automated by Argo CD applying whatever is in Git.
+
+Both approaches automate deployment; the difference is whether the source of truth is “CI run” or “Git state.”
+
+---
+
+## GitOps and Argo CD
+
+### What is GitOps?
+
+**GitOps** means the **desired state** of the system lives in **Git** (manifests, Helm values, Kustomize). A controller (e.g. **Argo CD**) compares the cluster to that state and applies changes so the cluster matches Git. You don’t run `kubectl apply` or `helm upgrade` from CI; you push a commit and Argo CD does the rest.
+
+### Benefits of GitOps with Argo CD
+
+| Benefit | Description |
+|---------|-------------|
+| **Single source of truth** | Git is the only place that defines “what should run.” All changes go through Git; no ad-hoc edits (or they get overwritten). |
+| **Audit trail** | Every change is a commit: who, when, and why (PR/commit message). Easy to answer “what was deployed when?” |
+| **Easy rollback** | Rollback = revert the commit or change the image tag in Git; Argo CD syncs. No need to re-run CI or dig through pipeline history. |
+| **Drift detection** | If someone edits the cluster by hand, Argo CD sees the diff and can report it or revert to Git state. |
+| **Approval and safety** | Changes go through PRs and code review; merge triggers sync. Good for production and compliance. |
+| **Same workflow for many environments** | Use different folders or branches (e.g. `env/prod`, `env/staging`) or Helm values files; Argo CD applications point at each. |
+| **No long-lived cluster credentials in CI** | CI only pushes images and pushes to Git. Argo CD (in the cluster) needs cluster access; CI does not need `KUBE_CONFIG_DATA`. |
+
+### GitOps vs CI-only deploy
+
+| | **CI runs `helm upgrade`** | **GitOps with Argo CD** |
+|---|----------------------------|--------------------------|
+| **Who applies to the cluster?** | GitHub Actions (or other CI) | Argo CD |
+| **Credentials** | CI needs cluster access (e.g. `KUBE_CONFIG_DATA`) | Only Argo CD needs cluster access; CI only needs Git + registry |
+| **Source of truth** | “Last successful pipeline run” | Git (branch/folder Argo CD watches) |
+| **Rollback** | Re-run pipeline with old tag or revert and re-run | Revert commit or change tag in Git; Argo CD syncs |
+| **Drift** | No built-in detection | Argo CD shows diff between cluster and Git |
+
+### Using Argo CD with this repo
+
+1. **Install Argo CD** in your cluster (see [Argo CD docs](https://argo-cd.readthedocs.io/)).
+2. **Define the desired state in Git** – e.g. a folder with Helm values (or Kustomize) that reference your charts and image tags. CI can update the image tag in that folder (e.g. after building and pushing).
+3. **Create an Argo CD Application** pointing at this repo and path (e.g. `K8s/helm` or a dedicated `deploy/` folder with values).
+4. Argo CD will sync the cluster to that state. Your existing **Argo Rollouts** (blue-green) still apply; promotion can remain manual or be automated via Rollouts analysis.
+
+With this setup, CI focuses on: build → test → push images → **update Git** (e.g. image tag). Argo CD handles applying to Kubernetes and keeping the cluster in sync with Git.
+
+---
+
 ## Troubleshooting
 
 ### Check Pod Status
@@ -590,4 +658,5 @@ kubectl exec -it bookings-api-xxx -n sol9 -- \
 - [Kubernetes Documentation](https://kubernetes.io/docs/)
 - [Docker Documentation](https://docs.docker.com/)
 - [Argo Rollouts](https://argoproj.github.io/rollouts/)
+- [Argo CD](https://argo-cd.readthedocs.io/) – GitOps and continuous sync from Git
 - [.NET Aspire Documentation](https://learn.microsoft.com/en-us/dotnet/aspire/)

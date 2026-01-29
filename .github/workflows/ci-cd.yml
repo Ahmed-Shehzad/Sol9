@@ -110,6 +110,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set registry owner (lowercase for Docker)
+        run: echo "REGISTRY_OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Extract metadata and build Bookings API
         uses: docker/build-push-action@v6
         with:
@@ -117,8 +120,8 @@ jobs:
           file: Bookings.API/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/sol9-bookings-api:${{ github.sha }}
-            ghcr.io/${{ github.repository_owner }}/sol9-bookings-api:latest
+            ghcr.io/${{ env.REGISTRY_OWNER }}/sol9-bookings-api:${{ github.sha }}
+            ghcr.io/${{ env.REGISTRY_OWNER }}/sol9-bookings-api:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -129,8 +132,8 @@ jobs:
           file: Orders.API/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/sol9-orders-api:${{ github.sha }}
-            ghcr.io/${{ github.repository_owner }}/sol9-orders-api:latest
+            ghcr.io/${{ env.REGISTRY_OWNER }}/sol9-orders-api:${{ github.sha }}
+            ghcr.io/${{ env.REGISTRY_OWNER }}/sol9-orders-api:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -141,8 +144,8 @@ jobs:
           file: Gateway.API/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/sol9-gateway-api:${{ github.sha }}
-            ghcr.io/${{ github.repository_owner }}/sol9-gateway-api:latest
+            ghcr.io/${{ env.REGISTRY_OWNER }}/sol9-gateway-api:${{ github.sha }}
+            ghcr.io/${{ env.REGISTRY_OWNER }}/sol9-gateway-api:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -157,6 +160,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set registry owner (lowercase for Docker)
+        run: echo "REGISTRY_OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Install Helm
         uses: azure/setup-helm@v4
@@ -179,21 +185,21 @@ jobs:
         run: |
           helm upgrade --install sol9-bookings ./K8s/helm/bookings-api \
             -n sol9 --create-namespace \
-            --set image.repository=ghcr.io/${{ github.repository_owner }}/sol9-bookings-api \
+            --set image.repository=ghcr.io/${{ env.REGISTRY_OWNER }}/sol9-bookings-api \
             --set image.tag=${{ github.sha }}
 
       - name: Deploy Orders API
         run: |
           helm upgrade --install sol9-orders ./K8s/helm/orders-api \
             -n sol9 --create-namespace \
-            --set image.repository=ghcr.io/${{ github.repository_owner }}/sol9-orders-api \
+            --set image.repository=ghcr.io/${{ env.REGISTRY_OWNER }}/sol9-orders-api \
             --set image.tag=${{ github.sha }}
 
       - name: Deploy Gateway API
         run: |
           helm upgrade --install sol9-gateway ./K8s/helm/gateway-api \
             -n sol9 --create-namespace \
-            --set image.repository=ghcr.io/${{ github.repository_owner }}/sol9-gateway-api \
+            --set image.repository=ghcr.io/${{ env.REGISTRY_OWNER }}/sol9-gateway-api \
             --set image.tag=${{ github.sha }}
 
       - name: Promote rollouts (optional)
