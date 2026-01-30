@@ -53,7 +53,7 @@ catch (Exception ex)
     Environment.Exit(1);
 }
 
-static async Task ConsumeSseAsync(string url, CancellationToken cancellationToken)
+async static Task ConsumeSseAsync(string url, CancellationToken cancellationToken)
 {
     using var http = new HttpClient();
     http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
@@ -140,7 +140,6 @@ static void PrintEvent(string eventName, string? eventId, string data)
         {
             string? bodyB64 = bodyProp.GetString();
             if (!string.IsNullOrEmpty(bodyB64))
-            {
                 try
                 {
                     byte[] bytes = Convert.FromBase64String(bodyB64);
@@ -151,16 +150,12 @@ static void PrintEvent(string eventName, string? eventId, string data)
                         using var bodyDoc = JsonDocument.Parse(bodyStr);
                         Console.WriteLine($"  body: {JsonSerializer.Serialize(bodyDoc.RootElement, new JsonSerializerOptions { WriteIndented = false })}");
                     }
-                    else
-                    {
-                        Console.WriteLine($"  body: {bodyStr}");
-                    }
+                    else Console.WriteLine($"  body: {bodyStr}");
                 }
                 catch
                 {
                     Console.WriteLine($"  body: (base64, {bodyB64.Length} chars)");
                 }
-            }
         }
 
         if (root.TryGetProperty("headers", out var headers) && headers.ValueKind == JsonValueKind.Object)
