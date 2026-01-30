@@ -36,6 +36,7 @@
       <ProjectReference Include="..\Transponder.Serilog\Transponder.Serilog.csproj" />
       <ProjectReference Include="..\Transponder.Transports.Grpc.Contracts\Transponder.Transports.Grpc.Contracts.csproj" />
       <ProjectReference Include="..\Transponder.Transports.Grpc\Transponder.Transports.Grpc.csproj" />
+      <ProjectReference Include="..\Transponder.Transports.SSE\Transponder.Transports.SSE.csproj" />
       <ProjectReference Include="..\Transponder\Transponder.csproj" />
     </ItemGroup>
 

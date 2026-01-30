@@ -13,7 +13,6 @@ public sealed class WebhookTransportHost : TransportHostBase
     private readonly HttpClient _httpClient;
     private readonly bool _disposeClient;
     private readonly ResiliencePipeline _resiliencePipeline;
-    private readonly TransportResilienceOptions? _resilienceOptions;
 
     public WebhookTransportHost(IWebhookHostSettings settings)
         : this(settings, httpClient: null)
@@ -24,8 +23,8 @@ public sealed class WebhookTransportHost : TransportHostBase
         : base(settings?.Address ?? throw new ArgumentNullException(nameof(settings)))
     {
         Settings = settings;
-        _resilienceOptions = (settings as ITransportHostResilienceSettings)?.ResilienceOptions;
-        _resiliencePipeline = TransportResiliencePipeline.Create(_resilienceOptions);
+        TransportResilienceOptions? resilienceOptions = (settings as ITransportHostResilienceSettings)?.ResilienceOptions;
+        _resiliencePipeline = TransportResiliencePipeline.Create(resilienceOptions);
         _httpClient = httpClient ?? new HttpClient();
         _disposeClient = httpClient is null;
 

@@ -17,7 +17,7 @@ internal static class WebhookSubscriptionMatcher
             string trimmed = pattern.Trim();
             if (trimmed == "*") return true;
 
-            if (trimmed.EndsWith("*", StringComparison.Ordinal))
+            if (trimmed.EndsWith('*'))
             {
                 string prefix = trimmed[..^1];
                 if (messageType.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) return true;

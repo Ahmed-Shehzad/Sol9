@@ -24,6 +24,7 @@ using Transponder.Persistence.EntityFramework.PostgreSql.Abstractions;
 using Transponder.Persistence.Redis;
 using Transponder.Serilog;
 using Transponder.Transports.Grpc;
+using Transponder.Transports.SSE;
 
 using Cysharp.Serialization.Json;
 
@@ -148,6 +149,7 @@ if (!allowUnsecuredTransport) _ = app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapGrpcService<GrpcTransportService>();
+app.MapTransponderSse();
 app.MapDefaultEndpoints();
 app.MapControllers();
 
@@ -261,6 +263,7 @@ static void ConfigureTransponderBus(
     _ = builder.Services.AddTransponder(localAddress, options =>
     {
         _ = options.TransportBuilder.UseGrpc(localAddress, remoteResolution.Addresses);
+        _ = options.TransportBuilder.UseSse(localAddress);
         options.RequestAddressResolver = TransponderRequestAddressResolver.Create(
             remoteResolution.Addresses,
             remoteResolution.Strategy,

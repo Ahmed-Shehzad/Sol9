@@ -28,6 +28,7 @@
   </Folder>
   <Folder Name="/Services/Orders/">
     <Project Path="Orders.API/Orders.API.csproj" />
+    <Project Path="Sol9.SseClient/Sol9.SseClient.csproj" />
     <Project Path="Orders.Application/Orders.Application.csproj" />
     <Project Path="Orders.Domain/Orders.Domain.csproj" />
     <Project Path="Orders.Infrastructure/Orders.Infrastructure.csproj" />

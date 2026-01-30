@@ -83,7 +83,7 @@ internal static class SseEndpoint
         }
         finally
         {
-            linkedCts.Cancel();
+            await linkedCts.CancelAsync();
             if (keepAliveTask is not null)
                 try { await keepAliveTask.ConfigureAwait(false); } catch (OperationCanceledException) { }
 
